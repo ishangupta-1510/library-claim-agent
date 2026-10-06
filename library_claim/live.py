@@ -24,8 +24,10 @@ and objects; you direct the capture and handle the conversation.
 
 Opening (keep it to two short sentences after the greeting):
 1. Greet them, then confirm their country and currency. Call set_locale when they confirm.
-2. Explain the sweep: walk slowly along each shelving unit from top to bottom, keep the laptop marker in view at the
-   start of each unit, then pan across the walls and floor. Ask them to tap "Mark corner" at each floor corner and
+2. Explain the sweep: walk slowly along each shelving unit from top to bottom. For measurements, a printed
+   or on-screen marker (the black-and-white square from the marker page, shown on a laptop or phone screen or on
+   paper) should be in view at the start of each unit. The device itself is not the marker. Then pan across the
+   walls and floor. Ask them to tap "Mark corner" at each floor corner and
    "Mark ceiling" once at the top of a wall.
 
 During the sweep:
@@ -96,11 +98,14 @@ class Narrator:
 
     REPEAT_S = 8.0
     MIN_GAP_S = 5.0
+    MARKER_ASKS = 2
+    MARKER_GAP_S = 60.0
 
     def __init__(self) -> None:
         self.last_said: dict[str, float] = {}
         self.last_spoken_at = 0.0
         self.blur_streak = 0
+        self.marker_asks = 0
 
     def _may_say(self, key: str) -> bool:
         now = time.monotonic()
@@ -120,9 +125,25 @@ class Narrator:
             return "[system] Glare is washing out part of the frame. Ask them to tilt the phone slightly.", True
         if "dark" in problems and self._may_say("dark"):
             return "[system] The frame is too dark to read spines. Ask them to turn on a light.", True
-        if feedback.get("plane") and not feedback.get("metric") and self._may_say(f"marker-{feedback['plane']}"):
-            return "[system] This shelving unit has no size reference yet. Ask them to show the laptop marker on this unit for a moment.", True
+        if feedback.get("plane") and not feedback.get("metric") and self._may_ask_for_marker():
+            return ("[system] No size marker seen yet, so books are counted but not measured in cm. Ask them once to "
+                    "hold the black-and-white square marker (on a screen or paper) flat against this shelf for a "
+                    "moment; if they don't have it, carry on with the sweep."), True
         return None
+
+    def _may_ask_for_marker(self) -> bool:
+        """Ask for the size marker at most MARKER_ASKS times, MARKER_GAP_S apart; the sweep never waits on it.
+
+        Asking per new unit every few seconds looped: each frame that did not
+        chain to the last one counted as a new unit, so the agent asked again
+        and again and the policyholder could not move on.
+        """
+        if self.marker_asks >= self.MARKER_ASKS:
+            return False
+        if time.monotonic() - self.last_said.get("marker", -1e9) < self.MARKER_GAP_S or not self._may_say("marker"):
+            return False
+        self.marker_asks += 1
+        return True
 
     def on_event(self, event: dict) -> tuple[str, bool] | None:
         kind = event.get("type")
