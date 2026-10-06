@@ -209,13 +209,16 @@ class PriceClient:
 
     def __init__(
         self, http: httpx.AsyncClient, serpapi_key: str, cache_dir: Path | None = Path(".cache/serpapi"),
-        max_live_searches: int | None = None,
+        max_live_searches: int | None = None, offline: bool = False,
     ):
         self.http = http
         self.serpapi_key = serpapi_key
         self.cache_dir = cache_dir
         # Optional cap on paid searches per packet (development runs); None = unlimited.
         self.max_live_searches = max_live_searches
+        # Offline (mock flow): answer only from cached searches, whatever their age; never search live.
+        self.offline = offline
+        self.cache_used: list[Path] = []  # cache files this packet read, so a recording can keep just those
         self.budget_exhausted = False
         self.raw: list[dict] = []  # every search used for this packet, with its response
         self.live_searches = 0
@@ -229,15 +232,18 @@ class PriceClient:
         return self.cache_dir / f"{key}.json"
 
     async def _serpapi(self, params: dict) -> tuple[dict, str]:
-        if not self.serpapi_key:
+        if not self.serpapi_key and not self.offline:
             return {}, ""
         path = self._cache_path(params)
         if path and path.exists():
             cached = json.loads(path.read_text(encoding="utf-8"))
             age = datetime.now(timezone.utc) - datetime.fromisoformat(cached["retrieved_at"])
-            if age < timedelta(days=CACHE_DAYS):
+            if self.offline or age < timedelta(days=CACHE_DAYS):
+                self.cache_used.append(path)
                 self.raw.append({**cached, "from_cache": True})
                 return cached["response"], cached["retrieved_at"]
+        if self.offline:
+            return {}, ""
         if self.max_live_searches is not None and self.live_searches >= self.max_live_searches:
             self.budget_exhausted = True
             return {}, ""

@@ -1,0 +1,177 @@
+{
+ "usage": {
+  "model": "gemini-3.5-flash-lite",
+  "latency_s": 47.0,
+  "input_tokens": 1347,
+  "output_tokens": 1208
+ },
+ "response": {
+  "books": [
+   {
+    "box_2d": [
+     138,
+     351,
+     530,
+     399
+    ],
+    "orientation": "upright",
+    "title": "FAHRENHEIT 451",
+    "author": "Ray Bradbury",
+    "publisher": "",
+    "all_text": "FAHRENHEIT 451 Ray Bradbury",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     135,
+     399,
+     530,
+     440
+    ],
+    "orientation": "upright",
+    "title": "SHANTARAM",
+    "author": "Gregory David Roberts",
+    "publisher": "Abacus",
+    "all_text": "Gregory David Roberts Abacus SHANTARAM",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     3,
+     439,
+     530,
+     471
+    ],
+    "orientation": "upright",
+    "title": "THE ALCHEMIST",
+    "author": "Paulo Coelho",
+    "publisher": "HarperCollins",
+    "all_text": "Paulo Coelho HarperCollins THE ALCHEMIST",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     169,
+     473,
+     530,
+     493
+    ],
+    "orientation": "upright",
+    "title": "WINGS OF FIRE",
+    "author": "A.P.J. Abdul Kalam",
+    "publisher": "",
+    "all_text": "A.P.J. Abdul Kalam WINGS OF FIRE",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     133,
+     493,
+     530,
+     520
+    ],
+    "orientation": "upright",
+    "title": "DEEP WORK",
+    "author": "Cal Newport",
+    "publisher": "Piatkus",
+    "all_text": "Cal Newport Piatkus DEEP WORK",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     179,
+     520,
+     530,
+     551
+    ],
+    "orientation": "upright",
+    "title": "THE BOOK THIEF",
+    "author": "Markus Zusak",
+    "publisher": "Black Swan",
+    "all_text": "Markus Zusak Black Swan THE BOOK THIEF",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     0,
+     554,
+     530,
+     582
+    ],
+    "orientation": "upright",
+    "title": "THE MIDNIGHT LIBRARY",
+    "author": "Matt Haig",
+    "publisher": "Canongate",
+    "all_text": "Matt Haig Canongate THE MIDNIGHT LIBRARY",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     755,
+     222,
+     994,
+     241
+    ],
+    "orientation": "upright",
+    "title": "",
+    "author": "Tara Westover",
+    "publisher": "Windmill",
+    "all_text": "Tara Westover Windmill",
+    "legible": false,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     873,
+     242,
+     994,
+     286
+    ],
+    "orientation": "upright",
+    "title": "",
+    "author": "Haruki Murakami",
+    "publisher": "Vintage",
+    "all_text": "Haruki Murakami Vintage",
+    "legible": false,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     729,
+     287,
+     994,
+     316
+    ],
+    "orientation": "upright",
+    "title": "",
+    "author": "Michelle Obama",
+    "publisher": "Penguin",
+    "all_text": "Michelle Obama Penguin",
+    "legible": false,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     725,
+     315,
+     994,
+     346
+    ],
+    "orientation": "upright",
+    "title": "",
+    "author": "Charles Duhigg",
+    "publisher": "Random House",
+    "all_text": "Charles Duhigg Random House",
+    "legible": false,
+    "age_cues": []
+   }
+  ]
+ }
+}

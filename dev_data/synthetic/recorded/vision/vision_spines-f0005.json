@@ -1,0 +1,312 @@
+{
+ "usage": {
+  "model": "gemini-3.5-flash-lite",
+  "latency_s": 5.84,
+  "input_tokens": 1327,
+  "output_tokens": 1993
+ },
+ "response": {
+  "books": [
+   {
+    "box_2d": [
+     1,
+     248,
+     62,
+     286
+    ],
+    "orientation": "upright",
+    "title": "",
+    "author": "",
+    "publisher": "",
+    "all_text": "THE",
+    "legible": false,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     1,
+     286,
+     62,
+     307
+    ],
+    "orientation": "upright",
+    "title": "",
+    "author": "",
+    "publisher": "",
+    "all_text": "THE",
+    "legible": false,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     1,
+     308,
+     62,
+     350
+    ],
+    "orientation": "upright",
+    "title": "",
+    "author": "",
+    "publisher": "",
+    "all_text": "THE",
+    "legible": false,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     1,
+     351,
+     64,
+     381
+    ],
+    "orientation": "upright",
+    "title": "",
+    "author": "",
+    "publisher": "",
+    "all_text": "",
+    "legible": false,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     1,
+     380,
+     64,
+     412
+    ],
+    "orientation": "upright",
+    "title": "",
+    "author": "",
+    "publisher": "",
+    "all_text": "THE PS",
+    "legible": false,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     0,
+     413,
+     67,
+     638
+    ],
+    "orientation": "upright",
+    "title": "NINETEEN EIGHTY-FOUR",
+    "author": "George Orwell",
+    "publisher": "Penguin",
+    "all_text": "NINETEEN EIGHTY-FOUR George Orwell Penguin",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     38,
+     414,
+     76,
+     622
+    ],
+    "orientation": "upright",
+    "title": "LONG WALK TO FREEDOM",
+    "author": "Nelson Mandela",
+    "publisher": "Abacus",
+    "all_text": "LONG WALK TO FREEDOM Nelson Mandela Abacus",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     403,
+     252,
+     749,
+     291
+    ],
+    "orientation": "upright",
+    "title": "THE INHERITANCE OF LOSS",
+    "author": "Kiran Desai",
+    "publisher": "Penguin",
+    "all_text": "THE INHERITANCE OF LOSS Kiran Desai Penguin",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     411,
+     290,
+     753,
+     331
+    ],
+    "orientation": "upright",
+    "title": "THE SILENT PATIENT",
+    "author": "Alex Michaelides",
+    "publisher": "Orion",
+    "all_text": "THE SILENT PATIENT Alex Michaelides Orion",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     226,
+     329,
+     755,
+     354
+    ],
+    "orientation": "upright",
+    "title": "QUIET",
+    "author": "Susan Cain",
+    "publisher": "Penguin",
+    "all_text": "QUIET Susan Cain Penguin",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     316,
+     353,
+     757,
+     387
+    ],
+    "orientation": "upright",
+    "title": "THE SELFISH GENE",
+    "author": "Richard Dawkins",
+    "publisher": "Oxford",
+    "all_text": "THE SELFISH GENE Richard Dawkins Oxford",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     242,
+     386,
+     758,
+     411
+    ],
+    "orientation": "upright",
+    "title": "TRAIN TO PAKISTAN",
+    "author": "Khushwant Singh",
+    "publisher": "Penguin",
+    "all_text": "TRAIN TO PAKISTAN Khushwant Singh Penguin",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     259,
+     410,
+     759,
+     442
+    ],
+    "orientation": "upright",
+    "title": "IKIGAI",
+    "author": "Hector Garcia",
+    "publisher": "Penguin",
+    "all_text": "IKIGAI Hector Garcia Penguin",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     273,
+     442,
+     762,
+     461
+    ],
+    "orientation": "upright",
+    "title": "A BRIEF HISTORY OF TIME",
+    "author": "Stephen Hawking",
+    "publisher": "Bantam",
+    "all_text": "A BRIEF HISTORY OF TIME Stephen Hawking Bantam",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     271,
+     459,
+     764,
+     503
+    ],
+    "orientation": "upright",
+    "title": "OF MICE AND MEN",
+    "author": "John Steinbeck",
+    "publisher": "Penguin",
+    "all_text": "OF MICE AND MEN John Steinbeck Penguin",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     245,
+     503,
+     766,
+     529
+    ],
+    "orientation": "upright",
+    "title": "MAN'S SEARCH FOR MEANING",
+    "author": "Viktor E. Frankl",
+    "publisher": "Rider",
+    "all_text": "MAN'S SEARCH FOR MEANING Viktor E. Frankl Rider",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     883,
+     252,
+     960,
+     283
+    ],
+    "orientation": "upright",
+    "title": "",
+    "author": "",
+    "publisher": "Vintage",
+    "all_text": "Vintage",
+    "legible": false,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     919,
+     283,
+     961,
+     321
+    ],
+    "orientation": "upright",
+    "title": "",
+    "author": "",
+    "publisher": "ntage",
+    "all_text": "ntage",
+    "legible": false,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     860,
+     322,
+     963,
+     340
+    ],
+    "orientation": "upright",
+    "title": "",
+    "author": "",
+    "publisher": "Penguin",
+    "all_text": "dweell Penguin",
+    "legible": false,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     949,
+     342,
+     965,
+     370
+    ],
+    "orientation": "upright",
+    "title": "",
+    "author": "",
+    "publisher": "",
+    "all_text": "",
+    "legible": false,
+    "age_cues": []
+   }
+  ]
+ }
+}

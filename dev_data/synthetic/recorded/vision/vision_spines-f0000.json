@@ -1,0 +1,162 @@
+{
+ "usage": {
+  "model": "gemini-3.5-flash-lite",
+  "latency_s": 4.3,
+  "input_tokens": 1347,
+  "output_tokens": 1095
+ },
+ "response": {
+  "books": [
+   {
+    "box_2d": [
+     261,
+     372,
+     847,
+     411
+    ],
+    "orientation": "upright",
+    "title": "DUNE",
+    "author": "Frank Herbert",
+    "publisher": "Hodder",
+    "all_text": "DUNE Frank Herbert Hodder",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     235,
+     411,
+     847,
+     442
+    ],
+    "orientation": "upright",
+    "title": "THE IMMORTALS OF MELUHA",
+    "author": "Amish Tripathi",
+    "publisher": "Westland",
+    "all_text": "THE IMMORTALS OF MELUHA Amish Tripathi Westland",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     347,
+     441,
+     847,
+     471
+    ],
+    "orientation": "upright",
+    "title": "THE HOBBIT",
+    "author": "J. R. R. Tolkien",
+    "publisher": "HarperCollins",
+    "all_text": "THE HOBBIT J. R. R. Tolkien HarperCollins",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     496,
+     471,
+     847,
+     514
+    ],
+    "orientation": "upright",
+    "title": "EGO IS THE ENEMY",
+    "author": "Ryan Holiday",
+    "publisher": "Profile",
+    "all_text": "EGO IS THE ENEMY Ryan Holiday Profile",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     486,
+     514,
+     847,
+     549
+    ],
+    "orientation": "upright",
+    "title": "THE GOD OF SMALL THINGS",
+    "author": "Arundhati Roy",
+    "publisher": "Penguin",
+    "all_text": "THE GOD OF SMALL THINGS Arundhati Roy Penguin",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     452,
+     552,
+     847,
+     574
+    ],
+    "orientation": "upright",
+    "title": "",
+    "author": "",
+    "publisher": "",
+    "all_text": "",
+    "legible": false,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     274,
+     574,
+     847,
+     597
+    ],
+    "orientation": "upright",
+    "title": "FIVE POINT SOMEONE",
+    "author": "Chetan Bhagat",
+    "publisher": "Rupa",
+    "all_text": "FIVE POINT SOMEONE Chetan Bhagat Rupa",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     644,
+     600,
+     847,
+     627
+    ],
+    "orientation": "upright",
+    "title": "CLEAN CODE",
+    "author": "",
+    "publisher": "",
+    "all_text": "CLEAN CODE",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     250,
+     599,
+     847,
+     627
+    ],
+    "orientation": "upright",
+    "title": "",
+    "author": "Robert C. Martin",
+    "publisher": "Pearson",
+    "all_text": "Robert C. Martin Pearson",
+    "legible": false,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     484,
+     627,
+     847,
+     656
+    ],
+    "orientation": "upright",
+    "title": "WHERE THE CRAWDADS SING",
+    "author": "Delia Owens",
+    "publisher": "Corsair",
+    "all_text": "WHERE THE CRAWDADS SING Delia Owens Corsair",
+    "legible": true,
+    "age_cues": []
+   }
+  ]
+ }
+}

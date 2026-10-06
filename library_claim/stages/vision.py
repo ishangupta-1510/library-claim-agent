@@ -14,6 +14,7 @@ import asyncio
 import json
 import time
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Protocol
 
 from rapidfuzz import fuzz
@@ -95,8 +96,34 @@ ITEM_SCHEMA = {
 
 
 class VisionModel(Protocol):
-    async def generate_json(self, image_jpeg: bytes, prompt: str, schema: dict) -> tuple[dict, dict]:
-        """Returns (parsed JSON, usage info with token counts and latency)."""
+    async def generate_json(self, image_jpeg: bytes, prompt: str, schema: dict, call_id: str = "") -> tuple[dict, dict]:
+        """Returns (parsed JSON, usage info with token counts and latency).
+
+        `call_id` names the call within the sweep ("vision_spines-f0003"); a
+        live model ignores it, a recorded one looks its answer up by it.
+        """
+
+
+class RecordedVision:
+    """Answers from a recorded run, for the offline mock flow: no network, no key, same answers every time.
+
+    The pipeline is deterministic on the same frames, so a sweep of the demo
+    footage asks for the same call ids the recorded run did. A call that was
+    not recorded gets an empty answer, as a model that saw nothing would give.
+    """
+
+    def __init__(self, directory: Path, delay_s: float = 0.0):
+        self.directory = directory
+        self.delay_s = delay_s  # the mock flow paces answers so the live inventory fills in visibly
+
+    async def generate_json(self, image_jpeg: bytes, prompt: str, schema: dict, call_id: str = "") -> tuple[dict, dict]:
+        path = self.directory / f"{call_id}.json"
+        empty = {"books": []} if "books" in schema.get("properties", {}) else {"items": []}
+        if not call_id or not path.exists():
+            return empty, {"model": "recorded (not recorded for this call)", "input_tokens": 0, "output_tokens": 0}
+        saved = json.loads(path.read_text(encoding="utf-8"))
+        await asyncio.sleep(self.delay_s)
+        return saved["response"], {**saved.get("usage", {}), "model": "recorded " + saved.get("usage", {}).get("model", "")}
 
 
 @dataclass
@@ -205,7 +232,7 @@ class GeminiVision:
                     return
                 await asyncio.sleep(60 - (now - self._calls[0]) + 0.1)
 
-    async def generate_json(self, image_jpeg: bytes, prompt: str, schema: dict) -> tuple[dict, dict]:
+    async def generate_json(self, image_jpeg: bytes, prompt: str, schema: dict, call_id: str = "") -> tuple[dict, dict]:
         from google.genai import types
 
         from google.genai import errors

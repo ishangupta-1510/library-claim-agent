@@ -1,0 +1,237 @@
+{
+ "usage": {
+  "model": "gemini-3.5-flash-lite",
+  "latency_s": 5.89,
+  "input_tokens": 1327,
+  "output_tokens": 1621
+ },
+ "response": {
+  "books": [
+   {
+    "box_2d": [
+     2,
+     383,
+     541,
+     419
+    ],
+    "orientation": "upright",
+    "title": "DUNE",
+    "author": "Frank Herbert",
+    "publisher": "",
+    "all_text": "DUNE Frank Herbert",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     1,
+     419,
+     541,
+     448
+    ],
+    "orientation": "upright",
+    "title": "THE IMMORTALS OF MELUHA",
+    "author": "Amish Tripathi",
+    "publisher": "",
+    "all_text": "THE IMMORTALS OF MELUHA Amish Tripathi",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     30,
+     452,
+     541,
+     476
+    ],
+    "orientation": "upright",
+    "title": "THE HOBBIT",
+    "author": "J. R. R. Tolkien",
+    "publisher": "",
+    "all_text": "THE HOBBIT J. R. R. Tolkien",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     186,
+     476,
+     541,
+     503
+    ],
+    "orientation": "upright",
+    "title": "EGO IS THE ENEMY",
+    "author": "Ryan Holiday",
+    "publisher": "Profile",
+    "all_text": "EGO IS THE ENEMY Ryan Holiday Profile",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     175,
+     518,
+     541,
+     551
+    ],
+    "orientation": "upright",
+    "title": "THE GOD OF SMALL THINGS",
+    "author": "Arundhati Roy",
+    "publisher": "Penguin",
+    "all_text": "THE GOD OF SMALL THINGS Arundhati Roy Penguin",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     141,
+     551,
+     541,
+     574
+    ],
+    "orientation": "upright",
+    "title": "",
+    "author": "",
+    "publisher": "",
+    "all_text": "",
+    "legible": false,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     3,
+     574,
+     541,
+     597
+    ],
+    "orientation": "upright",
+    "title": "FIVE POINT SOMEONE",
+    "author": "Chetan Bhagat",
+    "publisher": "Rup",
+    "all_text": "FIVE POINT SOMEONE Chetan Bhagat Rup",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     1,
+     597,
+     541,
+     624
+    ],
+    "orientation": "upright",
+    "title": "CLEAN CODE",
+    "author": "Robert C. Martin",
+    "publisher": "Harpe",
+    "all_text": "CLEAN CODE Robert C. Martin Harpe",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     175,
+     624,
+     541,
+     653
+    ],
+    "orientation": "upright",
+    "title": "WHERE THE CRAWDADS SING",
+    "author": "Delia Owens",
+    "publisher": "Corsair",
+    "all_text": "WHERE THE CRAWDADS SING Delia Owens Corsair",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     780,
+     256,
+     981,
+     291
+    ],
+    "orientation": "upright",
+    "title": "",
+    "author": "Eric Ries",
+    "publisher": "Portfolio",
+    "all_text": "Eric Ries Portfolio",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     759,
+     291,
+     981,
+     313
+    ],
+    "orientation": "upright",
+    "title": "",
+    "author": "Aravind Adiga",
+    "publisher": "HarperCollins",
+    "all_text": "Aravind Adiga HarperCollins",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     724,
+     313,
+     981,
+     331
+    ],
+    "orientation": "upright",
+    "title": "",
+    "author": "Ernest Hemingway",
+    "publisher": "Vintage",
+    "all_text": "Ernest Hemingway Vintage",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     863,
+     331,
+     981,
+     356
+    ],
+    "orientation": "upright",
+    "title": "",
+    "author": "",
+    "publisher": "EA",
+    "all_text": "EA",
+    "legible": false,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     883,
+     356,
+     981,
+     388
+    ],
+    "orientation": "upright",
+    "title": "",
+    "author": "",
+    "publisher": "",
+    "all_text": "",
+    "legible": false,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     904,
+     388,
+     981,
+     421
+    ],
+    "orientation": "upright",
+    "title": "",
+    "author": "",
+    "publisher": "Jaico",
+    "all_text": "ousel Jaico",
+    "legible": true,
+    "age_cues": []
+   }
+  ]
+ }
+}

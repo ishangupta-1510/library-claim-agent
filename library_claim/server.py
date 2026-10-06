@@ -19,6 +19,7 @@ from fastapi.responses import FileResponse, HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from .config import LOCALES, confirms_country, settings
+from . import mock
 from .live import Narrator, live_config
 from .stages.scale import render_marker
 from .stages.vision import GeminiVision
@@ -67,7 +68,7 @@ def _demo_manifest() -> dict | None:
 @app.get("/api/demo")
 def demo() -> dict:
     """The demo camera's frames and the size of the marker printed in them (unavailable outside dev)."""
-    return _demo_manifest() or {"frames": []}
+    return {**(_demo_manifest() or {"frames": []}), "mock": mock.available(DEMO)}
 
 
 @app.get("/")
@@ -102,6 +103,15 @@ async def sweep_socket(websocket: WebSocket) -> None:
         async with send_lock:
             with contextlib.suppress(Exception):
                 await websocket.send_json(payload)
+
+    if websocket.query_params.get("mock") == "1":
+        # Offline mock flow: demo footage, recorded model answers, scripted agent; no keys, no network.
+        if not mock.available(DEMO):
+            await send({"type": "error", "message": "Mock flow needs dev_data/synthetic (frames and recorded/)"})
+            await websocket.close()
+            return
+        await mock.run(websocket, send, cfg, DEMO)
+        return
 
     if not cfg.google_api_key:
         await send({"type": "error", "message": "GOOGLE_API_KEY is missing from .env"})

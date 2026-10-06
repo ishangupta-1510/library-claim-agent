@@ -1,0 +1,129 @@
+{
+ "usage": {
+  "model": "gemini-3.5-flash-lite",
+  "latency_s": 48.98,
+  "input_tokens": 1234,
+  "output_tokens": 750
+ },
+ "response": {
+  "items": [
+   {
+    "box_2d": [
+     281,
+     480,
+     823,
+     526
+    ],
+    "category": "decor",
+    "description": "Book spine",
+    "material": "paper",
+    "brand_model": "HarperCollins",
+    "is_artwork": false
+   },
+   {
+    "box_2d": [
+     433,
+     439,
+     826,
+     493
+    ],
+    "category": "decor",
+    "description": "Book spine",
+    "material": "paper",
+    "brand_model": "Abacus",
+    "is_artwork": false
+   },
+   {
+    "box_2d": [
+     472,
+     391,
+     826,
+     450
+    ],
+    "category": "decor",
+    "description": "Book spine",
+    "material": "paper",
+    "brand_model": "",
+    "is_artwork": false
+   },
+   {
+    "box_2d": [
+     466,
+     517,
+     823,
+     551
+    ],
+    "category": "decor",
+    "description": "Book spine",
+    "material": "paper",
+    "brand_model": "",
+    "is_artwork": false
+   },
+   {
+    "box_2d": [
+     430,
+     539,
+     823,
+     577
+    ],
+    "category": "decor",
+    "description": "Book spine",
+    "material": "paper",
+    "brand_model": "Piatkus",
+    "is_artwork": false
+   },
+   {
+    "box_2d": [
+     453,
+     569,
+     823,
+     610
+    ],
+    "category": "decor",
+    "description": "Book spine",
+    "material": "paper",
+    "brand_model": "",
+    "is_artwork": false
+   },
+   {
+    "box_2d": [
+     239,
+     601,
+     823,
+     642
+    ],
+    "category": "decor",
+    "description": "Book spine",
+    "material": "paper",
+    "brand_model": "Canongate",
+    "is_artwork": false
+   },
+   {
+    "box_2d": [
+     103,
+     212,
+     1000,
+     810
+    ],
+    "category": "shelving",
+    "description": "wooden bookshelf",
+    "material": "wood",
+    "brand_model": "",
+    "is_artwork": false
+   },
+   {
+    "box_2d": [
+     169,
+     229,
+     433,
+     391
+    ],
+    "category": "art",
+    "description": "marker tag sticker artwork",
+    "material": "paper",
+    "brand_model": "",
+    "is_artwork": true
+   }
+  ]
+ }
+}

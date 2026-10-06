@@ -165,6 +165,19 @@ def _spread(items: list, n: int) -> list:
 
 
 @dataclass
+class OfflineLookups:
+    """Recorded answers for the post-sweep lookups (see cassette.py and PriceClient offline mode)."""
+
+    http_recording: Path  # catalogs and FX, replayed by ReplayTransport
+    price_cache: Path  # SerpAPI searches, in PriceClient's cache layout
+
+    def transport(self):
+        from .cassette import ReplayTransport
+
+        return ReplayTransport(self.http_recording)
+
+
+@dataclass
 class Plane:
     """One shelving unit's coordinate system."""
 
@@ -195,8 +208,11 @@ class StageClock:
 
 
 class SweepSession:
-    def __init__(self, settings: Settings, vision: VisionModel | None, emit: Emit, device: str = ""):
+    def __init__(self, settings: Settings, vision: VisionModel | None, emit: Emit, device: str = "",
+                 offline: "OfflineLookups | None" = None):
         self.settings = settings
+        # Offline (mock flow): catalog, FX and price lookups answered from recordings, never the network.
+        self.offline = offline
         self.vision = vision
         self.emit = emit
         self.id = datetime.now().strftime("%Y%m%d-%H%M%S-") + uuid.uuid4().hex[:6]
@@ -484,7 +500,7 @@ class SweepSession:
 
     async def _call_vision(self, stage: str, jpeg: bytes, prompt: str, schema: dict, frame_id: str) -> dict:
         t0 = time.monotonic()
-        payload, info = await self.vision.generate_json(jpeg, prompt, schema)
+        payload, info = await self.vision.generate_json(jpeg, prompt, schema, call_id=f"{stage}-{frame_id}")
         self.clock.add(stage, time.monotonic() - t0)
         self.clock.count(stage, calls=1, input_tokens=info.get("input_tokens", 0), output_tokens=info.get("output_tokens", 0))
         (self.dir / "raw" / f"{stage}-{frame_id}.json").write_text(json.dumps({"usage": info, "response": payload}, indent=1), encoding="utf-8")
@@ -640,8 +656,13 @@ class SweepSession:
 
         locale = locale_for(self.country)
         fallback = locale_for(self.settings.compare_country)
-        async with httpx.AsyncClient(timeout=30) as http:
-            prices = PriceClient(http, self.settings.serpapi_key, max_live_searches=self.settings.price_search_budget)
+        transport = self.offline.transport() if self.offline else None
+        async with httpx.AsyncClient(timeout=30, transport=transport) as http:
+            if self.offline:
+                prices = PriceClient(http, "", cache_dir=self.offline.price_cache, offline=True)
+            else:
+                prices = PriceClient(http, self.settings.serpapi_key, max_live_searches=self.settings.price_search_budget)
+            self.prices = prices
             catalogs = identify_stage.Catalogs(http, self.settings.google_api_key)
             books = await self._identify_and_price(catalogs, prices, locale, fallback)
             self.service_events += catalogs.events

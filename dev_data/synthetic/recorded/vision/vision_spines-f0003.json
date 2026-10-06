@@ -1,0 +1,252 @@
+{
+ "usage": {
+  "model": "gemini-3.5-flash-lite",
+  "latency_s": 5.41,
+  "input_tokens": 1327,
+  "output_tokens": 1640
+ },
+ "response": {
+  "books": [
+   {
+    "box_2d": [
+     178,
+     235,
+     650,
+     270
+    ],
+    "orientation": "upright",
+    "title": "THE LEAN STARTUP",
+    "author": "Eric Ries",
+    "publisher": "Portfolio",
+    "all_text": "THE LEAN STARTUP Eric Ries Portfolio",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     159,
+     269,
+     652,
+     290
+    ],
+    "orientation": "upright",
+    "title": "THE WHITE TIGER",
+    "author": "Aravind Adiga",
+    "publisher": "HarperCollins",
+    "all_text": "THE WHITE TIGER Aravind Adiga HarperCollins",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     127,
+     289,
+     652,
+     310
+    ],
+    "orientation": "upright",
+    "title": "THE OLD MAN AND THE SEA",
+    "author": "Ernest Hemingway",
+    "publisher": "Vintage",
+    "all_text": "THE OLD MAN AND THE SEA Ernest Hemingway Vintage",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     259,
+     308,
+     652,
+     335
+    ],
+    "orientation": "upright",
+    "title": "",
+    "author": "",
+    "publisher": "",
+    "all_text": "",
+    "legible": false,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     281,
+     335,
+     654,
+     365
+    ],
+    "orientation": "upright",
+    "title": "",
+    "author": "",
+    "publisher": "",
+    "all_text": "",
+    "legible": false,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     291,
+     364,
+     654,
+     396
+    ],
+    "orientation": "upright",
+    "title": "THE PSYCHOLOGY OF MONEY",
+    "author": "",
+    "publisher": "Morgan Housel Jaico",
+    "all_text": "THE PSYCHOLOGY OF MONEY Morgan Housel Jaico",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     521,
+     398,
+     581,
+     622
+    ],
+    "orientation": "flat",
+    "title": "ZERO TO ONE",
+    "author": "Peter Thiel",
+    "publisher": "Virgin",
+    "all_text": "ZERO TO ONE Peter Thiel Virgin",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     581,
+     398,
+     624,
+     645
+    ],
+    "orientation": "flat",
+    "title": "NINETEEN EIGHTY-FOUR",
+    "author": "George Orwell",
+    "publisher": "Penguin",
+    "all_text": "NINETEEN EIGHTY-FOUR George Orwell Penguin",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     624,
+     398,
+     663,
+     609
+    ],
+    "orientation": "flat",
+    "title": "LONG WALK TO FREEDOM",
+    "author": "Nelson Mandela",
+    "publisher": "Abacus",
+    "all_text": "LONG WALK TO FREEDOM Nelson Mandela Abacus",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     818,
+     314,
+     981,
+     335
+    ],
+    "orientation": "upright",
+    "title": "an Cain",
+    "author": "",
+    "publisher": "Penguin",
+    "all_text": "an Cain Penguin",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     950,
+     337,
+     981,
+     371
+    ],
+    "orientation": "upright",
+    "title": "",
+    "author": "",
+    "publisher": "ford",
+    "all_text": "ford",
+    "legible": false,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     835,
+     371,
+     981,
+     395
+    ],
+    "orientation": "upright",
+    "title": "",
+    "author": "vant Singh",
+    "publisher": "Penguin",
+    "all_text": "vant Singh Penguin",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     854,
+     395,
+     982,
+     427
+    ],
+    "orientation": "upright",
+    "title": "GARCIA",
+    "author": "",
+    "publisher": "Penguin",
+    "all_text": "GARCIA Penguin",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     886,
+     427,
+     982,
+     443
+    ],
+    "orientation": "upright",
+    "title": "",
+    "author": "",
+    "publisher": "Bantam",
+    "all_text": "Bantam",
+    "legible": false,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     864,
+     446,
+     983,
+     483
+    ],
+    "orientation": "upright",
+    "title": "",
+    "author": "",
+    "publisher": "Penguin",
+    "all_text": "inbeck Penguin",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     838,
+     488,
+     984,
+     514
+    ],
+    "orientation": "upright",
+    "title": "",
+    "author": "E. Frankl",
+    "publisher": "Rider",
+    "all_text": "E. Frankl Rider",
+    "legible": true,
+    "age_cues": []
+   }
+  ]
+ }
+}

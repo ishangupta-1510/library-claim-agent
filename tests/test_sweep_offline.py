@@ -23,7 +23,7 @@ class FakeVision:
     def __init__(self):
         self.calls = []
 
-    async def generate_json(self, image_jpeg, prompt, schema):
+    async def generate_json(self, image_jpeg, prompt, schema, call_id=""):
         self.calls.append(prompt[:20])
         if "books" in schema["properties"]:
             payload = {"books": [{"box_2d": [100, 480, 900, 520], "orientation": "upright", "title": "", "author": "",
@@ -94,13 +94,13 @@ async def test_sweep_produces_traceable_packet(cfg, monkeypatch):
 class QuotaAfterOne(FakeVision):
     """Answers once, then reports the daily quota used up, as the free tier does."""
 
-    async def generate_json(self, image_jpeg, prompt, schema):
+    async def generate_json(self, image_jpeg, prompt, schema, call_id=""):
         if self.calls:
             from library_claim.stages.vision import VisionQuotaExhausted
 
             self.calls.append("refused")
             raise VisionQuotaExhausted("gemini: daily request quota used up")
-        return await super().generate_json(image_jpeg, prompt, schema)
+        return await super().generate_json(image_jpeg, prompt, schema, call_id)
 
 
 async def test_daily_vision_quota_stops_calls_and_the_packet_still_builds(cfg, monkeypatch):

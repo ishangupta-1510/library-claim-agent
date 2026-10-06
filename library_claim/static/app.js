@@ -148,10 +148,13 @@ function escapeHtml(text) {
 
 function handle(event) {
   switch (event.type) {
-    case "ready": status(`Sweep ${event.sweep_id} · live`); break;
+    case "ready": status(`Sweep ${event.sweep_id} · ${event.mock ? "mock flow (offline)" : "live"}`); break;
     case "audio": playPcm(event.data, event.mime); break;
     case "interrupted": stopPlayback(); break;
-    case "transcript": log(event.speaker, event.text); break;
+    case "transcript":
+      log(event.speaker, event.text);
+      if (mockMode && event.speaker === "agent") speak(event.text);
+      break;
     case "turn_complete": closeTurns(); break;
     case "feedback":
       keyframeInFlight = false;
@@ -191,7 +194,7 @@ function stopCapture() {
 const DEMO_HOLD_MS = 2500;
 let demoFrame = -1;
 
-async function demoStream(frames) {
+async function demoPlayer(frames) {
   const images = await Promise.all(frames.map((src) => new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => resolve(img);
@@ -204,12 +207,70 @@ async function demoStream(frames) {
   const ctx = canvas.getContext("2d");
   const show = (i) => { demoFrame = i; ctx.drawImage(images[i], 0, 0); };
   show(0);
-  let i = 0;
-  timers.push(setInterval(() => { if (i < images.length - 1) show(++i); }, DEMO_HOLD_MS));
   // Frames for the server come from the pictures themselves: the preview <video> shows black until
   // the captured stream delivers, and the first dozen keyframes of a demo were all black.
   grabFrame = (maxSide, quality) => grab(maxSide > 1000 ? $("large") : $("small"), maxSide, quality, canvas);
-  return canvas.captureStream(10);
+  return { stream: canvas.captureStream(10), show, count: images.length };
+}
+
+async function demoStream(frames) {
+  const player = await demoPlayer(frames);
+  let i = 0;
+  timers.push(setInterval(() => { if (i < player.count - 1) player.show(++i); }, DEMO_HOLD_MS));
+  return player.stream;
+}
+
+// ---------- mock flow ----------
+// The whole journey with no keys and no network: the server replays recorded model answers and a
+// scripted agent; this page plays the demo footage, answers the agent's questions, marks the room's
+// corners and ends the sweep, speaking the agent's lines with the browser's own voice.
+const MOCK_ROOM = [[0, 0, 0], [4.2, 0, 0], [4.2, 0, 3.6], [0, 0, 3.6]]; // a 4.2 x 3.6 m room
+const MOCK_CEILING_M = 2.7;
+let mockMode = false;
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+function speak(text) {
+  if (!("speechSynthesis" in window)) return;
+  speechSynthesis.speak(new SpeechSynthesisUtterance(text));
+}
+
+async function startMock() {
+  ["start", "start-ar", "start-demo", "start-mock"].forEach((id) => { $(id).disabled = true; });
+  status("Starting mock flow…");
+  mockMode = true;
+  const manifest = await fetch("/api/demo").then((r) => r.json());
+  const player = await demoPlayer(manifest.frames);
+  $("preview").srcObject = player.stream;
+  const scheme = location.protocol === "https:" ? "wss" : "ws";
+  ws = new WebSocket(`${scheme}://${location.host}/ws/sweep?mock=1`);
+  ws.onmessage = (e) => { const event = JSON.parse(e.data); handle(event); mockStep(event, player); };
+  ws.onclose = () => { status("Disconnected"); stopCapture(); };
+  await new Promise((resolve, reject) => { ws.onopen = resolve; ws.onerror = reject; });
+  $("end").disabled = false;
+}
+
+async function mockStep(event, player) {
+  if (event.type === "ready") {
+    await wait(4000);
+    send({ type: "text", text: "I'm in India." });
+  } else if (event.type === "locale") {
+    await wait(3000);
+    for (let i = 0; i < player.count && ws.readyState === WebSocket.OPEN; i++) {
+      player.show(i);
+      send({ type: "keyframe", demo_index: i });
+      await wait(DEMO_HOLD_MS);
+    }
+    for (const corner of MOCK_ROOM) {
+      send({ type: "ar_point", kind: "floor_corner", position: corner });
+      await wait(900);
+    }
+    send({ type: "ar_point", kind: "ceiling", position: [1, MOCK_CEILING_M, 1] });
+    await wait(1500);
+    send({ type: "end" });
+  } else if (event.type === "transcript" && event.speaker === "agent" && /original or a print/i.test(event.text)) {
+    await wait(2500);
+    send({ type: "text", text: "It's a print." });
+  }
 }
 
 async function start({ ar = false, demo = false } = {}) {
@@ -250,12 +311,16 @@ async function start({ ar = false, demo = false } = {}) {
 
 const fail = (e) => {
   status(`Could not start: ${e.message}`);
-  ["start", "start-ar", "start-demo"].forEach((id) => { $(id).disabled = false; });
+  ["start", "start-ar", "start-demo", "start-mock"].forEach((id) => { $(id).disabled = false; });
 };
 $("start").onclick = () => start().catch(fail);
 $("start-ar").onclick = () => start({ ar: true }).catch(fail);
 $("start-demo").onclick = () => start({ demo: true }).catch(fail);
-fetch("/api/demo").then((r) => r.json()).then((m) => { if (m.frames?.length) $("start-demo").style.display = "inline-block"; }).catch(() => {});
+$("start-mock").onclick = () => startMock().catch(fail);
+fetch("/api/demo").then((r) => r.json()).then((m) => {
+  if (m.frames?.length) $("start-demo").style.display = "inline-block";
+  if (m.mock) $("start-mock").style.display = "inline-block";
+}).catch(() => {});
 navigator.xr?.isSessionSupported("immersive-ar").then((ok) => { if (ok) $("start-ar").style.display = "inline-block"; });
 $("end").onclick = () => send({ type: "end" });
 window.claimSweep = { send, handle }; // used by the AR module and tests
