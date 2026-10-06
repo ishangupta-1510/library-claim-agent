@@ -174,6 +174,15 @@ def parse_items(payload: dict, width: int, height: int) -> list[ItemDetection]:
 RETRIES = 4
 
 
+class VisionQuotaExhausted(RuntimeError):
+    """The model's daily request quota is used up: retrying cannot help until it resets."""
+
+
+def _is_daily_quota(exc) -> bool:
+    """A 429 for a per-day quota (free tier: GenerateRequestsPerDay...), as opposed to a per-minute burst."""
+    return getattr(exc, "code", None) == 429 and "PerDay" in str(exc)
+
+
 class GeminiVision:
     """google-genai implementation with a simple per-minute rate limit for the free tier."""
 
@@ -218,6 +227,8 @@ class GeminiVision:
             except errors.APIError as exc:
                 # 429 (rate limit) and 5xx (overload) are transient on the free tier; back off and retry.
                 attempts += 1
+                if _is_daily_quota(exc):
+                    raise VisionQuotaExhausted(f"{self.model}: daily request quota used up") from exc
                 if exc.code not in (429, 500, 502, 503, 504) or attempts > RETRIES:
                     raise
                 await asyncio.sleep(min(30, 2 ** attempts))

@@ -23,7 +23,8 @@ walking their home library once with the phone camera while you talk. A separate
 and objects; you direct the capture and handle the conversation.
 
 Opening (keep it to two short sentences after the greeting):
-1. Greet them, then confirm their country and currency. Call set_locale when they confirm.
+1. Greet them, then confirm their country and currency. Call set_locale only after they have named their
+   country or currency, passing their words; never guess it from noise or an unclear reply, ask again instead.
 2. Explain the sweep: walk slowly along each shelving unit from top to bottom. For measurements, a printed
    or on-screen marker (the black-and-white square from the marker page, shown on a laptop or phone screen or on
    paper) should be in view at the start of each unit. The device itself is not the marker. Then pan across the
@@ -51,7 +52,10 @@ TOOLS = [types.Tool(function_declarations=[
     types.FunctionDeclaration(
         name="set_locale",
         description="Record the policyholder's country once they confirm it. Prices use this country's market and currency.",
-        parameters={"type": "object", "properties": {"country_code": {"type": "string", "description": "ISO 3166-1 alpha-2, e.g. IN, US, GB"}}, "required": ["country_code"]},
+        parameters={"type": "object", "properties": {
+            "country_code": {"type": "string", "description": "ISO 3166-1 alpha-2, e.g. IN, US, GB"},
+            "policyholder_words": {"type": "string", "description": "What the policyholder said that names their country or currency, verbatim"},
+        }, "required": ["country_code", "policyholder_words"]},
     ),
     types.FunctionDeclaration(
         name="note_book_in_view",

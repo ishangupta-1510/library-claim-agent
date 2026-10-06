@@ -39,7 +39,7 @@ from .stages.quality import FrameQuality, QualityMeter
 from .stages.room import measure_room, to_ft2
 from .stages.scale import PlaneScale, detect_markers, plane_scale, rectify, to_plane_cm
 from .stages.tracking import Features, features, link_features
-from .stages.vision import ITEM_PROMPT, ITEM_SCHEMA, SPINE_PROMPT, SPINE_SCHEMA, VisionModel, parse_items, parse_spines
+from .stages.vision import VisionQuotaExhausted, ITEM_PROMPT, ITEM_SCHEMA, SPINE_PROMPT, SPINE_SCHEMA, VisionModel, parse_items, parse_spines
 from .totals import finalize
 
 Emit = Callable[[dict], Awaitable[None]]
@@ -230,7 +230,9 @@ class SweepSession:
         self.ended_at: float | None = None
         self.merges: list[dict] = []  # loop closures, for the stage report
         self.split_merges = 0  # spines a detection split in two, merged after the sweep
-        self.service_events: list[str] = []  # services that degraded during the run, for the stage report
+        self.service_events: list[str] = []
+        self.vision_unavailable = False  # set when the vision model's daily quota runs out
+        self.frames_unread = 0  # vision jobs skipped because vision was unavailable  # services that degraded during the run, for the stage report
 
     # ---------------- during the sweep ----------------
 
@@ -461,11 +463,20 @@ class SweepSession:
         while True:
             kind, frame_id, image, plane, quality = await self.queue.get()
             try:
-                if self.vision is not None:
+                if self.vision_unavailable:
+                    self.frames_unread += 1
+                elif self.vision is not None:
                     if kind == "spines":
                         await self._detect_spines(frame_id, image, plane, quality)
                     else:
                         await self._detect_items(frame_id, image, plane)
+            except VisionQuotaExhausted as exc:
+                # Every later call would fail too: stop calling, build the packet from what was read, say so.
+                self.frames_unread += 1
+                if not self.vision_unavailable:
+                    self.vision_unavailable = True
+                    self.service_events.append(f"Vision stopped mid-sweep: {exc}; frames after this were not read")
+                    await self.emit({"type": "stage_error", "stage": kind, "frame_id": frame_id, "error": "vision quota exhausted"})
             except Exception as exc:  # one bad frame must not stop the sweep
                 await self.emit({"type": "stage_error", "stage": kind, "frame_id": frame_id, "error": type(exc).__name__})
             finally:
@@ -812,6 +823,7 @@ class SweepSession:
             # Degraded services during the run (e.g. a catalog skipped), so a reviewer knows why lookups are thin.
             "service_events": self.service_events,
             "split_spines_merged": self.split_merges,
+            "vision_jobs_not_run": self.frames_unread,
             "units": len([p for p in self.planes if any(b.plane_id == p.id for b in self.inventory.books)]),
             "frames_sent_to_vision": usage.get("vision_spines", {}).get("calls", 0) + usage.get("vision_items", {}).get("calls", 0),
             "cost_usd_estimate": {

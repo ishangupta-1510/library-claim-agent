@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import re
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
@@ -20,6 +21,20 @@ class Locale:
     google_hl: str
     google_domain: str
     ebay_domain: str  # for used listings, where a local eBay exists
+
+
+# Words that confirm a country when the policyholder says them (country, people, currency).
+LOCALE_WORDS: dict[str, tuple[str, ...]] = {
+    "IN": ("india", "indian", "bharat", "rupee", "rupees", "inr"),
+    "US": ("united states", "america", "american", "usa", "us", "dollar", "dollars", "usd"),
+    "GB": ("united kingdom", "uk", "britain", "british", "england", "scotland", "wales", "pound", "pounds", "gbp"),
+}
+
+
+def confirms_country(code: str, words: str) -> bool:
+    """The policyholder's words name this country or its currency (whole words, any case)."""
+    said = " " + " ".join(re.findall(r"[a-z]+", words.lower())) + " "
+    return any(f" {w} " in said for w in LOCALE_WORDS.get(code, ()))
 
 
 LOCALES: dict[str, Locale] = {

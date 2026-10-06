@@ -10,6 +10,7 @@ import base64
 import contextlib
 import json
 import logging
+from dataclasses import replace
 from pathlib import Path
 
 import cv2
@@ -17,7 +18,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse, HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
 
-from .config import LOCALES, settings
+from .config import LOCALES, confirms_country, settings
 from .live import Narrator, live_config
 from .stages.scale import render_marker
 from .stages.vision import GeminiVision
@@ -27,13 +28,46 @@ logger = logging.getLogger("library_claim")
 logging.basicConfig(level=logging.INFO)
 
 STATIC = Path(__file__).parent / "static"
+# Demo camera: the synthetic sweep, played in the browser as the camera so the live flow can be tried
+# without a bookshelf. Present only in a development checkout (dev_data/synthetic.py generates it).
+DEMO = Path(__file__).parent.parent / "dev_data" / "synthetic"
 MAX_MESSAGE = 4_000_000  # a high-res keyframe as base64
 
 app = FastAPI(title="Library contents claim agent")
+
+
+@app.middleware("http")
+async def revalidate_app_shell(request, call_next):
+    """The page and its scripts are revalidated on every load (ETag, so usually a 304).
+
+    Without this a browser kept running a cached app.js after an update, with
+    a page that no longer matched the server.
+    """
+    response = await call_next(request)
+    if request.url.path == "/" or request.url.path.startswith("/static/"):
+        response.headers["Cache-Control"] = "no-cache"
+    return response
 cfg = settings()
 cfg.sweeps_dir.mkdir(parents=True, exist_ok=True)
 app.mount("/sweeps", StaticFiles(directory=cfg.sweeps_dir, html=True), name="sweeps")
 app.mount("/static", StaticFiles(directory=STATIC), name="static")
+if (DEMO / "frames").is_dir():
+    app.mount("/demo/frames", StaticFiles(directory=DEMO / "frames"), name="demo-frames")
+
+
+def _demo_manifest() -> dict | None:
+    frames = sorted(p.name for p in (DEMO / "frames").glob("*.jpg")) if (DEMO / "frames").is_dir() else []
+    truth = DEMO / "ground_truth.json"
+    if not frames or not truth.exists():
+        return None
+    marker_cm = json.loads(truth.read_text(encoding="utf-8")).get("marker_cm")
+    return {"frames": [f"/demo/frames/{name}" for name in frames], "marker_cm": marker_cm}
+
+
+@app.get("/api/demo")
+def demo() -> dict:
+    """The demo camera's frames and the size of the marker printed in them (unavailable outside dev)."""
+    return _demo_manifest() or {"frames": []}
 
 
 @app.get("/")
@@ -96,7 +130,13 @@ async def sweep_socket(websocket: WebSocket) -> None:
 
     vision = GeminiVision(cfg.google_api_key, cfg.vision_model)
     device = websocket.headers.get("user-agent", "")[:120]
-    sweep = SweepSession(cfg, vision, on_pipeline_event, device=device)
+    session_cfg = cfg
+    manifest = _demo_manifest() if websocket.query_params.get("demo") == "1" else None
+    if manifest:
+        # The demo footage carries its own marker; its size is part of the footage, not this room's setting.
+        session_cfg = replace(cfg, marker_size_cm=float(manifest["marker_cm"]))
+        device = "demo camera (synthetic sweep) / " + device
+    sweep = SweepSession(session_cfg, vision, on_pipeline_event, device=device)
     await send({"type": "ready", "sweep_id": sweep.id, "countries": sorted(LOCALES), "country": sweep.country})
 
     async def end_sweep() -> dict:
@@ -111,6 +151,9 @@ async def sweep_socket(websocket: WebSocket) -> None:
             code = str(args.get("country_code", "")).upper()
             if code not in LOCALES:
                 return {"ok": False, "supported": sorted(LOCALES)}
+            if not confirms_country(code, str(args.get("policyholder_words", ""))):
+                # The live model once set USD after hearing "Sh": the currency must come from what they said.
+                return {"ok": False, "reason": "their words do not name this country or currency; ask them to say it"}
             sweep.country = code
             await send({"type": "locale", "country": code, "currency": LOCALES[code].currency})
             return {"ok": True, "country": code, "currency": LOCALES[code].currency}
@@ -127,11 +170,16 @@ async def sweep_socket(websocket: WebSocket) -> None:
         await send({"type": "tool", "name": call.name, "args": args, "result": result})
         return result
 
+    opening = "[system] The policyholder opened the app. Greet them and start the opening."
+    if manifest:
+        opening += (" This is a demo: the camera is pre-recorded footage of a two-unit bookshelf with its marker, "
+                    "played at a steady pace. The policyholder cannot move the camera, so do not give capture "
+                    "directions; confirm their country, then describe progress from the [system] updates.")
     try:
         async with client.aio.live.connect(model=cfg.live_model, config=live_config()) as live:
             live_ref["session"] = live
             await live.send_client_content(
-                turns=types.Content(role="user", parts=[types.Part(text="[system] The policyholder opened the app. Greet them and start the opening.")]),
+                turns=types.Content(role="user", parts=[types.Part(text=opening)]),
                 turn_complete=True,
             )
 

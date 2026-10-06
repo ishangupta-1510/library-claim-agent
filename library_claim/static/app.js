@@ -96,13 +96,14 @@ function stopPlayback() {
 // Frames come from the <video> preview by default; AR mode swaps in the WebXR camera.
 let grabFrame = (maxSide, quality) => grab(maxSide > 1000 ? $("large") : $("small"), maxSide, quality);
 
-function grab(canvas, maxSide, quality) {
-  const video = $("preview");
-  if (!video.videoWidth) return null;
-  const scale = Math.min(1, maxSide / Math.max(video.videoWidth, video.videoHeight));
-  canvas.width = Math.round(video.videoWidth * scale);
-  canvas.height = Math.round(video.videoHeight * scale);
-  canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
+function grab(canvas, maxSide, quality, source = $("preview")) {
+  const width = source.videoWidth ?? source.width;
+  const height = source.videoHeight ?? source.height;
+  if (!width) return null;
+  const scale = Math.min(1, maxSide / Math.max(width, height));
+  canvas.width = Math.round(width * scale);
+  canvas.height = Math.round(height * scale);
+  canvas.getContext("2d").drawImage(source, 0, 0, canvas.width, canvas.height);
   return canvas.toDataURL("image/jpeg", quality).split(",")[1];
 }
 
@@ -111,10 +112,14 @@ function sendLiveFrame() {
   if (data) send({ type: "video", data });
 }
 
+let lastDemoFrameSent = -1;
+
 function maybeSendKeyframe() {
   if (keyframeInFlight || performance.now() - lastKeyframeAt < KEYFRAME_MIN_MS) return;
+  if (demoFrame >= 0 && demoFrame === lastDemoFrameSent) return; // a held demo picture is one keyframe
   const data = grabFrame(KEYFRAME_MAX_SIDE, 0.88);
   if (!data) return;
+  lastDemoFrameSent = demoFrame;
   keyframeInFlight = true;
   lastKeyframeAt = performance.now();
   send({ type: "keyframe", data });
@@ -180,12 +185,46 @@ function stopCapture() {
   $("end").disabled = true;
 }
 
-async function start({ ar = false } = {}) {
+// ---------- demo camera ----------
+// Plays the built-in synthetic sweep as the camera, so the whole live flow can be tried without a bookshelf.
+// Each picture is held like a slow pan; keyframes are sent once per picture, as a moving camera would give.
+const DEMO_HOLD_MS = 2500;
+let demoFrame = -1;
+
+async function demoStream(frames) {
+  const images = await Promise.all(frames.map((src) => new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error(`demo frame ${src} did not load`));
+    img.src = src;
+  })));
+  const canvas = document.createElement("canvas");
+  canvas.width = images[0].naturalWidth;
+  canvas.height = images[0].naturalHeight;
+  const ctx = canvas.getContext("2d");
+  const show = (i) => { demoFrame = i; ctx.drawImage(images[i], 0, 0); };
+  show(0);
+  let i = 0;
+  timers.push(setInterval(() => { if (i < images.length - 1) show(++i); }, DEMO_HOLD_MS));
+  // Frames for the server come from the pictures themselves: the preview <video> shows black until
+  // the captured stream delivers, and the first dozen keyframes of a demo were all black.
+  grabFrame = (maxSide, quality) => grab(maxSide > 1000 ? $("large") : $("small"), maxSide, quality, canvas);
+  return canvas.captureStream(10);
+}
+
+async function start({ ar = false, demo = false } = {}) {
   $("start").disabled = true;
   $("start-ar").disabled = true;
+  $("start-demo").disabled = true;
   status("Starting camera and microphone…");
   const audio = { echoCancellation: true, noiseSuppression: true, channelCount: 1 };
-  if (ar) {
+  if (demo) {
+    const manifest = await fetch("/api/demo").then((r) => r.json());
+    const mic = await navigator.mediaDevices.getUserMedia({ audio });
+    const video = await demoStream(manifest.frames);
+    mediaStream = new MediaStream([...mic.getAudioTracks(), ...video.getVideoTracks()]);
+    $("preview").srcObject = mediaStream;
+  } else if (ar) {
     // WebXR owns the camera in AR; only the microphone comes from getUserMedia.
     mediaStream = await navigator.mediaDevices.getUserMedia({ audio });
     const { startAr } = await import("/static/ar.js");
@@ -199,7 +238,7 @@ async function start({ ar = false } = {}) {
     $("preview").srcObject = mediaStream;
   }
   const scheme = location.protocol === "https:" ? "wss" : "ws";
-  ws = new WebSocket(`${scheme}://${location.host}/ws/sweep`);
+  ws = new WebSocket(`${scheme}://${location.host}/ws/sweep${demo ? "?demo=1" : ""}`);
   ws.onmessage = (e) => handle(JSON.parse(e.data));
   ws.onclose = () => { status("Disconnected"); stopCapture(); };
   await new Promise((resolve, reject) => { ws.onopen = resolve; ws.onerror = reject; });
@@ -209,9 +248,14 @@ async function start({ ar = false } = {}) {
   $("end").disabled = false;
 }
 
-const fail = (e) => { status(`Could not start: ${e.message}`); $("start").disabled = false; $("start-ar").disabled = false; };
+const fail = (e) => {
+  status(`Could not start: ${e.message}`);
+  ["start", "start-ar", "start-demo"].forEach((id) => { $(id).disabled = false; });
+};
 $("start").onclick = () => start().catch(fail);
 $("start-ar").onclick = () => start({ ar: true }).catch(fail);
+$("start-demo").onclick = () => start({ demo: true }).catch(fail);
+fetch("/api/demo").then((r) => r.json()).then((m) => { if (m.frames?.length) $("start-demo").style.display = "inline-block"; }).catch(() => {});
 navigator.xr?.isSessionSupported("immersive-ar").then((ok) => { if (ok) $("start-ar").style.display = "inline-block"; });
 $("end").onclick = () => send({ type: "end" });
 window.claimSweep = { send, handle }; // used by the AR module and tests

@@ -89,3 +89,36 @@ async def test_sweep_produces_traceable_packet(cfg, monkeypatch):
     assert any(e["type"] == "inventory" for e in events) and events[-1]["type"] == "packet"
     # Stage errors are caught per frame in production; in tests they must not happen at all.
     assert not [e for e in events if e["type"] == "stage_error"]
+
+
+class QuotaAfterOne(FakeVision):
+    """Answers once, then reports the daily quota used up, as the free tier does."""
+
+    async def generate_json(self, image_jpeg, prompt, schema):
+        if self.calls:
+            from library_claim.stages.vision import VisionQuotaExhausted
+
+            self.calls.append("refused")
+            raise VisionQuotaExhausted("gemini: daily request quota used up")
+        return await super().generate_json(image_jpeg, prompt, schema)
+
+
+async def test_daily_vision_quota_stops_calls_and_the_packet_still_builds(cfg, monkeypatch):
+    async def no_candidates(*a, **k):
+        return []
+    monkeypatch.setattr("library_claim.stages.identify.fetch_candidates", no_candidates)
+
+    async def emit(event):
+        pass
+
+    vision = QuotaAfterOne()
+    sweep = SweepSession(cfg, vision, emit, device="test")
+    for _, image in _pan(_shelf_face(), n=6)[0]:
+        ok, jpeg = cv2.imencode(".jpg", image, [cv2.IMWRITE_JPEG_QUALITY, 95])
+        await sweep.add_frame(jpeg.tobytes())
+    packet = await sweep.finish()
+
+    assert vision.calls.count("refused") == 1  # no call after the quota ran out
+    assert packet.totals.book_count >= 1  # what was read before still counts
+    assert any("quota" in e for e in packet.stages["service_events"])
+    assert packet.stages["vision_jobs_not_run"] >= 1
