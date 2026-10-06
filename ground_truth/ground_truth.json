@@ -1,0 +1,41 @@
+{
+ "book_count": 1,
+ "legible": 1,
+ "books": [
+  {
+   "unit": "A",
+   "shelf": "1",
+   "position": "1",
+   "title": "Example Title",
+   "author": "Example Author",
+   "legible": true,
+   "height_cm": null,
+   "thickness_cm": null
+  }
+ ],
+ "prices": [
+  {
+   "title": "Example Title",
+   "replacement": 399.0,
+   "used": 180.0,
+   "source": "Amazon.in",
+   "url": "https://www.amazon.in/...",
+   "checked_on": "2026-10-07"
+  }
+ ],
+ "items": [
+  {
+   "category": "lighting",
+   "description": "floor lamp",
+   "brand_model": ""
+  }
+ ],
+ "room": {
+  "length_m": null,
+  "width_m": null,
+  "height_m": null,
+  "floor_area_m2": null,
+  "wall_area_m2": null,
+  "shelved_wall_area_m2": null
+ }
+}

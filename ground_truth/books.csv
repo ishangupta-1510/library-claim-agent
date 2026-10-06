@@ -1,0 +1,2 @@
+unit,shelf,position,title,author,legible,height_cm,thickness_cm,notes
+A,1,1,Example Title,Example Author,yes,,,"fill one row per physical book, left to right, top shelf first; legible = a person can read the title from the spine; measure height/thickness for at least 20 rows"

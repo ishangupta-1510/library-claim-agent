@@ -1,0 +1,2 @@
+length_m,width_m,height_m,floor_area_m2,wall_area_m2,shelved_wall_area_m2,shape_notes
+,,,,,,"tape-measure each wall; floor area = length x width for a rectangle; wall area = perimeter x height (gross)"
