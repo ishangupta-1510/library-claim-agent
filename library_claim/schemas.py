@@ -81,6 +81,8 @@ class Book(BaseModel):
     id_url: str = ""
     replacement_cost: Price = Field(default_factory=Price)
     used_value: Price = Field(default_factory=Price)
+    # The policyholder said these are not theirs: listed for the record, not claimed.
+    excluded: bool = False
     notes: list[str] = Field(default_factory=list)
 
 
@@ -124,6 +126,7 @@ class Totals(BaseModel):
     books_identified: int = 0
     books_unidentified: int = 0
     books_needs_appraisal: int = 0
+    books_excluded_by_policyholder: int = 0
     shelf_run_m: float = 0
     books_replacement_cost: float = 0
     books_used_value: float = 0

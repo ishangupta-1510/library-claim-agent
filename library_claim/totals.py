@@ -19,7 +19,8 @@ def _money(value: float) -> float:
 def book_counts_in_total(book: Book) -> bool:
     """A book contributes money only when identified AND sourced in the claim currency."""
     return (
-        book.status == "identified"
+        not book.excluded
+        and book.status == "identified"
         and book.replacement_cost.amount is not None
         and bool(book.replacement_cost.url)
     )
@@ -53,6 +54,7 @@ def compute_totals(packet: ClaimPacket) -> Totals:
         books_identified=sum(b.status == "identified" for b in books),
         books_unidentified=sum(b.status == "unidentified" for b in books),
         books_needs_appraisal=sum(b.status == "needs_appraisal" for b in books),
+        books_excluded_by_policyholder=sum(b.excluded for b in books),
         # Shelf run = summed spine thickness of measured books, in metres.
         shelf_run_m=round(sum(thickness) / 100, 2),
         books_replacement_cost=_money(replacement),
@@ -65,6 +67,8 @@ def compute_totals(packet: ClaimPacket) -> Totals:
 
 
 def _book_reasons(book: Book) -> list[str]:
+    if book.excluded:
+        return ["Excluded by the policyholder (not their property); not claimed"]
     reasons = []
     if book.status == "unidentified":
         reasons.append("Spine not readable enough to identify; logged with dimensions only")
