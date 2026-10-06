@@ -87,3 +87,5 @@ async def test_sweep_produces_traceable_packet(cfg, monkeypatch):
     assert saved["totals"]["book_count"] == packet.totals.book_count
     assert (out / "report.html").read_text(encoding="utf-8").count("<tr>") > 5
     assert any(e["type"] == "inventory" for e in events) and events[-1]["type"] == "packet"
+    # Stage errors are caught per frame in production; in tests they must not happen at all.
+    assert not [e for e in events if e["type"] == "stage_error"]

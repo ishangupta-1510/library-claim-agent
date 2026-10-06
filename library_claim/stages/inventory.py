@@ -106,6 +106,20 @@ class Inventory:
         self.books.append(book)
         return book, True
 
+    def merge_overlaps(self, plane_id: str) -> int:
+        """Merge books on one plane whose boxes now overlap (after two fragments were joined)."""
+        merged = 0
+        books = [b for b in self.books if b.plane_id == plane_id]
+        for i, book in enumerate(books):
+            if book not in self.books:
+                continue
+            for other in books[i + 1:]:
+                if other in self.books and iou(book.box, other.box) >= MERGE_IOU:
+                    book.sightings.extend(other.sightings)
+                    self.books.remove(other)
+                    merged += 1
+        return merged
+
     def assign_shelves(self, unit_names: dict[str, str] | None = None) -> None:
         """Group each unit's books into shelf rows (top to bottom) and order left to right."""
         unit_names = unit_names or {}

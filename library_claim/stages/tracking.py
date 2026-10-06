@@ -9,9 +9,13 @@ marker, every overlapping frame can be mapped onto the same centimetre grid:
 That gives scale to frames without a marker, and puts the same spine seen in
 several frames at the same plane position, which is how duplicates merge.
 
-A chain is only trusted while each link has enough RANSAC inliers. A weak
-link breaks the chain: those frames stay unscaled rather than getting a
-drifting, wrong scale.
+Features are SIFT, computed once per frame and reused for every link attempt.
+ORB was tried first and lost the chain at row changes and on tilted views; it
+also recomputed features for every candidate pair, which made one sweep take
+over ten minutes on CPU.
+
+A link is trusted only with enough RANSAC inliers. A weak link breaks the
+chain: those frames stay unscaled rather than getting a drifting, wrong scale.
 """
 
 from __future__ import annotations
@@ -23,9 +27,36 @@ import numpy as np
 
 from .scale import PlaneScale
 
-MIN_INLIERS = 40
-MIN_INLIER_RATIO = 0.35
+MIN_INLIERS = 30
+MIN_INLIER_RATIO = 0.30
 MAX_CHAIN = 30  # links from the marker frame; beyond this drift is not trusted
+FEATURE_WIDTH = 960  # features are computed on a downscaled copy; homographies are rescaled back
+
+
+@dataclass
+class Features:
+    keypoints: np.ndarray  # Nx2 float32, in full-resolution pixels
+    descriptors: np.ndarray | None  # float32 SIFT descriptors
+
+    def compact(self) -> "Features":
+        """SIFT descriptor values fit in 0-255; uint8 storage is 4x smaller for long-lived keyframes."""
+        if self.descriptors is None:
+            return self
+        return Features(self.keypoints, np.clip(self.descriptors, 0, 255).astype(np.uint8))
+
+
+def features(image: np.ndarray) -> Features:
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) if image.ndim == 3 else image
+    scale = min(1.0, FEATURE_WIDTH / gray.shape[1])
+    small = cv2.resize(gray, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA) if scale < 1 else gray
+    keypoints, descriptors = cv2.SIFT_create(nfeatures=2500).detectAndCompute(small, None)
+    points = np.float32([k.pt for k in keypoints]) / scale if keypoints else np.zeros((0, 2), np.float32)
+    return Features(points, descriptors)
+
+
+# Approximate nearest neighbours (KD-trees) instead of brute force: several times faster
+# for 2500 x 2500 SIFT descriptors, with the same ratio test and RANSAC afterwards.
+_MATCHER = cv2.FlannBasedMatcher({"algorithm": 1, "trees": 4}, {"checks": 48})
 
 
 @dataclass
@@ -39,28 +70,24 @@ class Link:
         return self.homography is not None and self.inliers >= MIN_INLIERS and self.inlier_ratio >= MIN_INLIER_RATIO
 
 
-def _features(gray: np.ndarray):
-    orb = cv2.ORB_create(nfeatures=3000, fastThreshold=12)
-    return orb.detectAndCompute(gray, None)
-
-
-def link(frame_j: np.ndarray, frame_k: np.ndarray) -> Link:
-    """Homography taking frame_k pixels into frame_j pixels (both BGR or gray)."""
-    gj = cv2.cvtColor(frame_j, cv2.COLOR_BGR2GRAY) if frame_j.ndim == 3 else frame_j
-    gk = cv2.cvtColor(frame_k, cv2.COLOR_BGR2GRAY) if frame_k.ndim == 3 else frame_k
-    kj, dj = _features(gj)
-    kk, dk = _features(gk)
-    if dj is None or dk is None or len(kj) < 8 or len(kk) < 8:
+def link_features(fj: Features, fk: Features) -> Link:
+    """Homography taking frame_k pixels into frame_j pixels."""
+    if fj.descriptors is None or fk.descriptors is None or len(fj.keypoints) < 8 or len(fk.keypoints) < 8:
         return Link(None, 0, 0.0)
-    matches = cv2.BFMatcher(cv2.NORM_HAMMING).knnMatch(dk, dj, k=2)
+    matches = _MATCHER.knnMatch(fk.descriptors.astype(np.float32), fj.descriptors.astype(np.float32), k=2)
     good = [m for pair in matches if len(pair) == 2 for m, n in [pair] if m.distance < 0.75 * n.distance]
     if len(good) < 8:
         return Link(None, len(good), 0.0)
-    src = np.float32([kk[m.queryIdx].pt for m in good]).reshape(-1, 1, 2)
-    dst = np.float32([kj[m.trainIdx].pt for m in good]).reshape(-1, 1, 2)
-    homography, mask = cv2.findHomography(src, dst, cv2.RANSAC, 4.0)
+    src = fk.keypoints[[m.queryIdx for m in good]].reshape(-1, 1, 2)
+    dst = fj.keypoints[[m.trainIdx for m in good]].reshape(-1, 1, 2)
+    homography, mask = cv2.findHomography(src, dst, cv2.RANSAC, 5.0)
     inliers = int(mask.sum()) if mask is not None else 0
     return Link(homography, inliers, inliers / len(good))
+
+
+def link(frame_j: np.ndarray, frame_k: np.ndarray) -> Link:
+    """Convenience: link two images directly (computes features for both)."""
+    return link_features(features(frame_j), features(frame_k))
 
 
 @dataclass
@@ -88,23 +115,15 @@ def register_sequence(
 ) -> PlaneTrack:
     """Register an ordered run of frames to the plane of their marker anchors.
 
-    `anchors` maps frame id -> scale measured directly from a visible marker.
-    Scale then propagates forwards and backwards from each anchor through
+    Scale propagates forwards and backwards from each anchor through
     consecutive links, stopping at the first weak link or after MAX_CHAIN hops.
     """
     track = PlaneTrack(plane_id, marker_size_cm)
     ids = [fid for fid, _ in frames]
-    images = dict(frames)
+    feats = {fid: features(image) for fid, image in frames}
     for fid, scale in anchors.items():
         track.plane_from_frame[fid] = scale.homography
         track.hops[fid] = 0
-
-    links: dict[tuple[str, str], Link] = {}
-
-    def get_link(a: str, b: str) -> Link:  # maps b pixels into a pixels
-        if (a, b) not in links:
-            links[(a, b)] = link(images[a], images[b])
-        return links[(a, b)]
 
     for anchor in anchors:
         start = ids.index(anchor)
@@ -116,7 +135,7 @@ def register_sequence(
                 hops = track.hops[prev] + 1
                 if hops > MAX_CHAIN:
                     break
-                lk = get_link(prev, fid)
+                lk = link_features(feats[prev], feats[fid])
                 if not lk.ok:
                     break
                 if fid not in track.hops or hops < track.hops[fid]:

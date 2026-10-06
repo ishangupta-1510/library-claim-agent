@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 import pytest
 
-from library_claim.stages.quality import assess
+from library_claim.stages.quality import QualityMeter, assess
 from library_claim.stages.scale import best_scale, render_marker, to_plane_cm
 from library_claim.stages.tracking import register_sequence
 
@@ -77,13 +77,50 @@ def test_unrelated_frame_breaks_the_chain():
     assert "elsewhere" not in track.plane_from_frame
 
 
-def test_quality_flags_blur_and_darkness():
+def test_blur_is_judged_against_the_sweep_itself():
+    frames, _ = _pan(_shelf_face(), n=5)
+    meter = QualityMeter()
+    for _, image in frames[:4]:
+        assert meter.assess(image).usable  # builds the sweep's history
+    motion = cv2.blur(frames[4][1], (25, 3))  # a fast pan
+    assert meter.assess(motion).blurry
+
+
+def test_an_emptier_part_of_the_shelf_is_not_called_blurry():
     face = _shelf_face()
-    sharp = face[:480, :640]
-    assert assess(sharp).usable
-    blurred = cv2.GaussianBlur(sharp, (31, 31), 12)
-    assert assess(blurred).blurry
+    meter = QualityMeter()
+    for _, image in _pan(face, n=4)[0]:
+        meter.assess(image)
+    sparse = face[:480, -640:].copy()  # the right end of the shelf: fewer, wider spines
+    assert not meter.assess(sparse).blurry
+
+
+def test_a_plain_wall_is_featureless_not_blurry():
+    meter = QualityMeter()
+    frames, _ = _pan(_shelf_face(), n=4)
+    for _, image in frames:
+        meter.assess(image)
+    wall = np.full((480, 640, 3), 205, np.uint8)
+    quality = meter.assess(wall)
+    assert quality.featureless and not quality.blurry
+
+
+def test_no_blur_verdict_without_history_and_darkness_is_absolute():
+    sharp = _shelf_face()[:480, :640]
+    assert not assess(sharp).blurry
     assert assess((sharp * 0.1).astype(np.uint8)).dark
+
+
+def test_marker_white_border_is_not_glare():
+    from library_claim.stages.scale import detect_markers, render_marker
+
+    frame = np.full((480, 640, 3), 90, np.uint8)
+    marker = cv2.resize(render_marker(0, 300), (400, 400), interpolation=cv2.INTER_NEAREST)
+    frame[40:440, 120:520] = marker[..., None]
+    quads = [m.corners for m in detect_markers(frame)]
+    assert quads
+    assert QualityMeter().assess(frame).glare  # without exclusion the white border reads as glare
+    assert not QualityMeter().assess(frame, quads).glare
 
 
 @pytest.mark.parametrize("n", [1])

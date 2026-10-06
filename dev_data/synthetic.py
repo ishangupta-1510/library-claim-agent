@@ -26,8 +26,8 @@ import numpy as np
 
 from library_claim.stages.scale import render_marker
 
-PX = 10  # pixels per cm on the flat faces
-MARKER_CM = 15.0
+PX = 25  # pixels per cm on the flat faces (sharp enough that frames are not upscaled mush)
+MARKER_CM = 10.0  # fits wholly inside the first row of close-up frames
 OUT = Path(__file__).parent / "synthetic"
 
 # Real, widely sold books so identification and pricing can run against live sources.
@@ -93,7 +93,7 @@ def _spine(height_cm, thick_cm, title, author, publisher, color, legible):
     return np.ascontiguousarray(np.rot90(canvas, 1))
 
 
-def build_unit(name, books, rng, width_cm=90, shelf_heights=(34, 34, 34, 34, 30)):
+def build_unit(name, books, rng, width_cm=50, shelf_heights=(34, 34, 34, 30)):
     """A shelving unit face with books packed on each shelf; returns image and ground-truth rows."""
     height_cm = sum(shelf_heights) + 3 * (len(shelf_heights) + 1)
     face = np.full((height_cm * PX, width_cm * PX, 3), (60, 95, 140), np.uint8)  # wood
@@ -157,13 +157,13 @@ def build_unit(name, books, rng, width_cm=90, shelf_heights=(34, 34, 34, 34, 30)
     side = int(MARKER_CM * PX)
     scaled = cv2.resize(marker, None, fx=side / 400, fy=side / 400, interpolation=cv2.INTER_NEAREST)
     pad = (scaled.shape[0] - side) // 2
-    my, mx = 3 * PX + 40, 2 * PX + 5
+    my, mx = 5 * PX, 3 * PX  # marker's top-left at (3, 5) cm: inside the first row of frames
     face[my - pad:my - pad + scaled.shape[0], mx - pad:mx - pad + scaled.shape[1]] = scaled[..., None]
     return face, truth, leftovers
 
 
 def pan_frames(faces, out_dir, rng, size=(1280, 720)):
-    """A handheld pan: each unit top to bottom in overlapping, slightly tilted views."""
+    """A handheld pan: each unit top to bottom in overlapping, slightly tilted views, serpentine."""
     out_dir.mkdir(parents=True, exist_ok=True)
     w, h = size
     index = 0
@@ -171,8 +171,12 @@ def pan_frames(faces, out_dir, rng, size=(1280, 720)):
         fh, fw = face.shape[:2]
         view_w = int(fw * 0.62)
         view_h = int(view_w * h / w)
-        for top in np.arange(0, fh - view_h + 1, view_h * 0.45):
-            for left in (0, fw - view_w):
+        # ~70% overlap between consecutive views: a 1 m unit panned in ~5 s from ~1 m away,
+        # sampled every 0.7 s, overlaps by ~80%; this is a little harsher than that.
+        lefts = list(np.linspace(0, fw - view_w, 3))
+        for row, top in enumerate(np.arange(0, fh - view_h + 1, view_h * 0.4)):
+            # Serpentine, like a person panning: left to right, then back right to left.
+            for left in (lefts if row % 2 == 0 else lefts[::-1]):
                 jitter = rng.uniform(-0.04, 0.04, 8).reshape(4, 2) * [view_w, view_h]
                 src = np.float32([[left, top], [left + view_w, top], [left + view_w, top + view_h], [left, top + view_h]]) + jitter.astype(np.float32)
                 tilt = rng.uniform(-0.05, 0.05) * w

@@ -35,10 +35,10 @@ from .stages import identify as identify_stage
 from .stages.inventory import Inventory, InventoryBook, Sighting
 from .stages.item_pricing import price_item
 from .stages.pricing import PriceClient, price_book
-from .stages.quality import FrameQuality, assess
+from .stages.quality import FrameQuality, QualityMeter
 from .stages.room import measure_room, to_ft2
-from .stages.scale import PlaneScale, best_scale, rectify, to_plane_cm
-from .stages.tracking import link
+from .stages.scale import PlaneScale, detect_markers, plane_scale, rectify, to_plane_cm
+from .stages.tracking import Features, features, link_features
 from .stages.vision import ITEM_PROMPT, ITEM_SCHEMA, SPINE_PROMPT, SPINE_SCHEMA, VisionModel, parse_items, parse_spines
 from .totals import finalize
 
@@ -49,10 +49,34 @@ ITEM_SCAN_EVERY_S = 6.0
 COVERAGE_CELL = 2.0  # plane units per coverage cell (cm on metric planes)
 RECTIFIED_PX_PER_CM = 12.0  # ~30 px across a 2.5 cm spine: enough for the model to read it
 RECTIFIED_MAX_PX = 2400
+MIN_MARKER_PX = 40  # smaller markers give unreliable corners
+LINK_CANDIDATES = 6  # recent frames of the current unit tried when chaining a new frame
+STRONG_LINK = 150  # inliers at which the first candidate is accepted without trying others
+MIN_KEYPOINTS = 60  # fewer features than this: the frame cannot be placed reliably
+CLOSURE_WINDOW = 12  # frames during which a new fragment keeps trying to rejoin an older plane
+CLOSURE_CANDIDATES = 8  # keyframes per older plane tried for a rejoin
+CLOSURE_MIN_INLIERS = 40  # stricter than chaining: a wrong merge is worse than a missed one
 
 # Published per-token prices (USD per 1M tokens) used for the cost report; update with your model's rates.
 MODEL_PRICES_USD = {"input": 0.30, "output": 2.50}
 SERPAPI_USD_PER_SEARCH = 0.015  # paid-plan rate; the free plan costs nothing but caps searches
+
+
+def _map_box(box: tuple[float, float, float, float], homography: np.ndarray) -> tuple[float, float, float, float]:
+    """Map an upright box through a homography; returns the upright bounds of the mapped quad."""
+    x0, y0, x1, y1 = box
+    corners = np.array([[[x0, y0]], [[x1, y0]], [[x1, y1]], [[x0, y1]]], np.float64)
+    mapped = cv2.perspectiveTransform(corners, homography).reshape(4, 2)
+    (mx0, my0), (mx1, my1) = mapped.min(axis=0), mapped.max(axis=0)
+    return float(mx0), float(my0), float(mx1), float(my1)
+
+
+def _spread(items: list, n: int) -> list:
+    """Up to n items evenly spread over the list (always including the last)."""
+    if len(items) <= n:
+        return list(items)
+    step = len(items) / n
+    return [items[min(len(items) - 1, int(i * step))] for i in range(n - 1)] + [items[-1]]
 
 
 @dataclass
@@ -64,6 +88,9 @@ class Plane:
     # frame id -> homography from frame pixels to plane units (cm if metric, else first-frame pixels)
     from_frame: dict[str, np.ndarray] = field(default_factory=dict)
     covered: set[tuple[int, int]] = field(default_factory=set)
+    # Features of registered frames, kept to rejoin fragments of this unit later (loop closure).
+    keyframes: list[tuple[str, Features]] = field(default_factory=list)
+    created_at_frame: int = 0
 
 
 @dataclass
@@ -94,9 +121,11 @@ class SweepSession:
         self.device = device
         self.country = settings.country
         self.inventory = Inventory()
+        self.quality = QualityMeter()
         self.planes: list[Plane] = []
         self.current: Plane | None = None
         self.last_frame: tuple[str, np.ndarray] | None = None
+        self.recent_frames: list[tuple[str, Features]] = []  # registered frames of the current unit, with features
         self.frame_log: list[dict] = []
         self.item_sightings: list[dict] = []
         self.last_item_scan = -ITEM_SCAN_EVERY_S
@@ -108,6 +137,7 @@ class SweepSession:
         self.excluded_shelves: set[str] = set()
         self.art_answers: dict[int, bool] = {}  # item sighting index -> is print
         self.ended_at: float | None = None
+        self.merges: list[dict] = []  # loop closures, for the stage report
 
     # ---------------- during the sweep ----------------
 
@@ -137,12 +167,19 @@ class SweepSession:
             self.frame_log.append({**record, "error": "unreadable image"})
             return {"frame_id": frame_id, "problems": ["unreadable image"]}, []
 
-        quality = assess(image)
+        markers = detect_markers(image)
+        quality = self.quality.assess(image, [m.corners for m in markers])
         record["quality"] = quality.to_dict()
         feedback = {"frame_id": frame_id, "problems": quality.problems(), "plane": None, "marker": False, "metric": False}
         jobs: list[tuple] = []
-        if quality.usable:
-            plane, _, marker = self._register(frame_id, image)
+        plane = None
+        if quality.usable and quality.featureless:
+            record["skipped"] = "featureless (wall or floor)"
+        elif quality.usable:
+            plane, _, marker = self._register(frame_id, image, markers)
+            if plane is None:
+                record["skipped"] = "too little texture to place on a shelving unit"
+        if plane is not None:
             record.update(plane=plane.id, metric=plane.metric, marker=marker)
             feedback.update(plane=plane.id, marker=marker, metric=plane.metric)
             gain = self._coverage_gain(plane, frame_id, image.shape)
@@ -157,19 +194,19 @@ class SweepSession:
         return feedback, jobs
 
     def _new_plane(self, metric: bool) -> Plane:
-        plane = Plane(id=f"P{len(self.planes) + 1}", metric=metric)
+        plane = Plane(id=f"P{len(self.planes) + 1}", metric=metric, created_at_frame=len(self.frame_log))
         self.planes.append(plane)
         return plane
 
-    def _register(self, frame_id: str, image: np.ndarray) -> tuple[Plane | None, PlaneScale | None, bool]:
+    def _register(self, frame_id: str, image: np.ndarray, markers) -> tuple[Plane | None, PlaneScale | None, bool]:
         """Place the frame on its shelving unit's plane: by marker, by chaining, or as a new unit."""
-        scale = best_scale(image, self.settings.marker_size_cm)
-        chained = None
-        if self.current is not None and self.last_frame is not None:
-            prev_id, prev_image = self.last_frame
-            lk = link(prev_image, image)
-            if lk.ok and prev_id in self.current.from_frame:
-                chained = self.current.from_frame[prev_id] @ lk.homography
+        scales = [plane_scale(m, self.settings.marker_size_cm) for m in markers]
+        scales = [s for s in scales if s.marker_px >= MIN_MARKER_PX]
+        scale = max(scales, key=lambda s: s.marker_px, default=None)
+        feats = features(image)
+        if scale is None and len(feats.keypoints) < MIN_KEYPOINTS:
+            return None, None, False  # bare shelf back or a smear: cannot be placed reliably
+        chained = self._chain(feats)
 
         if scale is not None:
             if self.current is not None and chained is not None:
@@ -179,14 +216,88 @@ class SweepSession:
             else:
                 plane = self.current = self._new_plane(metric=True)
             plane.from_frame[frame_id] = scale.homography
-            return plane, scale, True
+            self._remember(plane, frame_id, feats)
+            return self._close_loop(plane, frame_id, feats), scale, True
         if chained is not None:
             self.current.from_frame[frame_id] = chained
-            return self.current, None, False
-        # No marker and no link: a new unit (or the user walked away from the last one).
+            self._remember(self.current, frame_id, feats)
+            return self._close_loop(self.current, frame_id, feats), None, False
+        # No marker and no link: a new fragment (a new unit, or a gap in the current one).
         plane = self.current = self._new_plane(metric=False)
         plane.from_frame[frame_id] = np.eye(3)
-        return plane, None, False
+        self._remember(plane, frame_id, feats)
+        return self._close_loop(plane, frame_id, feats), None, False
+
+    def _remember(self, plane: Plane, frame_id: str, feats: Features) -> None:
+        if self.recent_frames and self.recent_frames[-1][0] not in plane.from_frame:
+            self.recent_frames = []  # a new unit started
+        self.recent_frames = (self.recent_frames + [(frame_id, feats)])[-LINK_CANDIDATES:]
+        plane.keyframes.append((frame_id, feats.compact()))
+
+    def _close_loop(self, plane: Plane, frame_id: str, feats: Features) -> Plane:
+        """Rejoin a young fragment to an older plane it overlaps (loop closure).
+
+        A gap in the sweep (blur, a fast move, a bare stretch of shelf) starts a
+        new fragment with no scale. When a later frame of that fragment overlaps
+        any frame of an older plane, the fragment is transformed into that plane:
+        it gains the older plane's scale, and books seen on both sides merge.
+        Only young or unscaled fragments are checked, which keeps the cost small.
+        """
+        age = len(self.frame_log) - plane.created_at_frame
+        # Only unscaled fragments gain from rejoining, and only while young (bounds the cost).
+        if plane.metric or age > CLOSURE_WINDOW:
+            return plane
+        for other in reversed(self.planes):
+            if other is plane:
+                continue
+            for other_id, other_feats in _spread(other.keyframes, CLOSURE_CANDIDATES):
+                lk = link_features(other_feats, feats)
+                if not lk.ok or lk.inliers < CLOSURE_MIN_INLIERS:
+                    continue
+                # other plane <- other frame <- this frame <- this plane
+                other_from_this = other.from_frame[other_id] @ lk.homography @ np.linalg.inv(plane.from_frame[frame_id])
+                self._absorb(into=other, fragment=plane, into_from_fragment=other_from_this)
+                return other
+        return plane
+
+    def _absorb(self, into: Plane, fragment: Plane, into_from_fragment: np.ndarray) -> None:
+        for fid, homography in fragment.from_frame.items():
+            into.from_frame[fid] = into_from_fragment @ homography
+        for book in self.inventory.books:
+            if book.plane_id == fragment.id:
+                book.plane_id = into.id
+                for s in book.sightings:
+                    s.box_plane = _map_box(s.box_plane, into_from_fragment)
+                    s.metric = into.metric
+        into.keyframes.extend(fragment.keyframes)
+        into.covered.clear()  # coverage cells were in the fragment's units; recomputed as frames arrive
+        self.planes.remove(fragment)
+        self.recent_frames = [(fid, f) for fid, f in self.recent_frames if fid in into.from_frame]
+        if self.current is fragment:
+            self.current = into
+        merged = self.inventory.merge_overlaps(into.id)
+        self.merges.append({"into": into.id, "fragment": fragment.id, "frames": len(fragment.from_frame), "books_merged": merged})
+
+    def _chain(self, feats: Features):
+        """Homography onto the current unit's plane via the best-overlapping recent frame.
+
+        Linking only to the previous frame breaks at every row change: the last
+        frame of one row barely overlaps the first of the next, but the frame
+        above it overlaps a lot. So try the recent frames and keep the link with
+        the most RANSAC inliers.
+        """
+        if self.current is None:
+            return None
+        best, best_inliers = None, 0
+        for prev_id, prev_feats in reversed(self.recent_frames):
+            if prev_id not in self.current.from_frame:
+                continue
+            lk = link_features(prev_feats, feats)
+            if lk.ok and lk.inliers > best_inliers:
+                best, best_inliers = self.current.from_frame[prev_id] @ lk.homography, lk.inliers
+                if best_inliers >= STRONG_LINK:
+                    break  # good enough; skip the remaining candidates
+        return best
 
     def _make_metric(self, plane: Plane, frame_id: str, plane_from_frame: np.ndarray, cm_from_frame: np.ndarray) -> None:
         """A marker appeared on a unit tracked in pixels: convert the whole unit to centimetres."""
@@ -197,8 +308,7 @@ class SweepSession:
             if book.plane_id != plane.id:
                 continue
             for s in book.sightings:
-                quad = cv2.perspectiveTransform(np.array([[[s.box_plane[0], s.box_plane[1]]], [[s.box_plane[2], s.box_plane[3]]]], np.float64), cm_from_plane).reshape(2, 2)
-                s.box_plane = (float(quad[0, 0]), float(quad[0, 1]), float(quad[1, 0]), float(quad[1, 1]))
+                s.box_plane = _map_box(s.box_plane, cm_from_plane)
                 s.metric = True
         plane.covered.clear()
         plane.metric = True
@@ -278,7 +388,7 @@ class SweepSession:
                 pts = to_plane_cm(PlaneScale(homography, -1, 1, 1, 0), np.array([[det.box_px[0], det.box_px[1]], [det.box_px[2], det.box_px[3]]]))
                 box = (float(pts[0, 0]), float(pts[0, 1]), float(pts[1, 0]), float(pts[1, 1]))
             sighting = Sighting(frame_id, box, plane.metric, det.orientation, det.title, det.author, det.publisher,
-                                det.all_text, det.legible, det.age_cues, quality.sharpness)
+                                det.all_text, det.legible, det.age_cues, 1 - quality.blur_effect)
             _, is_new = self.inventory.add(plane.id, sighting)
             new_books += is_new
         self.inventory.assign_shelves()
@@ -554,6 +664,8 @@ class SweepSession:
             "time_to_packet_s": round(after_sweep_s, 1),
             "usage": usage,
             "frames": len(self.frame_log),
+            "loop_closures": self.merges,
+            "units": len([p for p in self.planes if any(b.plane_id == p.id for b in self.inventory.books)]),
             "frames_sent_to_vision": usage.get("vision_spines", {}).get("calls", 0) + usage.get("vision_items", {}).get("calls", 0),
             "cost_usd_estimate": {
                 "vision": round(vision_cost, 4),
