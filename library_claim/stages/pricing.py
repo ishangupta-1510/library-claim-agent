@@ -10,12 +10,17 @@ number here. Outcomes per figure, in order of preference:
 
 Rare / signed / antiquarian books, and anything at or above the appraisal
 threshold, are flagged for a human and not priced.
+
+Only like-kind listings count: the same title as a whole phrase, a physical
+copy, one item, not a collectible copy, with a link. A used value is never
+above the replacement cost; used listings above it are collectible copies.
 """
 
 from __future__ import annotations
 
 import hashlib
 import json
+import re
 import statistics
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
@@ -32,7 +37,6 @@ from ..schemas import Price
 SERPAPI = "https://serpapi.com/search.json"
 FX_API = "https://api.frankfurter.dev/v1/latest"
 
-LISTING_TITLE_MATCH = 70  # listing titles are noisy ("1984 (Penguin Modern Classics) Paperback ...")
 ANTIQUARIAN_BEFORE = 1950
 RARITY_WORDS = ("signed", "first edition", "1st edition", "first printing", "limited edition", "inscribed", "antiquarian")
 
@@ -76,19 +80,70 @@ def appraisal_check(title: str, edition_year: str, notes: list[str], spine_text:
     return Appraisal(bool(reasons), reasons)
 
 
+def _words(text: str) -> str:
+    """Lowercase words separated by single spaces, padded so phrases match on word boundaries."""
+    return " " + " ".join(re.findall(r"[a-z0-9]+", text.lower())) + " "
+
+
+# A listing for one of these is not a like-kind copy of the book on the shelf.
+NOT_THE_BOOK = (
+    # other works that share the title
+    "summary", "study guide", "cliffsnotes", "workbook", "critical perspective", "companion", "discussion guide",
+    # other formats and products
+    "audiobook", "audio cd", "audio book", "ebook", "e book", "kindle edition", "mp3", "poster", "bookmark",
+    # several items in one listing
+    "box set", "lot", "set of", "books set", "bundle", "combo", "collection",
+    # translations (the spine was read in the language it is printed in)
+    "hindi", "marathi", "telugu", "tamil", "malayalam", "kannada", "bengali", "gujarati", "urdu", "punjabi",
+    "spanish", "french", "german", "farsi", "persian", "arabic", "translated",
+)
+# Collectible copies: priced for the copy, not the text, so never a replacement or a used reading copy.
+COLLECTIBLE = (*RARITY_WORDS, "1st ed", "first uk edition", "first us edition", "autographed", "rare", "collectible",
+               "leather bound")
+
+# What may follow the title in a listing for the same book: a subtitle, a bracket, a dash, "by <author>",
+# the author's name (eBay: "The Selfish Gene Richard Dawkins Book") or a format.
+_SEPARATOR = r"\s*$|\s*[:(\[\-–—|,/.]"
+_FOLLOWERS = ("by", "paperback", "hardcover", "hardback", "mass market", "edition", "novel", "book")
+
+
 def relevant(listing_title: str, title: str, author: str) -> bool:
-    """A listing is about this book if its title contains the book's title (fuzzily)."""
-    score = fuzz.partial_ratio(title.lower(), listing_title.lower())
-    if score < LISTING_TITLE_MATCH:
+    """A listing is a like-kind copy of this book.
+
+    The listing must start with the book's main title (before any subtitle,
+    leading article optional), followed only by a subtitle, bracket, dash,
+    "by <author>" or format. Containing the title anywhere was not enough:
+    "Deep Work" matched "JDM Deep rim WORK" wheels, and "The Midnight Library"
+    matched "Tales from the Midnight Library" and two-book combos. A "by"
+    naming someone else is another book with the same title. Other formats,
+    translations, multi-item lots and collectible copies are rejected.
+    """
+    main = re.sub(r"^\s*(the|a|an)\s+", "", title.split(":")[0].strip(), flags=re.I)
+    words = re.findall(r"[a-z0-9]+", main.lower())
+    if not words:
         return False
-    # Guard against study guides, summaries and box sets that share the title.
-    lowered = listing_title.lower()
-    return not any(w in lowered for w in ("summary", "study guide", "cliffsnotes", "box set", "workbook"))
+    followers = "|".join(map(re.escape, (*_FOLLOWERS, *author.lower().split())))
+    head = (r"^\W*(?:(?:the|a|an)\W+)?" + r"[\W_]+".join(map(re.escape, words))
+            + rf"(?={_SEPARATOR}|\s+(?:{followers})\b)")
+    if not re.search(head, listing_title, flags=re.I):
+        return False
+    by = re.search(r"\bby\s+([^,(\[|:]+)", listing_title, flags=re.I)
+    surname = author.split()[-1].lower() if author.split() else ""
+    if by and surname and fuzz.partial_ratio(surname, by.group(1).lower()) < 80:
+        return False
+    listing, own = _words(listing_title), _words(title)  # own: "The Cambridge Companion to ..." is the book itself
+    return not any(_words(w) in listing and _words(w) not in own for w in (*NOT_THE_BOOK, *COLLECTIBLE))
 
 
-def pick(listings: list[Listing], condition: str) -> tuple[float, list[Listing]] | None:
-    """Median of matching listings, so one outlier merchant cannot set the price."""
-    chosen = [l for l in listings if l.condition == condition and l.amount > 0]
+def pick(listings: list[Listing], condition: str, ceiling: float | None = None) -> tuple[float, list[Listing]] | None:
+    """Median of matching listings, so one outlier merchant cannot set the price.
+
+    Listings without a link are not evidence and are dropped. `ceiling` drops
+    listings above it: a used reading copy cannot cost more than a new one, so
+    used listings above the replacement price are collectible copies.
+    """
+    chosen = [l for l in listings if l.condition == condition and l.amount > 0 and l.url
+              and (ceiling is None or l.amount <= ceiling)]
     if not chosen:
         return None
     return round(statistics.median(l.amount for l in chosen), 2), chosen
@@ -269,27 +324,34 @@ async def price_book(
     failed_before = getattr(client, "failed_searches", 0)
     listings = [l for l in await client.shopping(query, locale) if relevant(l.title, title, author)]
     new = pick(listings, "new")
-    used = pick(listings, "used")
     replacement = _price_from(new, "new", retrieved_at) if new else Price()
-    used_value = _price_from(used, "used, good", retrieved_at) if used else Price()
+    used_value = Price()
     out_notes = []
 
-    if used_value.amount is None and fallback.ebay_domain:
-        foreign = [l for l in await client.ebay_used(query, fallback) if relevant(l.title, title, author)]
-        picked = pick(foreign, "used")
-        if picked:
-            converted = await convert(_price_from(picked, "used, good", now()), locale.currency, client)
-            if converted:
-                used_value = converted
-                out_notes.append(f"used value converted from {fallback.country} eBay listings")
+    # A used copy's value is bounded by the replacement cost, so it is only
+    # priced when there is a replacement to bound it; listings above that
+    # bound are collectible copies, not this one.
+    if replacement.amount is not None:
+        used = pick(listings, "used", ceiling=replacement.amount)
+        if used:
+            used_value = _price_from(used, "used, good", retrieved_at)
+        elif fallback.ebay_domain:
+            rate = await client.fx(fallback.currency, locale.currency)
+            foreign = [l for l in await client.ebay_used(query, fallback) if relevant(l.title, title, author)]
+            picked = pick(foreign, "used", ceiling=replacement.amount / rate.rate) if rate else None
+            if picked:
+                converted = await convert(_price_from(picked, "used, good", now()), locale.currency, client)
+                if converted:
+                    used_value = converted
+                    out_notes.append(f"used value converted from {fallback.country} eBay listings")
     if replacement.amount is None and getattr(client, "failed_searches", 0) > failed_before:
         out_notes.append("not priced: the price search failed (network); retry before settling")
     elif replacement.amount is None and getattr(client, "budget_exhausted", False):
         out_notes.append("not priced: price-search budget for this run was used up")
     elif replacement.amount is None:
         out_notes.append("no new listing found in local market")
-    if used_value.amount is None:
-        out_notes.append("no used listing found")
+    if used_value.amount is None and replacement.amount is not None:
+        out_notes.append("no used listing at or below the replacement price")
 
     if replacement.amount is not None and replacement.amount >= threshold:
         appraisal = Appraisal(True, [f"replacement {replacement.amount:.0f} {locale.currency} at or above appraisal threshold {threshold:.0f}"])

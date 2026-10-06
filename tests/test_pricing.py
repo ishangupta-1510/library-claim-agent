@@ -55,11 +55,11 @@ async def test_median_of_local_new_listings_with_source():
 
 
 async def test_used_falls_back_to_converted_us_listing():
-    client = FakeClient([L("Nineteen Eighty-Four", 250)], ebay=[L("Nineteen Eighty-Four Orwell", 4.0, "USD", "used", "eBay")])
+    client = FakeClient([L("Nineteen Eighty-Four", 250)], ebay=[L("Nineteen Eighty-Four Orwell", 2.0, "USD", "used", "eBay")])
     result = await _price(client)
     used = result.used
     assert used.converted and used.original_currency == "USD" and used.currency == "INR"
-    assert used.amount == pytest.approx(4.0 * 96.3)
+    assert used.amount == pytest.approx(2.0 * 96.3)
     assert "2026-10-05" in used.fx_source
 
 
@@ -100,7 +100,7 @@ async def test_above_threshold_is_routed_to_appraisal():
 
 def test_study_guides_are_not_the_book():
     assert not relevant("Nineteen Eighty-Four Study Guide", "Nineteen Eighty-Four", "Orwell")
-    assert relevant("1984 / Nineteen Eighty-Four (Penguin Modern Classics)", "Nineteen Eighty-Four", "Orwell")
+    assert relevant("Nineteen Eighty-Four (Penguin Modern Classics)", "Nineteen Eighty-Four", "Orwell")
 
 
 def test_parsers_skip_listings_without_numeric_price():
@@ -168,3 +168,71 @@ async def test_a_search_that_keeps_timing_out_leaves_the_line_unpriced(tmp_path,
 
 async def _no_sleep(_):
     return None
+
+
+def test_short_titles_need_the_whole_phrase():
+    assert relevant("Deep Work: Rules for Focused Success (Paperback)", "Deep Work", "Cal Newport")
+    assert not relevant("JDM Deep rim WORK Schwert SC4 245/40R20", "Deep Work", "Cal Newport")
+    assert not relevant("Rare Luxus Ruhla Cal. UMF Working Men's Wristwatch, Deep", "Deep Work", "Cal Newport")
+
+
+def test_collectible_lots_and_other_formats_are_not_like_kind():
+    title, author = "Long Walk to Freedom", "Nelson Mandela"
+    assert relevant("Long Walk To Freedom: The Autobiography of Nelson Mandela", title, author)
+    for listing in ("Long Walk To Freedom, Mandela, Nelson, Signed First Edition, 1994",
+                    "Long Walk to Freedom, the South African first edition, inscribed and...",
+                    "Long Walk To Freedom Vol 1 - Audiobook", "Long Walk to Freedom (Kindle Edition)",
+                    "Lot of 3 books: Long Walk to Freedom, Invictus"):
+        assert not relevant(listing, title, author), listing
+
+
+def test_exclusion_words_in_the_books_own_title_do_not_reject_it():
+    assert relevant("The Cambridge Companion to Orwell (Paperback)", "The Cambridge Companion to Orwell", "")
+
+
+async def test_used_listings_above_replacement_are_collectible_copies():
+    client = FakeClient([
+        L("Nineteen Eighty-Four", 300), L("Nineteen Eighty-Four", 350, merchant="Flipkart"),
+        L("Nineteen Eighty-Four", 180, condition="used", merchant="Bookchor"),
+        L("Nineteen Eighty-Four", 404395, condition="used", merchant="Biblio.com"),
+        L("Nineteen Eighty-Four", 95000, condition="used", merchant="Peter Harrington"),
+    ])
+    result = await _price(client)
+    assert result.used.amount == 180 and "median of 1" in result.used.basis
+    assert result.used.amount <= result.replacement.amount
+
+
+async def test_converted_used_value_is_bounded_by_replacement():
+    client = FakeClient([L("Nineteen Eighty-Four", 250)],
+                        ebay=[L("Nineteen Eighty-Four Orwell", 2430.0, "USD", "used", "eBay")])
+    result = await _price(client)
+    assert result.used.amount is None
+    assert any("at or below the replacement" in n for n in result.notes)
+
+
+async def test_no_used_value_without_a_replacement_to_bound_it():
+    client = FakeClient([L("Nineteen Eighty-Four", 120, condition="used")],
+                        ebay=[L("Nineteen Eighty-Four Orwell", 4.0, "USD", "used", "eBay")])
+    result = await _price(client)
+    assert result.replacement.amount is None and result.used.amount is None
+
+
+async def test_listings_without_a_link_are_not_evidence():
+    linkless = Listing("The Selfish Gene", 14, "INR", "", "", "new")
+    result = await _price(FakeClient([linkless, linkless]), title="The Selfish Gene", author="Richard Dawkins")
+    assert result.replacement.amount is None
+
+
+def test_same_title_by_someone_else_or_in_translation_is_another_book():
+    title, author = "The Midnight Library", "Matt Haig"
+    assert relevant("The Midnight Library (Special Hardcover Edition with Sprayed edges)", title, author)
+    assert relevant("The Midnight Library: A Novel: A GMA Book Club Pick", title, author)
+    assert relevant("Midnight Library by Matt Haig, Paperback", title, author)
+    for listing in ("The Midnight Library by Kazuno Kohara", "Tales from the Midnight Library: I Can See You",
+                    "The Midnight Library (Malayalam)", "La biblioteca de la medianoche / The Midnight Library",
+                    "The Midnight Library & Reasons to Stay Alive By Matt Haig 2 Books Collection Set",
+                    "The Midnight Library For The Coolest Stories!",
+                    "The Midnight Library by Matt Haig Leather Bound Hardcover Book",
+                    "The Midnight Library by Matt Haig Book Poster, Contemporary Fiction"):
+        assert not relevant(listing, title, author), listing
+    assert relevant("Rich Dad, Poor Dad: What the Rich Teach Their Kids", "Rich Dad, Poor Dad", "Robert Kiyosaki")
