@@ -1,0 +1,464 @@
+[
+ {
+  "frame_id": "f0000",
+  "t": 0.02,
+  "path": "frames/f0000.jpg",
+  "quality": {
+   "blur_effect": 0.185,
+   "reference_blur": null,
+   "edge_strength": 161.0,
+   "glare_fraction": 0.0,
+   "brightness": 143.7,
+   "blurry": false,
+   "glare": false,
+   "dark": false,
+   "featureless": false,
+   "usable": true,
+   "problems": []
+  },
+  "plane": "P1",
+  "metric": true,
+  "marker": true,
+  "new_coverage": 1.0
+ },
+ {
+  "frame_id": "f0001",
+  "t": 0.14,
+  "path": "frames/f0001.jpg",
+  "quality": {
+   "blur_effect": 0.18,
+   "reference_blur": null,
+   "edge_strength": 156.0,
+   "glare_fraction": 0.0102,
+   "brightness": 136.6,
+   "blurry": false,
+   "glare": false,
+   "dark": false,
+   "featureless": false,
+   "usable": true,
+   "problems": []
+  },
+  "plane": "P1",
+  "metric": true,
+  "marker": false,
+  "new_coverage": 0.57
+ },
+ {
+  "frame_id": "f0002",
+  "t": 0.27,
+  "path": "frames/f0002.jpg",
+  "quality": {
+   "blur_effect": 0.188,
+   "reference_blur": null,
+   "edge_strength": 171.0,
+   "glare_fraction": 0.0,
+   "brightness": 132.9,
+   "blurry": false,
+   "glare": false,
+   "dark": false,
+   "featureless": false,
+   "usable": true,
+   "problems": []
+  },
+  "plane": "P1",
+  "metric": true,
+  "marker": false,
+  "new_coverage": 0.54
+ },
+ {
+  "frame_id": "f0003",
+  "t": 0.38,
+  "path": "frames/f0003.jpg",
+  "quality": {
+   "blur_effect": 0.166,
+   "reference_blur": 0.185,
+   "edge_strength": 175.0,
+   "glare_fraction": 0.0,
+   "brightness": 135.5,
+   "blurry": false,
+   "glare": false,
+   "dark": false,
+   "featureless": false,
+   "usable": true,
+   "problems": []
+  },
+  "plane": "P1",
+  "metric": true,
+  "marker": false,
+  "new_coverage": 0.59
+ },
+ {
+  "frame_id": "f0004",
+  "t": 0.47,
+  "path": "frames/f0004.jpg",
+  "quality": {
+   "blur_effect": 0.176,
+   "reference_blur": 0.182,
+   "edge_strength": 194.0,
+   "glare_fraction": 0.0,
+   "brightness": 143.0,
+   "blurry": false,
+   "glare": false,
+   "dark": false,
+   "featureless": false,
+   "usable": true,
+   "problems": []
+  },
+  "plane": "P1",
+  "metric": true,
+  "marker": false,
+  "new_coverage": 0.58
+ },
+ {
+  "frame_id": "f0005",
+  "t": 0.58,
+  "path": "frames/f0005.jpg",
+  "quality": {
+   "blur_effect": 0.173,
+   "reference_blur": 0.18,
+   "edge_strength": 182.0,
+   "glare_fraction": 0.0,
+   "brightness": 138.8,
+   "blurry": false,
+   "glare": false,
+   "dark": false,
+   "featureless": false,
+   "usable": true,
+   "problems": []
+  },
+  "plane": "P1",
+  "metric": true,
+  "marker": false,
+  "new_coverage": 0.55
+ },
+ {
+  "frame_id": "f0006",
+  "t": 0.69,
+  "path": "frames/f0006.jpg",
+  "quality": {
+   "blur_effect": 0.17,
+   "reference_blur": 0.178,
+   "edge_strength": 170.0,
+   "glare_fraction": 0.0,
+   "brightness": 138.6,
+   "blurry": false,
+   "glare": false,
+   "dark": false,
+   "featureless": false,
+   "usable": true,
+   "problems": []
+  },
+  "plane": "P1",
+  "metric": true,
+  "marker": false,
+  "new_coverage": 0.54
+ },
+ {
+  "frame_id": "f0007",
+  "t": 0.8,
+  "path": "frames/f0007.jpg",
+  "quality": {
+   "blur_effect": 0.17,
+   "reference_blur": 0.176,
+   "edge_strength": 153.0,
+   "glare_fraction": 0.0,
+   "brightness": 142.8,
+   "blurry": false,
+   "glare": false,
+   "dark": false,
+   "featureless": false,
+   "usable": true,
+   "problems": []
+  },
+  "plane": "P1",
+  "metric": true,
+  "marker": false,
+  "new_coverage": 0.53
+ },
+ {
+  "frame_id": "f0008",
+  "t": 0.91,
+  "path": "frames/f0008.jpg",
+  "quality": {
+   "blur_effect": 1.0,
+   "reference_blur": 0.175,
+   "edge_strength": 0.0,
+   "glare_fraction": 0.0,
+   "brightness": 211.0,
+   "blurry": false,
+   "glare": false,
+   "dark": false,
+   "featureless": true,
+   "usable": true,
+   "problems": []
+  },
+  "skipped": "featureless (wall or floor)"
+ },
+ {
+  "frame_id": "f0009",
+  "t": 0.94,
+  "path": "frames/f0009.jpg",
+  "quality": {
+   "blur_effect": 1.0,
+   "reference_blur": 0.175,
+   "edge_strength": 0.0,
+   "glare_fraction": 0.0,
+   "brightness": 211.0,
+   "blurry": false,
+   "glare": false,
+   "dark": false,
+   "featureless": true,
+   "usable": true,
+   "problems": []
+  },
+  "skipped": "featureless (wall or floor)"
+ },
+ {
+  "frame_id": "f0010",
+  "t": 0.97,
+  "path": "frames/f0010.jpg",
+  "quality": {
+   "blur_effect": 1.0,
+   "reference_blur": 0.175,
+   "edge_strength": 0.0,
+   "glare_fraction": 0.0,
+   "brightness": 211.0,
+   "blurry": false,
+   "glare": false,
+   "dark": false,
+   "featureless": true,
+   "usable": true,
+   "problems": []
+  },
+  "skipped": "featureless (wall or floor)"
+ },
+ {
+  "frame_id": "f0011",
+  "t": 1.0,
+  "path": "frames/f0011.jpg",
+  "quality": {
+   "blur_effect": 0.197,
+   "reference_blur": 0.175,
+   "edge_strength": 143.0,
+   "glare_fraction": 0.0001,
+   "brightness": 142.8,
+   "blurry": false,
+   "glare": false,
+   "dark": false,
+   "featureless": false,
+   "usable": true,
+   "problems": []
+  },
+  "plane": "P2",
+  "metric": true,
+  "marker": true,
+  "new_coverage": 1.0
+ },
+ {
+  "frame_id": "f0012",
+  "t": 1.36,
+  "path": "frames/f0012.jpg",
+  "quality": {
+   "blur_effect": 0.184,
+   "reference_blur": 0.176,
+   "edge_strength": 146.0,
+   "glare_fraction": 0.01,
+   "brightness": 136.3,
+   "blurry": false,
+   "glare": false,
+   "dark": false,
+   "featureless": false,
+   "usable": true,
+   "problems": []
+  },
+  "plane": "P2",
+  "metric": true,
+  "marker": false,
+  "new_coverage": 0.56
+ },
+ {
+  "frame_id": "f0013",
+  "t": 1.45,
+  "path": "frames/f0013.jpg",
+  "quality": {
+   "blur_effect": 0.187,
+   "reference_blur": 0.178,
+   "edge_strength": 167.0,
+   "glare_fraction": 0.0001,
+   "brightness": 134.3,
+   "blurry": false,
+   "glare": false,
+   "dark": false,
+   "featureless": false,
+   "usable": true,
+   "problems": []
+  },
+  "plane": "P2",
+  "metric": true,
+  "marker": false,
+  "new_coverage": 0.53
+ },
+ {
+  "frame_id": "f0014",
+  "t": 1.55,
+  "path": "frames/f0014.jpg",
+  "quality": {
+   "blur_effect": 0.759,
+   "reference_blur": 0.178,
+   "edge_strength": 22.0,
+   "glare_fraction": 0.0,
+   "brightness": 130.4,
+   "blurry": true,
+   "glare": false,
+   "dark": false,
+   "featureless": false,
+   "usable": false,
+   "problems": [
+    "blur"
+   ]
+  }
+ },
+ {
+  "frame_id": "f0015",
+  "t": 1.59,
+  "path": "frames/f0015.jpg",
+  "quality": {
+   "blur_effect": 0.185,
+   "reference_blur": 0.178,
+   "edge_strength": 174.0,
+   "glare_fraction": 0.0,
+   "brightness": 133.7,
+   "blurry": false,
+   "glare": false,
+   "dark": false,
+   "featureless": false,
+   "usable": true,
+   "problems": []
+  },
+  "plane": "P2",
+  "metric": true,
+  "marker": false,
+  "new_coverage": 0.77
+ },
+ {
+  "frame_id": "f0016",
+  "t": 1.69,
+  "path": "frames/f0016.jpg",
+  "quality": {
+   "blur_effect": 0.749,
+   "reference_blur": 0.18,
+   "edge_strength": 23.0,
+   "glare_fraction": 0.0,
+   "brightness": 131.4,
+   "blurry": true,
+   "glare": false,
+   "dark": false,
+   "featureless": false,
+   "usable": false,
+   "problems": [
+    "blur"
+   ]
+  }
+ },
+ {
+  "frame_id": "f0017",
+  "t": 1.73,
+  "path": "frames/f0017.jpg",
+  "quality": {
+   "blur_effect": 0.188,
+   "reference_blur": 0.18,
+   "edge_strength": 143.0,
+   "glare_fraction": 0.0,
+   "brightness": 134.0,
+   "blurry": false,
+   "glare": false,
+   "dark": false,
+   "featureless": false,
+   "usable": true,
+   "problems": []
+  },
+  "plane": "P2",
+  "metric": true,
+  "marker": false,
+  "new_coverage": 0.8
+ },
+ {
+  "frame_id": "f0018",
+  "t": 1.95,
+  "path": "frames/f0018.jpg",
+  "quality": {
+   "blur_effect": 0.191,
+   "reference_blur": 0.18,
+   "edge_strength": 150.0,
+   "glare_fraction": 0.0,
+   "brightness": 143.5,
+   "blurry": false,
+   "glare": false,
+   "dark": false,
+   "featureless": false,
+   "usable": true,
+   "problems": []
+  },
+  "plane": "P2",
+  "metric": true,
+  "marker": false,
+  "new_coverage": 0.57
+ },
+ {
+  "frame_id": "f0019",
+  "t": 2.22,
+  "path": "frames/f0019.jpg",
+  "quality": {
+   "blur_effect": 1.0,
+   "reference_blur": 0.185,
+   "edge_strength": 0.0,
+   "glare_fraction": 0.0,
+   "brightness": 211.0,
+   "blurry": false,
+   "glare": false,
+   "dark": false,
+   "featureless": true,
+   "usable": true,
+   "problems": []
+  },
+  "skipped": "featureless (wall or floor)"
+ },
+ {
+  "frame_id": "f0020",
+  "t": 2.27,
+  "path": "frames/f0020.jpg",
+  "quality": {
+   "blur_effect": 1.0,
+   "reference_blur": 0.185,
+   "edge_strength": 0.0,
+   "glare_fraction": 0.0,
+   "brightness": 211.0,
+   "blurry": false,
+   "glare": false,
+   "dark": false,
+   "featureless": true,
+   "usable": true,
+   "problems": []
+  },
+  "skipped": "featureless (wall or floor)"
+ },
+ {
+  "frame_id": "f0021",
+  "t": 2.3,
+  "path": "frames/f0021.jpg",
+  "quality": {
+   "blur_effect": 1.0,
+   "reference_blur": 0.185,
+   "edge_strength": 0.0,
+   "glare_fraction": 0.0,
+   "brightness": 211.0,
+   "blurry": false,
+   "glare": false,
+   "dark": false,
+   "featureless": true,
+   "usable": true,
+   "problems": []
+  },
+  "skipped": "featureless (wall or floor)"
+ }
+]
