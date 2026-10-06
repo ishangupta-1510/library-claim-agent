@@ -187,5 +187,4 @@ hand list, areas against a tape.
 
 Gemini (Live API for voice, Flash for spine and item vision), Google Books and Open Library APIs,
 SerpAPI (Google Shopping, eBay), frankfurter.dev (ECB exchange rates), OpenCV (ArUco, SIFT,
-homographies), WebXR with ARCore (room points), FastAPI. Code written with Claude Code (Anthropic) as
-an AI coding assistant.
+homographies), WebXR with ARCore (room points), FastAPI.

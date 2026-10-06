@@ -10,6 +10,7 @@ import base64
 import contextlib
 import json
 import logging
+import re
 from dataclasses import replace
 from pathlib import Path
 
@@ -20,6 +21,7 @@ from fastapi.staticfiles import StaticFiles
 
 from .config import LOCALES, confirms_country, settings
 from . import mock
+from .conversation import ConversationRecorder
 from .live import Narrator, live_config
 from .stages.scale import render_marker
 from .stages.vision import GeminiVision
@@ -163,6 +165,7 @@ async def sweep_socket(websocket: WebSocket) -> None:
         session_cfg = replace(cfg, marker_size_cm=float(manifest["marker_cm"]))
         device = "demo camera (synthetic sweep) / " + device
     sweep = SweepSession(session_cfg, vision, on_pipeline_event, device=device)
+    recorder = ConversationRecorder() if cfg.record_conversation else None
     await send({"type": "ready", "sweep_id": sweep.id, "countries": sorted(LOCALES), "country": sweep.country})
 
     async def end_sweep() -> dict:
@@ -212,7 +215,10 @@ async def sweep_socket(websocket: WebSocket) -> None:
             async def on_message(message: dict) -> None:
                 kind = message.get("type")
                 if kind == "audio":
-                    await live.send_realtime_input(audio=types.Blob(data=base64.b64decode(message["data"]), mime_type="audio/pcm;rate=16000"))
+                    pcm = base64.b64decode(message["data"])
+                    if recorder:
+                        recorder.add_mic(pcm)
+                    await live.send_realtime_input(audio=types.Blob(data=pcm, mime_type="audio/pcm;rate=16000"))
                 elif kind == "video":
                     await live.send_realtime_input(video=types.Blob(data=base64.b64decode(message["data"]), mime_type="image/jpeg"))
                 elif kind == "keyframe":
@@ -259,12 +265,17 @@ async def sweep_socket(websocket: WebSocket) -> None:
                             continue
                         if content.interrupted:
                             await send({"type": "interrupted"})
+                            if recorder:
+                                recorder.interrupt()
                         for speaker, chunk in (("you", content.input_transcription), ("agent", content.output_transcription)):
                             if chunk and chunk.text:
                                 await send({"type": "transcript", "speaker": speaker, "text": chunk.text})
                         if content.model_turn and not content.interrupted:
                             for part in content.model_turn.parts or []:
                                 if part.inline_data and (part.inline_data.mime_type or "").startswith("audio/"):
+                                    if recorder:
+                                        rate = re.search(r"rate=(\d+)", part.inline_data.mime_type or "")
+                                        recorder.add_agent(part.inline_data.data, int(rate.group(1)) if rate else 24_000)
                                     await send({"type": "audio", "data": base64.b64encode(part.inline_data.data).decode(),
                                                 "mime": part.inline_data.mime_type})
                         if content.turn_complete:
@@ -290,3 +301,6 @@ async def sweep_socket(websocket: WebSocket) -> None:
                 await asyncio.wait_for(asyncio.shield(finishing["task"]), timeout=600)
         else:
             sweep.close()
+        if recorder:
+            with contextlib.suppress(Exception):
+                recorder.save(sweep.dir)

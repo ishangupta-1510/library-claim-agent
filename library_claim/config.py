@@ -59,6 +59,7 @@ class Settings:
     appraisal_threshold_currency: str  # the threshold is converted at the day's rate for claims in other currencies
     sweeps_dir: Path
     price_search_budget: int | None
+    record_conversation: bool = False  # save the spoken conversation as conversation.wav (off unless chosen)
 
     @property
     def locale(self) -> Locale:
@@ -86,6 +87,7 @@ def settings() -> Settings:
         appraisal_threshold_currency=os.getenv("APPRAISAL_THRESHOLD_CURRENCY", "INR").upper(),
         sweeps_dir=Path(os.getenv("SWEEPS_DIR", "sweeps")),
         price_search_budget=int(os.environ["PRICE_SEARCH_BUDGET"]) if os.getenv("PRICE_SEARCH_BUDGET") else None,
+        record_conversation=os.getenv("RECORD_CONVERSATION", "") == "1",
     )
     # Fail at startup, not after a policyholder has walked the whole room.
     locale_for(cfg.country)

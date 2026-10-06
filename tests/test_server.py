@@ -56,3 +56,25 @@ def test_marker_size_from_the_page_is_bounded():
 
     assert _marker_cm("4.3") == 4.3 and _marker_cm("10") == 10.0
     assert _marker_cm("0") is None and _marker_cm("abc") is None and _marker_cm("500") is None and _marker_cm(None) is None
+
+
+def test_conversation_recording_queues_agent_audio_like_the_page(tmp_path, monkeypatch):
+    import wave
+
+    import numpy as np
+
+    from library_claim import conversation
+
+    clock = [0.0]
+    monkeypatch.setattr(conversation.time, "monotonic", lambda: clock[0])
+    rec = conversation.ConversationRecorder()
+    clock[0] = 1.0
+    rec.add_mic(np.full(16_000, 1000, np.int16).tobytes())  # 1 s of the policyholder at t = 1 s
+    clock[0] = 3.0
+    rec.add_agent(np.full(24_000, 2000, np.int16).tobytes())  # two 1 s chunks arriving together at t = 3 s
+    rec.add_agent(np.full(24_000, 3000, np.int16).tobytes())
+    path = rec.save(tmp_path)
+    with wave.open(str(path)) as w:
+        audio = np.frombuffer(w.readframes(w.getnframes()), np.int16)
+    at = lambda s: int(audio[int(s * 24_000)])
+    assert at(1.5) == 1000 and at(3.5) == 2000 and at(4.5) == 3000  # played back to back, not overlapped
