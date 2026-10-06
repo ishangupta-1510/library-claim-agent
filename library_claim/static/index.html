@@ -19,11 +19,16 @@
   #books-wrap{max-height:48vh;overflow:auto} .unread{color:var(--muted);font-style:italic}
   .stat{display:inline-block;margin-right:14px} .stat b{font-size:18px}
   #ar-controls{display:none;gap:8px} #packet{display:none;font-weight:600;color:var(--ok)}
+  /* In AR the page is a DOM overlay on the camera: keep the background transparent. */
+  body.xr{background:transparent} body.xr main .card{background:rgba(255,255,255,.82)} body.xr video{display:none}
+  #reticle{display:none;position:fixed;left:50%;top:50%;width:34px;height:34px;margin:-17px 0 0 -17px;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 2px #000;pointer-events:none;z-index:9}
+  #reticle.hit{border-color:#22c55e} #reticle span{position:absolute;top:38px;left:50%;transform:translateX(-50%);white-space:nowrap;color:#fff;font:600 12px system-ui;text-shadow:0 0 3px #000}
 </style></head><body>
 <header>
   <h1>Library contents claim</h1>
   <span id="status">Ready</span>
   <button id="start" class="primary">Start sweep</button>
+  <button id="start-ar" class="primary" style="display:none">Start AR sweep (measures room)</button>
   <span id="ar-controls"><button id="corner">Mark corner</button><button id="ceiling">Mark ceiling</button></span>
   <button id="end" disabled>End sweep</button>
   <a id="packet" target="_blank">Open claim packet</a>
@@ -45,6 +50,7 @@
     <table><tbody id="items"></tbody></table>
   </section>
 </main>
+<div id="reticle"><span id="reticle-label"></span></div>
 <canvas id="small" hidden></canvas><canvas id="large" hidden></canvas>
 <script type="module" src="/static/app.js"></script>
 </body></html>

@@ -93,6 +93,9 @@ function stopPlayback() {
 }
 
 // ---------- camera ----------
+// Frames come from the <video> preview by default; AR mode swaps in the WebXR camera.
+let grabFrame = (maxSide, quality) => grab(maxSide > 1000 ? $("large") : $("small"), maxSide, quality);
+
 function grab(canvas, maxSide, quality) {
   const video = $("preview");
   if (!video.videoWidth) return null;
@@ -104,13 +107,13 @@ function grab(canvas, maxSide, quality) {
 }
 
 function sendLiveFrame() {
-  const data = grab($("small"), 640, 0.6);
+  const data = grabFrame(640, 0.6);
   if (data) send({ type: "video", data });
 }
 
 function maybeSendKeyframe() {
   if (keyframeInFlight || performance.now() - lastKeyframeAt < KEYFRAME_MIN_MS) return;
-  const data = grab($("large"), KEYFRAME_MAX_SIDE, 0.88);
+  const data = grabFrame(KEYFRAME_MAX_SIDE, 0.88);
   if (!data) return;
   keyframeInFlight = true;
   lastKeyframeAt = performance.now();
@@ -177,14 +180,24 @@ function stopCapture() {
   $("end").disabled = true;
 }
 
-async function start() {
+async function start({ ar = false } = {}) {
   $("start").disabled = true;
+  $("start-ar").disabled = true;
   status("Starting camera and microphone…");
-  mediaStream = await navigator.mediaDevices.getUserMedia({
-    audio: { echoCancellation: true, noiseSuppression: true, channelCount: 1 },
-    video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } },
-  });
-  $("preview").srcObject = mediaStream;
+  const audio = { echoCancellation: true, noiseSuppression: true, channelCount: 1 };
+  if (ar) {
+    // WebXR owns the camera in AR; only the microphone comes from getUserMedia.
+    mediaStream = await navigator.mediaDevices.getUserMedia({ audio });
+    const { startAr } = await import("/static/ar.js");
+    grabFrame = await startAr({ onPoint: (kind, position) => send({ type: "ar_point", kind, position }), onEnd: () => send({ type: "end" }) });
+    $("ar-controls").style.display = "inline-flex";
+  } else {
+    mediaStream = await navigator.mediaDevices.getUserMedia({
+      audio,
+      video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } },
+    });
+    $("preview").srcObject = mediaStream;
+  }
   const scheme = location.protocol === "https:" ? "wss" : "ws";
   ws = new WebSocket(`${scheme}://${location.host}/ws/sweep`);
   ws.onmessage = (e) => handle(JSON.parse(e.data));
@@ -196,6 +209,9 @@ async function start() {
   $("end").disabled = false;
 }
 
-$("start").onclick = () => start().catch((e) => { status(`Could not start: ${e.message}`); $("start").disabled = false; });
+const fail = (e) => { status(`Could not start: ${e.message}`); $("start").disabled = false; $("start-ar").disabled = false; };
+$("start").onclick = () => start().catch(fail);
+$("start-ar").onclick = () => start({ ar: true }).catch(fail);
+navigator.xr?.isSessionSupported("immersive-ar").then((ok) => { if (ok) $("start-ar").style.display = "inline-block"; });
 $("end").onclick = () => send({ type: "end" });
 window.claimSweep = { send, handle }; // used by the AR module and tests
