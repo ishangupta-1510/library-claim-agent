@@ -677,7 +677,9 @@ class SweepSession:
     def note_book_in_view(self, statement: str) -> dict:
         book = self.book_in_view()
         if book is None:
-            return {"applied": False, "reason": "no book on screen yet"}
+            # The spines in view have not been read yet (vision runs a few seconds behind the camera).
+            return {"applied": False, "reason": "no book read in the current view yet",
+                    "ask": "hold the camera still on that book for a few seconds, then say it again"}
         book.statements.append(statement)
         self.notes.append({"statement": statement, "t": self.elapsed(), "frame_id": self.last_frame[0]})
         index = self.inventory.books.index(book)
@@ -686,7 +688,8 @@ class SweepSession:
     def exclude_shelf_in_view(self, reason: str) -> dict:
         book = self.book_in_view()
         if book is None or not book.shelf:
-            return {"applied": False, "reason": "no shelf on screen yet"}
+            return {"applied": False, "reason": "no shelf read in the current view yet",
+                    "ask": "hold the camera still on that shelf for a few seconds, then say it again"}
         shelf = book.shelf
         self.inventory.exclude_row_of(book, reason or "not the policyholder's")
         self.notes.append({"statement": reason, "t": self.elapsed(), "frame_id": self.last_frame[0], "excluded_shelf": shelf})

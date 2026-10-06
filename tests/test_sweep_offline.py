@@ -206,3 +206,11 @@ def test_an_item_described_as_a_book_is_not_an_item():
 
     assert _is_a_book("Book spine") and _is_a_book("stack of books")
     assert not _is_a_book("Wooden bookshelf") and not _is_a_book("brass bookends")
+
+
+async def test_a_note_with_no_book_read_in_view_is_refused_with_what_to_ask(cfg):
+    async def emit(event):
+        pass
+
+    result = SweepSession(cfg, None, emit).note_book_in_view("user: this one is signed")
+    assert result["applied"] is False and "hold the camera" in result["ask"]

@@ -7,7 +7,7 @@ What it does (Windows; needs Chrome and ffmpeg on PATH):
 1. Builds a camera file from dev_data/synthetic/frames (each view held 2.5 s) and, for live mode,
    a microphone file in which a synthesized voice says the policyholder's lines at set times.
 2. Starts the app on its own port with RECORD_CONVERSATION=1.
-3. Runs a separate, hidden Chrome (fresh profile) whose camera and microphone are those files,
+3. Runs a separate Chrome window (fresh profile) whose camera and microphone are those files,
    records the page itself through DevTools' screencast, presses Start, ends the sweep when the
    footage is done, waits for the packet and scrolls through the report.
 4. Muxes the recorded conversation (agent voice + policyholder voice) under the page recording.
@@ -99,7 +99,7 @@ class Page:
     """Just enough of the Chrome DevTools protocol: run JavaScript, and record the page as it renders.
 
     Recording uses DevTools' screencast: Chrome sends each rendered frame of the page itself, so the
-    video holds exactly the app (no other windows or notifications), and it works with Chrome hidden.
+    video holds exactly the app (no other windows or notifications), even if the window is covered.
     Screen grabbing was tried first and recorded only black: Chrome's window is GPU-composited.
     """
 
@@ -213,10 +213,15 @@ def main() -> None:
     try:
         wait_for(f"http://127.0.0.1:{PORT}/api/health")
         flags = [f"--user-data-dir={profile}", f"--remote-debugging-port={DEBUG_PORT}", "--no-first-run",
-                 "--no-default-browser-check", "--headless=new", "--window-size=1600,900", "--hide-scrollbars",
+                 # A visible window: headless Chrome does not repaint <video> into the screencast, so the
+                 # camera panel looked frozen on its first frame.
+                 "--no-default-browser-check", "--window-position=40,40", "--window-size=1600,900",
+                 "--hide-scrollbars", "--disable-background-timer-throttling", "--disable-renderer-backgrounding",
+                 # Keep painting when other windows cover it (Windows occlusion tracking would pause the page).
+                 "--disable-features=CalculateNativeWinOcclusion",
                  "--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream",
                  f"--use-file-for-fake-video-capture={camera.resolve()}", "--autoplay-policy=no-user-gesture-required",
-                 f"http://localhost:{PORT}/"]
+                 f"--app=http://localhost:{PORT}/"]
         if microphone:
             flags.append(f"--use-file-for-fake-audio-capture={microphone.resolve()}%noloop")
         chrome = subprocess.Popen([str(CHROME), *flags], stderr=subprocess.DEVNULL)
