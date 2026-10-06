@@ -90,20 +90,35 @@ def _native_px_per_cm(plane_from_frame: np.ndarray, shape) -> float:
 EDGE_MARGIN = 0.015  # share of the frame size treated as "touching the edge"
 
 
-def _cut_off(box_px, view, shape) -> bool:
-    """Whether a detected spine box touches the original frame's border.
+def _cut_edges(box_px, view, shape) -> frozenset[str]:
+    """Which sides of a detected spine box touch the original frame's border.
 
-    On a rectified view, the box is mapped back into the original frame first,
-    since the rectified canvas is larger than the area the camera saw.
+    Sides are named in the box's own axes ("left", "right", "top", "bottom"),
+    which on a rectified view are the shelf plane's axes. Each side is sampled
+    and mapped back into the original frame, since the rectified canvas is
+    larger than what the camera actually saw.
     """
     h, w = shape[:2]
     x0, y0, x1, y1 = box_px
-    corners = np.array([[[x0, y0]], [[x1, y0]], [[x1, y1]], [[x0, y1]]], np.float64)
-    if view is not None:
-        corners = cv2.perspectiveTransform(corners, np.linalg.inv(view.image_to_rectified))
-    pts = corners.reshape(4, 2)
+    samples = np.linspace(0.1, 0.9, 5)
+    sides = {
+        "left": [(x0, y0 + (y1 - y0) * f) for f in samples],
+        "right": [(x1, y0 + (y1 - y0) * f) for f in samples],
+        "top": [(x0 + (x1 - x0) * f, y0) for f in samples],
+        "bottom": [(x0 + (x1 - x0) * f, y1) for f in samples],
+    }
     mx, my = EDGE_MARGIN * w, EDGE_MARGIN * h
-    return bool((pts[:, 0] < mx).any() or (pts[:, 0] > w - mx).any() or (pts[:, 1] < my).any() or (pts[:, 1] > h - my).any())
+    cut = set()
+    for side, points in sides.items():
+        pts = np.array(points, np.float64).reshape(-1, 1, 2)
+        if view is not None:
+            pts = cv2.perspectiveTransform(pts, np.linalg.inv(view.image_to_rectified))
+        pts = pts.reshape(-1, 2)
+        near = (pts[:, 0] < mx) | (pts[:, 0] > w - mx) | (pts[:, 1] < my) | (pts[:, 1] > h - my)
+        # A side is cut when it runs along the border, not when a narrow box merely sits near one.
+        if near.mean() >= 0.5:
+            cut.add(side)
+    return frozenset(cut)
 
 
 def _spread(items: list, n: int) -> list:
@@ -391,7 +406,7 @@ class SweepSession:
         payload, info = await self.vision.generate_json(jpeg, prompt, schema)
         self.clock.add(stage, time.monotonic() - t0)
         self.clock.count(stage, calls=1, input_tokens=info.get("input_tokens", 0), output_tokens=info.get("output_tokens", 0))
-        (self.dir / "raw" / f"{stage}-{frame_id}.json").write_text(json.dumps({"usage": info, "response": payload}, indent=1))
+        (self.dir / "raw" / f"{stage}-{frame_id}.json").write_text(json.dumps({"usage": info, "response": payload}, indent=1), encoding="utf-8")
         return payload
 
     async def _detect_spines(self, frame_id: str, image: np.ndarray, plane: Plane, quality: FrameQuality) -> None:
@@ -415,7 +430,8 @@ class SweepSession:
 
         new_books = 0
         for det in detections:
-            if det.legible and _cut_off(det.box_px, view, image.shape):
+            cut = _cut_edges(det.box_px, view, image.shape)
+            if cut and det.legible:
                 # Part of this spine is outside the frame, so its text is partial
                 # ("MELUHA" for "The Immortals of Meluha"). Count it; read it elsewhere.
                 det.title = det.author = ""
@@ -428,7 +444,7 @@ class SweepSession:
                 pts = to_plane_cm(PlaneScale(homography, -1, 1, 1, 0), np.array([[det.box_px[0], det.box_px[1]], [det.box_px[2], det.box_px[3]]]))
                 box = (float(pts[0, 0]), float(pts[0, 1]), float(pts[1, 0]), float(pts[1, 1]))
             sighting = Sighting(frame_id, box, plane.metric, det.orientation, det.title, det.author, det.publisher,
-                                det.all_text, det.legible, det.age_cues, 1 - quality.blur_effect)
+                                det.all_text, det.legible, det.age_cues, 1 - quality.blur_effect, cut)
             _, is_new = self.inventory.add(plane.id, sighting)
             new_books += is_new
         self.inventory.assign_shelves()
@@ -544,7 +560,7 @@ class SweepSession:
             items = await self._price_items(prices, locale)
             comparison = await self._locale_comparison(books, prices, fallback)
             self.clock.count("pricing_searches", searches=prices.live_searches, cached=len(prices.raw) - prices.live_searches)
-            (self.dir / "raw" / "price_searches.json").write_text(json.dumps(prices.raw, indent=1))
+            (self.dir / "raw" / "price_searches.json").write_text(json.dumps(prices.raw, indent=1), encoding="utf-8")
 
         t0 = time.monotonic()
         room = self._room()
@@ -557,8 +573,8 @@ class SweepSession:
         )
         finalize(packet)
         packet.stages = self._stage_report(time.monotonic() - self.ended_at)
-        (self.dir / "frames.json").write_text(json.dumps(self.frame_log, indent=1))
-        (self.dir / "claim_packet.json").write_text(packet.model_dump_json(indent=2))
+        (self.dir / "frames.json").write_text(json.dumps(self.frame_log, indent=1), encoding="utf-8")
+        (self.dir / "claim_packet.json").write_text(packet.model_dump_json(indent=2), encoding="utf-8")
         write_report(packet, self.dir)
         await self.emit({"type": "packet", "sweep_id": self.id, "totals": packet.totals.model_dump(),
                          "review_count": len(packet.review_queue)})

@@ -163,29 +163,30 @@ def build_unit(name, books, rng, width_cm=50, shelf_heights=(34, 34, 34, 30)):
 
 
 def pan_frames(faces, out_dir, rng, size=(1280, 720)):
-    """A handheld pan: each unit top to bottom in overlapping, slightly tilted views, serpentine."""
+    """A handheld pan down each unit, framed like a phone held ~60 cm from a narrow bookcase.
+
+    Each view is 1.3x the unit's width (65 cm for a 50 cm unit), so a whole shelf
+    row fits in one frame, as in a real sweep. Consecutive views overlap ~60%
+    vertically (a 0.7 s keyframe interval at a slow downward pan).
+    """
     out_dir.mkdir(parents=True, exist_ok=True)
     w, h = size
     index = 0
     for face in faces:
         fh, fw = face.shape[:2]
-        view_w = int(fw * 0.62)
+        view_w = int(fw * 1.3)
         view_h = int(view_w * h / w)
-        # ~70% overlap between consecutive views: a 1 m unit panned in ~5 s from ~1 m away,
-        # sampled every 0.7 s, overlaps by ~80%; this is a little harsher than that.
-        lefts = list(np.linspace(0, fw - view_w, 3))
-        for row, top in enumerate(np.arange(0, fh - view_h + 1, view_h * 0.4)):
-            # Serpentine, like a person panning: left to right, then back right to left.
-            for left in (lefts if row % 2 == 0 else lefts[::-1]):
-                jitter = rng.uniform(-0.04, 0.04, 8).reshape(4, 2) * [view_w, view_h]
-                src = np.float32([[left, top], [left + view_w, top], [left + view_w, top + view_h], [left, top + view_h]]) + jitter.astype(np.float32)
-                tilt = rng.uniform(-0.05, 0.05) * w
-                dst = np.float32([[0 + tilt, 0], [w, 0 + abs(tilt) * 0.3], [w - tilt, h], [0, h]])
-                frame = cv2.warpPerspective(face, cv2.getPerspectiveTransform(src, dst), (w, h), borderValue=(200, 200, 200))
-                if rng.random() < 0.1:
-                    frame = cv2.blur(frame, (25, 3))  # motion blur, as when panning too fast
-                cv2.imwrite(str(out_dir / f"{index:04d}.jpg"), frame, [cv2.IMWRITE_JPEG_QUALITY, 92])
-                index += 1
+        left = (fw - view_w) / 2
+        for top in np.arange(-view_h * 0.1, fh - view_h * 0.9, view_h * 0.4):
+            jitter = rng.uniform(-0.03, 0.03, 8).reshape(4, 2) * [view_w, view_h]
+            src = np.float32([[left, top], [left + view_w, top], [left + view_w, top + view_h], [left, top + view_h]]) + jitter.astype(np.float32)
+            tilt = rng.uniform(-0.05, 0.05) * w
+            dst = np.float32([[0 + tilt, 0], [w, 0 + abs(tilt) * 0.3], [w - tilt, h], [0, h]])
+            frame = cv2.warpPerspective(face, cv2.getPerspectiveTransform(src, dst), (w, h), borderValue=(200, 200, 200))
+            if rng.random() < 0.1:
+                frame = cv2.blur(frame, (25, 3))  # motion blur, as when panning too fast
+            cv2.imwrite(str(out_dir / f"{index:04d}.jpg"), frame, [cv2.IMWRITE_JPEG_QUALITY, 92])
+            index += 1
         # Walking to the next unit: a few frames of blank wall break the tracking chain.
         for _ in range(3):
             cv2.imwrite(str(out_dir / f"{index:04d}.jpg"), np.full((h, w, 3), (205, 210, 215), np.uint8))
@@ -209,7 +210,7 @@ def main(seed=11):
         "book_count": len(truth), "legible": sum(b["legible"] for b in truth), "marker_cm": MARKER_CM,
         "unit_faces_cm": [list(np.array(face_a.shape[1::-1]) / PX), list(np.array(face_b.shape[1::-1]) / PX)],
         "books": truth, "frames": frames, "unshelved": left + left_b,
-    }, indent=1))
+    }, indent=1), encoding="utf-8")
     # Chrome's fake camera loops an MJPEG file (compressed, unlike .y4m which was 2 GB here).
     # Each view is held for 1.2 s at 10 fps, like a person pausing on each part of the shelf.
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-framerate", "0.83", "-i", str(OUT / "frames" / "%04d.jpg"),

@@ -129,9 +129,9 @@ def evaluate(packet: dict, truth: dict) -> dict:
 
 def main() -> None:
     sweep_dir, truth_path = Path(sys.argv[1]), Path(sys.argv[2])
-    packet = json.loads((sweep_dir / "claim_packet.json").read_text())
-    results = evaluate(packet, json.loads(truth_path.read_text()))
-    (sweep_dir / "evaluation.json").write_text(json.dumps(results, indent=2))
+    packet = json.loads((sweep_dir / "claim_packet.json").read_text(encoding="utf-8"))
+    results = evaluate(packet, json.loads(truth_path.read_text(encoding="utf-8")))
+    (sweep_dir / "evaluation.json").write_text(json.dumps(results, indent=2), encoding="utf-8")
     for name, r in results.items():
         flag = "PASS" if r.get("pass") else "FAIL"
         detail = {k: v for k, v in r.items() if k not in ("pass", "rows", "worst", "wrong_titles")}

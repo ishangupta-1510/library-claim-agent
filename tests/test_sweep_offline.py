@@ -83,7 +83,7 @@ async def test_sweep_produces_traceable_packet(cfg, monkeypatch):
     assert packet.totals.books_replacement_cost == 0
     assert packet.stages["time_to_packet_s"] >= 0 and "vision_spines" in packet.stages["latency_s"]
 
-    saved = json.loads((out / "claim_packet.json").read_text())
+    saved = json.loads((out / "claim_packet.json").read_text(encoding="utf-8"))
     assert saved["totals"]["book_count"] == packet.totals.book_count
     assert (out / "report.html").read_text(encoding="utf-8").count("<tr>") > 5
     assert any(e["type"] == "inventory" for e in events) and events[-1]["type"] == "packet"

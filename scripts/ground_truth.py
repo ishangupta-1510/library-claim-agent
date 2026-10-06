@@ -40,6 +40,6 @@ def build() -> dict:
 
 if __name__ == "__main__":
     data = build()
-    (ROOT / "ground_truth.json").write_text(json.dumps(data, indent=1))
+    (ROOT / "ground_truth.json").write_text(json.dumps(data, indent=1), encoding="utf-8")
     print(f"{data['book_count']} books ({data['legible']} legible), {len(data['prices'])} prices, "
           f"{len(data['items'])} items -> {ROOT / 'ground_truth.json'}")

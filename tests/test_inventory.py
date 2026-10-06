@@ -65,8 +65,41 @@ def test_conflicting_readings_are_detected():
     assert book.readings_disagree()
 
 
-def test_spine_cut_off_by_the_frame_edge_is_not_read():
-    from library_claim.sweep import _cut_off
+def test_cut_edges_name_the_sides_touching_the_frame():
+    from library_claim.sweep import _cut_edges
 
-    assert _cut_off((0, 100, 40, 600), None, (720, 1280, 3))  # touches the left edge
-    assert not _cut_off((300, 100, 340, 600), None, (720, 1280, 3))
+    assert _cut_edges((0, 100, 40, 600), None, (720, 1280, 3)) == {"left"}
+    assert _cut_edges((300, 0, 340, 720), None, (720, 1280, 3)) == {"top", "bottom"}
+    assert not _cut_edges((300, 100, 340, 600), None, (720, 1280, 3))
+
+
+def C(frame, box, cut=(), title="", legible=False, orientation="upright"):
+    return Sighting(frame, box, True, orientation, title, "", "", title, legible, [], 1.0, frozenset(cut))
+
+
+def test_top_and_bottom_halves_of_one_spine_merge_and_combine_into_its_height():
+    inv = Inventory()
+    inv.add("A", C("f1", (10, 0, 13, 14), cut={"bottom"}))   # sees the top 14 cm, bottom cut off
+    _, new = inv.add("A", C("f2", (10.2, 9, 13.1, 24), cut={"top"}))  # sees the bottom part
+    assert not new and len(inv.books) == 1
+    height, thickness = inv.books[0].dimensions_cm()
+    assert height == 24.0 and thickness == 3.0
+
+
+def test_length_unknown_if_an_end_was_never_seen():
+    inv = Inventory()
+    inv.add("A", C("f1", (10, 0, 13, 14), cut={"bottom"}))
+    assert inv.books[0].dimensions_cm() == (None, 3.0)
+
+
+def test_sideways_cut_does_not_give_thickness():
+    inv = Inventory()
+    inv.add("A", C("f1", (0, 0, 1.4, 24), cut={"left"}))  # only part of its width visible
+    assert inv.books[0].dimensions_cm() == (24.0, None)
+
+
+def test_neighbouring_columns_stay_separate_even_when_partial():
+    inv = Inventory()
+    inv.add("A", C("f1", (10, 0, 13, 14), cut={"bottom"}))
+    inv.add("A", C("f2", (13.2, 9, 16, 24), cut={"top"}))
+    assert len(inv.books) == 2

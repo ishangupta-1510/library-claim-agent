@@ -46,7 +46,7 @@ async def run(args) -> Path:
         if feedback["problems"]:
             print(f"  {feedback['frame_id']} ({path.name}): {feedback['problems']}")
     if args.ar_points:
-        for point in json.loads(Path(args.ar_points).read_text()):
+        for point in json.loads(Path(args.ar_points).read_text(encoding="utf-8")):
             sweep.add_ar_point(point["kind"], point["position"])
     packet = await sweep.finish()
     print(f"Packet: {packet.totals.book_count} books, {packet.totals.books_identified} identified -> {sweep.dir}")
@@ -65,9 +65,9 @@ def main() -> None:
     if args.truth:
         from scripts.evaluate import evaluate
 
-        packet = json.loads((sweep_dir / "claim_packet.json").read_text())
-        results = evaluate(packet, json.loads(Path(args.truth).read_text()))
-        (sweep_dir / "evaluation.json").write_text(json.dumps(results, indent=2))
+        packet = json.loads((sweep_dir / "claim_packet.json").read_text(encoding="utf-8"))
+        results = evaluate(packet, json.loads(Path(args.truth).read_text(encoding="utf-8")))
+        (sweep_dir / "evaluation.json").write_text(json.dumps(results, indent=2), encoding="utf-8")
         for name, r in results.items():
             print(f"{'PASS' if r.get('pass') else 'FAIL':4}  {name:18} "
                   f"{ {k: v for k, v in r.items() if k not in ('pass', 'rows', 'worst', 'wrong_titles')} }")

@@ -49,3 +49,12 @@ def test_items_ranges_and_appraisals():
 def test_room_without_measurement_is_reviewed():
     packet = finalize(_packet())
     assert any(r.ref_id == "room" for r in packet.review_queue)
+
+
+def test_report_and_packet_survive_non_latin_text(tmp_path):
+    """Catalog titles carry diacritics; Windows' default code page cannot write them."""
+    from library_claim.report import write_report
+
+    packet = finalize(_packet([priced(1, 300, title="Ḳuṭub al-Ṣiḥḥa", author="Ibn Sīnā")]))
+    (tmp_path / "claim_packet.json").write_text(packet.model_dump_json(), encoding="utf-8")
+    assert "Ḳuṭub" in write_report(packet, tmp_path).read_text(encoding="utf-8")
