@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Library claim sweep</title>
+<style>
+  :root{--bg:#f7f7f9;--card:#fff;--ink:#1b1b1f;--muted:#6b6b76;--line:#e4e4ea;--warn:#b45309;--ok:#15803d}
+  *{box-sizing:border-box} body{margin:0;font:14px/1.4 system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+  header{display:flex;gap:10px;align-items:center;padding:10px 14px;background:var(--card);border-bottom:1px solid var(--line);flex-wrap:wrap}
+  header h1{font-size:16px;margin:0 auto 0 0} #status{color:var(--muted)}
+  button{font:inherit;padding:8px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);cursor:pointer}
+  button.primary{background:#1b1b1f;color:#fff;border-color:#1b1b1f} button:disabled{opacity:.45;cursor:default}
+  main{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:12px;padding:12px}
+  @media (max-width:860px){main{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px;min-width:0}
+  .card h2{font-size:13px;margin:0 0 8px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  video{width:100%;border-radius:8px;background:#000;max-height:46vh}
+  #warnings{min-height:22px;color:var(--warn);font-weight:600;margin-top:6px}
+  #transcript{height:180px;overflow:auto;font-size:13px} #transcript p{margin:3px 0} .agent{color:#2456b3}
+  table{width:100%;border-collapse:collapse;font-size:12.5px} td,th{padding:4px 5px;border-bottom:1px solid var(--line);text-align:left}
+  #books-wrap{max-height:48vh;overflow:auto} .unread{color:var(--muted);font-style:italic}
+  .stat{display:inline-block;margin-right:14px} .stat b{font-size:18px}
+  #ar-controls{display:none;gap:8px} #packet{display:none;font-weight:600;color:var(--ok)}
+</style></head><body>
+<header>
+  <h1>Library contents claim</h1>
+  <span id="status">Ready</span>
+  <button id="start" class="primary">Start sweep</button>
+  <span id="ar-controls"><button id="corner">Mark corner</button><button id="ceiling">Mark ceiling</button></span>
+  <button id="end" disabled>End sweep</button>
+  <a id="packet" target="_blank">Open claim packet</a>
+</header>
+<main>
+  <section class="card">
+    <h2>Camera</h2>
+    <video id="preview" autoplay playsinline muted></video>
+    <div id="warnings"></div>
+    <h2 style="margin-top:10px">Conversation</h2>
+    <div id="transcript"></div>
+  </section>
+  <section class="card">
+    <h2>Inventory (live)</h2>
+    <div><span class="stat">Books <b id="n-books">0</b></span><span class="stat">Readable <b id="n-legible">0</b></span>
+      <span class="stat">Other items <b id="n-items">0</b></span><span class="stat">Room points <b id="n-points">0</b></span></div>
+    <div id="books-wrap"><table><thead><tr><th>#</th><th>Shelf · pos</th><th>Spine reading</th><th>H × T cm</th></tr></thead><tbody id="books"></tbody></table></div>
+    <h2 style="margin-top:10px">Other contents</h2>
+    <table><tbody id="items"></tbody></table>
+  </section>
+</main>
+<canvas id="small" hidden></canvas><canvas id="large" hidden></canvas>
+<script type="module" src="/static/app.js"></script>
+</body></html>

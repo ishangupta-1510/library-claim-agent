@@ -1,0 +1,208 @@
+"""FastAPI app: the sweep UI, the marker page, saved sweeps, and the live WebSocket.
+
+Run:  uvicorn library_claim.server:app --host 0.0.0.0 --port 8000
+"""
+
+from __future__ import annotations
+
+import asyncio
+import base64
+import contextlib
+import json
+import logging
+from pathlib import Path
+
+import cv2
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.responses import FileResponse, HTMLResponse, Response
+from fastapi.staticfiles import StaticFiles
+
+from .config import LOCALES, settings
+from .live import Narrator, live_config
+from .stages.scale import render_marker
+from .stages.vision import GeminiVision
+from .sweep import SweepSession
+
+logger = logging.getLogger("library_claim")
+logging.basicConfig(level=logging.INFO)
+
+STATIC = Path(__file__).parent / "static"
+MAX_MESSAGE = 4_000_000  # a high-res keyframe as base64
+
+app = FastAPI(title="Library contents claim agent")
+cfg = settings()
+cfg.sweeps_dir.mkdir(parents=True, exist_ok=True)
+app.mount("/sweeps", StaticFiles(directory=cfg.sweeps_dir, html=True), name="sweeps")
+app.mount("/static", StaticFiles(directory=STATIC), name="static")
+
+
+@app.get("/")
+def index() -> FileResponse:
+    return FileResponse(STATIC / "index.html")
+
+
+@app.get("/marker")
+def marker_page() -> FileResponse:
+    return FileResponse(STATIC / "marker.html")
+
+
+@app.get("/marker.png")
+def marker_png(id: int = 0) -> Response:
+    ok, png = cv2.imencode(".png", render_marker(id, 800))
+    return Response(png.tobytes(), media_type="image/png")
+
+
+@app.get("/api/health")
+def health() -> dict:
+    return {"gemini_key": bool(cfg.google_api_key), "serpapi_key": bool(cfg.serpapi_key),
+            "live_model": cfg.live_model, "vision_model": cfg.vision_model, "country": cfg.country,
+            "marker_size_cm": cfg.marker_size_cm}
+
+
+@app.websocket("/ws/sweep")
+async def sweep_socket(websocket: WebSocket) -> None:
+    await websocket.accept()
+    send_lock = asyncio.Lock()
+
+    async def send(payload: dict) -> None:
+        async with send_lock:
+            with contextlib.suppress(Exception):
+                await websocket.send_json(payload)
+
+    if not cfg.google_api_key:
+        await send({"type": "error", "message": "GOOGLE_API_KEY is missing from .env"})
+        await websocket.close()
+        return
+
+    from google import genai
+    from google.genai import types
+
+    client = genai.Client(api_key=cfg.google_api_key)
+    narrator = Narrator()
+    live_ref: dict = {}
+    finishing: dict = {}
+
+    async def tell_agent(text: str, speak: bool) -> None:
+        live = live_ref.get("session")
+        if live is None:
+            return
+        await live.send_client_content(turns=types.Content(role="user", parts=[types.Part(text=text)]), turn_complete=speak)
+
+    async def on_pipeline_event(event: dict) -> None:
+        await send(event)
+        said = narrator.on_event(event)
+        if said:
+            await tell_agent(*said)
+
+    vision = GeminiVision(cfg.google_api_key, cfg.vision_model)
+    device = websocket.headers.get("user-agent", "")[:120]
+    sweep = SweepSession(cfg, vision, on_pipeline_event, device=device)
+    await send({"type": "ready", "sweep_id": sweep.id, "countries": sorted(LOCALES), "country": sweep.country})
+
+    async def end_sweep() -> dict:
+        if "task" not in finishing:
+            finishing["task"] = asyncio.create_task(sweep.finish())
+            await send({"type": "phase", "phase": "processing"})
+        return {"started": True, "message": "Building the claim packet now; a summary will follow."}
+
+    async def run_tool(call) -> dict:
+        args = dict(call.args or {})
+        if call.name == "set_locale":
+            code = str(args.get("country_code", "")).upper()
+            if code not in LOCALES:
+                return {"ok": False, "supported": sorted(LOCALES)}
+            sweep.country = code
+            await send({"type": "locale", "country": code, "currency": LOCALES[code].currency})
+            return {"ok": True, "country": code, "currency": LOCALES[code].currency}
+        if call.name == "note_book_in_view":
+            result = sweep.note_book_in_view(str(args.get("statement", "")))
+        elif call.name == "exclude_shelf_in_view":
+            result = sweep.exclude_shelf_in_view(str(args.get("reason", "")))
+        elif call.name == "answer_art_question":
+            result = sweep.answer_art_question(bool(args.get("is_print")))
+        elif call.name == "end_sweep":
+            result = await end_sweep()
+        else:
+            result = {"error": f"unknown tool {call.name}"}
+        await send({"type": "tool", "name": call.name, "args": args, "result": result})
+        return result
+
+    try:
+        async with client.aio.live.connect(model=cfg.live_model, config=live_config()) as live:
+            live_ref["session"] = live
+            await live.send_client_content(
+                turns=types.Content(role="user", parts=[types.Part(text="[system] The policyholder opened the app. Greet them and start the opening.")]),
+                turn_complete=True,
+            )
+
+            async def browser_to_gemini() -> None:
+                while True:
+                    raw = await websocket.receive_text()
+                    if len(raw) > MAX_MESSAGE:
+                        continue
+                    message = json.loads(raw)
+                    kind = message.get("type")
+                    if kind == "audio":
+                        await live.send_realtime_input(audio=types.Blob(data=base64.b64decode(message["data"]), mime_type="audio/pcm;rate=16000"))
+                    elif kind == "video":
+                        await live.send_realtime_input(video=types.Blob(data=base64.b64decode(message["data"]), mime_type="image/jpeg"))
+                    elif kind == "keyframe":
+                        if "task" in finishing:
+                            continue
+                        feedback = await sweep.add_frame(base64.b64decode(message["data"]))
+                        await send({"type": "feedback", **feedback})
+                        said = narrator.on_frame(feedback)
+                        if said:
+                            await tell_agent(*said)
+                    elif kind == "ar_point":
+                        result = sweep.add_ar_point(str(message.get("kind")), list(message.get("position", [])))
+                        await send({"type": "ar_point", **result})
+                        if result.get("applied"):
+                            await tell_agent(f"[system] Room point recorded ({message.get('kind')}). Floor corners so far: {result['floor_corners']}.", False)
+                    elif kind == "text":
+                        await live.send_client_content(turns=types.Content(role="user", parts=[types.Part(text=str(message.get("text", ""))[:2000])]), turn_complete=True)
+                    elif kind == "end":
+                        await end_sweep()
+                        await tell_agent("[system] The policyholder pressed End sweep. Tell them the packet is being built.", True)
+
+            async def gemini_to_browser() -> None:
+                while True:
+                    async for response in live.receive():
+                        if response.tool_call and response.tool_call.function_calls:
+                            replies = [types.FunctionResponse(id=c.id, name=c.name, response=await run_tool(c))
+                                       for c in response.tool_call.function_calls]
+                            await live.send_tool_response(function_responses=replies)
+                        content = response.server_content
+                        if not content:
+                            continue
+                        if content.interrupted:
+                            await send({"type": "interrupted"})
+                        for speaker, chunk in (("you", content.input_transcription), ("agent", content.output_transcription)):
+                            if chunk and chunk.text:
+                                await send({"type": "transcript", "speaker": speaker, "text": chunk.text})
+                        if content.model_turn and not content.interrupted:
+                            for part in content.model_turn.parts or []:
+                                if part.inline_data and (part.inline_data.mime_type or "").startswith("audio/"):
+                                    await send({"type": "audio", "data": base64.b64encode(part.inline_data.data).decode(),
+                                                "mime": part.inline_data.mime_type})
+                        if content.turn_complete:
+                            await send({"type": "turn_complete"})
+
+            tasks = [asyncio.create_task(browser_to_gemini()), asyncio.create_task(gemini_to_browser())]
+            done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
+            for task in pending:
+                task.cancel()
+            for task in done:
+                task.result()
+    except WebSocketDisconnect:
+        pass
+    except Exception as exc:
+        logger.exception("Live session failed")
+        await send({"type": "error", "message": f"Live session ended: {type(exc).__name__}: {exc}"[:300]})
+    finally:
+        # A dropped connection must not lose the sweep: finish the packet from what was captured.
+        if "task" not in finishing and sweep.frame_log:
+            finishing["task"] = asyncio.create_task(sweep.finish())
+        if "task" in finishing:
+            with contextlib.suppress(Exception):
+                await asyncio.wait_for(asyncio.shield(finishing["task"]), timeout=600)

@@ -115,35 +115,46 @@ class SweepSession:
         return round(time.monotonic() - self.started, 2)
 
     async def add_frame(self, jpeg: bytes) -> dict:
-        """Handle one keyframe; returns the capture feedback the agent can speak."""
+        """Handle one keyframe; returns the capture feedback the agent can speak.
+
+        The OpenCV work (decode, quality, marker, feature matching) runs in a
+        worker thread so the event loop keeps relaying live audio smoothly.
+        Frames are processed one at a time, so the thread never races itself.
+        """
         t0 = time.monotonic()
-        frame_id = f"f{len(self.frame_log):04d}"
-        path = self.dir / "frames" / f"{frame_id}.jpg"
-        path.write_bytes(jpeg)
-        image = cv2.imdecode(np.frombuffer(jpeg, np.uint8), cv2.IMREAD_COLOR)
-        if image is None:
-            return {"frame_id": frame_id, "problems": ["unreadable image"]}
-
-        quality = assess(image)
-        record = {"frame_id": frame_id, "t": self.elapsed(), "path": f"frames/{frame_id}.jpg", "quality": quality.to_dict()}
-        feedback = {"frame_id": frame_id, "problems": quality.problems(), "plane": None, "marker": False}
-
-        if quality.usable:
-            plane, scale, marker = self._register(frame_id, image)
-            record.update(plane=plane.id if plane else None, metric=bool(plane and plane.metric), marker=marker)
-            feedback.update(plane=plane.id if plane else None, marker=marker, metric=bool(plane and plane.metric))
-            if plane is not None:
-                gain = self._coverage_gain(plane, frame_id, image.shape)
-                record["new_coverage"] = round(gain, 2)
-                if gain >= NEW_COVERAGE_FOR_VISION:
-                    await self.queue.put(("spines", frame_id, image, plane, quality))
-            if self.elapsed() - self.last_item_scan >= ITEM_SCAN_EVERY_S:
-                self.last_item_scan = self.elapsed()
-                await self.queue.put(("items", frame_id, image, plane, quality))
-            self.last_frame = (frame_id, image)
-        self.frame_log.append(record)
+        feedback, jobs = await asyncio.to_thread(self._process_frame, jpeg)
+        for job in jobs:
+            await self.queue.put(job)
         self.clock.add("capture_frame", time.monotonic() - t0)
         return feedback
+
+    def _process_frame(self, jpeg: bytes) -> tuple[dict, list[tuple]]:
+        frame_id = f"f{len(self.frame_log):04d}"
+        (self.dir / "frames" / f"{frame_id}.jpg").write_bytes(jpeg)
+        image = cv2.imdecode(np.frombuffer(jpeg, np.uint8), cv2.IMREAD_COLOR)
+        record = {"frame_id": frame_id, "t": self.elapsed(), "path": f"frames/{frame_id}.jpg"}
+        if image is None:
+            self.frame_log.append({**record, "error": "unreadable image"})
+            return {"frame_id": frame_id, "problems": ["unreadable image"]}, []
+
+        quality = assess(image)
+        record["quality"] = quality.to_dict()
+        feedback = {"frame_id": frame_id, "problems": quality.problems(), "plane": None, "marker": False, "metric": False}
+        jobs: list[tuple] = []
+        if quality.usable:
+            plane, _, marker = self._register(frame_id, image)
+            record.update(plane=plane.id, metric=plane.metric, marker=marker)
+            feedback.update(plane=plane.id, marker=marker, metric=plane.metric)
+            gain = self._coverage_gain(plane, frame_id, image.shape)
+            record["new_coverage"] = round(gain, 2)
+            if gain >= NEW_COVERAGE_FOR_VISION:
+                jobs.append(("spines", frame_id, image, plane, quality))
+            if self.elapsed() - self.last_item_scan >= ITEM_SCAN_EVERY_S:
+                self.last_item_scan = self.elapsed()
+                jobs.append(("items", frame_id, image, plane, quality))
+            self.last_frame = (frame_id, image)
+        self.frame_log.append(record)
+        return feedback, jobs
 
     def _new_plane(self, metric: bool) -> Plane:
         plane = Plane(id=f"P{len(self.planes) + 1}", metric=metric)
