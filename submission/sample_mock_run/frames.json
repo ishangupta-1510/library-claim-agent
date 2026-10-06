@@ -1,7 +1,7 @@
 [
  {
   "frame_id": "f0000",
-  "t": 0.02,
+  "t": 0.0,
   "path": "frames/f0000.jpg",
   "quality": {
    "blur_effect": 0.185,
@@ -45,7 +45,7 @@
  },
  {
   "frame_id": "f0002",
-  "t": 0.27,
+  "t": 0.3,
   "path": "frames/f0002.jpg",
   "quality": {
    "blur_effect": 0.188,
@@ -67,7 +67,7 @@
  },
  {
   "frame_id": "f0003",
-  "t": 0.38,
+  "t": 0.44,
   "path": "frames/f0003.jpg",
   "quality": {
    "blur_effect": 0.166,
@@ -89,7 +89,7 @@
  },
  {
   "frame_id": "f0004",
-  "t": 0.47,
+  "t": 0.56,
   "path": "frames/f0004.jpg",
   "quality": {
    "blur_effect": 0.176,
@@ -111,7 +111,7 @@
  },
  {
   "frame_id": "f0005",
-  "t": 0.58,
+  "t": 0.69,
   "path": "frames/f0005.jpg",
   "quality": {
    "blur_effect": 0.173,
@@ -133,7 +133,7 @@
  },
  {
   "frame_id": "f0006",
-  "t": 0.69,
+  "t": 0.81,
   "path": "frames/f0006.jpg",
   "quality": {
    "blur_effect": 0.17,
@@ -155,7 +155,7 @@
  },
  {
   "frame_id": "f0007",
-  "t": 0.8,
+  "t": 0.94,
   "path": "frames/f0007.jpg",
   "quality": {
    "blur_effect": 0.17,
@@ -177,7 +177,7 @@
  },
  {
   "frame_id": "f0008",
-  "t": 0.91,
+  "t": 1.03,
   "path": "frames/f0008.jpg",
   "quality": {
    "blur_effect": 1.0,
@@ -196,7 +196,7 @@
  },
  {
   "frame_id": "f0009",
-  "t": 0.94,
+  "t": 1.08,
   "path": "frames/f0009.jpg",
   "quality": {
    "blur_effect": 1.0,
@@ -215,7 +215,7 @@
  },
  {
   "frame_id": "f0010",
-  "t": 0.97,
+  "t": 1.11,
   "path": "frames/f0010.jpg",
   "quality": {
    "blur_effect": 1.0,
@@ -234,7 +234,7 @@
  },
  {
   "frame_id": "f0011",
-  "t": 1.0,
+  "t": 1.16,
   "path": "frames/f0011.jpg",
   "quality": {
    "blur_effect": 0.197,
@@ -256,7 +256,7 @@
  },
  {
   "frame_id": "f0012",
-  "t": 1.36,
+  "t": 1.52,
   "path": "frames/f0012.jpg",
   "quality": {
    "blur_effect": 0.184,
@@ -278,7 +278,7 @@
  },
  {
   "frame_id": "f0013",
-  "t": 1.45,
+  "t": 1.62,
   "path": "frames/f0013.jpg",
   "quality": {
    "blur_effect": 0.187,
@@ -300,7 +300,7 @@
  },
  {
   "frame_id": "f0014",
-  "t": 1.55,
+  "t": 1.77,
   "path": "frames/f0014.jpg",
   "quality": {
    "blur_effect": 0.759,
@@ -320,7 +320,7 @@
  },
  {
   "frame_id": "f0015",
-  "t": 1.59,
+  "t": 1.81,
   "path": "frames/f0015.jpg",
   "quality": {
    "blur_effect": 0.185,
@@ -342,7 +342,7 @@
  },
  {
   "frame_id": "f0016",
-  "t": 1.69,
+  "t": 1.91,
   "path": "frames/f0016.jpg",
   "quality": {
    "blur_effect": 0.749,
@@ -362,7 +362,7 @@
  },
  {
   "frame_id": "f0017",
-  "t": 1.73,
+  "t": 1.95,
   "path": "frames/f0017.jpg",
   "quality": {
    "blur_effect": 0.188,
@@ -384,7 +384,7 @@
  },
  {
   "frame_id": "f0018",
-  "t": 1.95,
+  "t": 2.19,
   "path": "frames/f0018.jpg",
   "quality": {
    "blur_effect": 0.191,
@@ -406,7 +406,7 @@
  },
  {
   "frame_id": "f0019",
-  "t": 2.22,
+  "t": 2.45,
   "path": "frames/f0019.jpg",
   "quality": {
    "blur_effect": 1.0,
@@ -425,7 +425,7 @@
  },
  {
   "frame_id": "f0020",
-  "t": 2.27,
+  "t": 2.48,
   "path": "frames/f0020.jpg",
   "quality": {
    "blur_effect": 1.0,
@@ -444,7 +444,7 @@
  },
  {
   "frame_id": "f0021",
-  "t": 2.3,
+  "t": 2.52,
   "path": "frames/f0021.jpg",
   "quality": {
    "blur_effect": 1.0,

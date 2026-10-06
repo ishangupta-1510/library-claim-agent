@@ -1,9 +1,9 @@
 {
   "sweep": {
-    "id": "20261006-182700-c0303e",
-    "captured_at": "2026-10-06T12:57:00+00:00",
+    "id": "20261006-193155-9825fc",
+    "captured_at": "2026-10-06T14:01:55+00:00",
     "device": "mock flow (demo footage, recorded answers)",
-    "duration_s": 2.3,
+    "duration_s": 2.6,
     "country": "IN",
     "currency": "INR"
   },
@@ -520,7 +520,7 @@
     },
     {
       "id": "B010",
-      "shelf": "Unit A · Shelf 4",
+      "shelf": "Unit A · Shelf 2",
       "position": 1,
       "frame_ref": "frames/f0003.jpg",
       "status": "identified",
@@ -575,7 +575,7 @@
     },
     {
       "id": "B011",
-      "shelf": "Unit A · Shelf 4",
+      "shelf": "Unit A · Shelf 2",
       "position": 2,
       "frame_ref": "frames/f0003.jpg",
       "status": "identified",
@@ -630,7 +630,7 @@
     },
     {
       "id": "B012",
-      "shelf": "Unit A · Shelf 4",
+      "shelf": "Unit A · Shelf 2",
       "position": 3,
       "frame_ref": "frames/f0003.jpg",
       "status": "identified",
@@ -684,7 +684,7 @@
     },
     {
       "id": "B013",
-      "shelf": "Unit A · Shelf 4",
+      "shelf": "Unit A · Shelf 2",
       "position": 4,
       "frame_ref": "frames/f0004.jpg",
       "status": "unidentified",
@@ -736,7 +736,7 @@
     },
     {
       "id": "B014",
-      "shelf": "Unit A · Shelf 4",
+      "shelf": "Unit A · Shelf 2",
       "position": 5,
       "frame_ref": "frames/f0003.jpg",
       "status": "unidentified",
@@ -788,7 +788,7 @@
     },
     {
       "id": "B015",
-      "shelf": "Unit A · Shelf 4",
+      "shelf": "Unit A · Shelf 2",
       "position": 6,
       "frame_ref": "frames/f0003.jpg",
       "status": "identified",
@@ -844,7 +844,7 @@
     {
       "id": "B016",
       "shelf": "Unit A · Shelf 2",
-      "position": 1,
+      "position": 7,
       "frame_ref": "frames/f0003.jpg",
       "status": "identified",
       "title": "Zero to One",
@@ -898,8 +898,8 @@
     },
     {
       "id": "B017",
-      "shelf": "Unit A · Shelf 3",
-      "position": 1,
+      "shelf": "Unit A · Shelf 2",
+      "position": 8,
       "frame_ref": "frames/f0003.jpg",
       "status": "identified",
       "title": "Nineteen Eighty-Four",
@@ -952,8 +952,8 @@
     },
     {
       "id": "B018",
-      "shelf": "Unit A · Shelf 4",
-      "position": 7,
+      "shelf": "Unit A · Shelf 2",
+      "position": 9,
       "frame_ref": "frames/f0003.jpg",
       "status": "identified",
       "title": "Long Walk to Freedom",
@@ -1007,7 +1007,7 @@
     },
     {
       "id": "B019",
-      "shelf": "Unit A · Shelf 5",
+      "shelf": "Unit A · Shelf 3",
       "position": 3,
       "frame_ref": "frames/f0005.jpg",
       "status": "identified",
@@ -1063,7 +1063,7 @@
     },
     {
       "id": "B020",
-      "shelf": "Unit A · Shelf 5",
+      "shelf": "Unit A · Shelf 3",
       "position": 4,
       "frame_ref": "frames/f0006.jpg",
       "status": "identified",
@@ -1118,7 +1118,7 @@
     },
     {
       "id": "B021",
-      "shelf": "Unit A · Shelf 5",
+      "shelf": "Unit A · Shelf 3",
       "position": 5,
       "frame_ref": "frames/f0005.jpg",
       "status": "identified",
@@ -1173,7 +1173,7 @@
     },
     {
       "id": "B022",
-      "shelf": "Unit A · Shelf 5",
+      "shelf": "Unit A · Shelf 3",
       "position": 6,
       "frame_ref": "frames/f0005.jpg",
       "status": "identified",
@@ -1229,7 +1229,7 @@
     },
     {
       "id": "B023",
-      "shelf": "Unit A · Shelf 5",
+      "shelf": "Unit A · Shelf 3",
       "position": 7,
       "frame_ref": "frames/f0005.jpg",
       "status": "identified",
@@ -1283,7 +1283,7 @@
     },
     {
       "id": "B024",
-      "shelf": "Unit A · Shelf 5",
+      "shelf": "Unit A · Shelf 3",
       "position": 8,
       "frame_ref": "frames/f0005.jpg",
       "status": "identified",
@@ -1338,7 +1338,7 @@
     },
     {
       "id": "B025",
-      "shelf": "Unit A · Shelf 5",
+      "shelf": "Unit A · Shelf 3",
       "position": 9,
       "frame_ref": "frames/f0005.jpg",
       "status": "identified",
@@ -1393,7 +1393,7 @@
     },
     {
       "id": "B026",
-      "shelf": "Unit A · Shelf 5",
+      "shelf": "Unit A · Shelf 3",
       "position": 1,
       "frame_ref": "frames/f0006.jpg",
       "status": "identified",
@@ -1448,7 +1448,7 @@
     },
     {
       "id": "B027",
-      "shelf": "Unit A · Shelf 5",
+      "shelf": "Unit A · Shelf 3",
       "position": 2,
       "frame_ref": "frames/f0006.jpg",
       "status": "identified",
@@ -1503,7 +1503,7 @@
     },
     {
       "id": "B028",
-      "shelf": "Unit A · Shelf 8",
+      "shelf": "Unit A · Shelf 4",
       "position": 1,
       "frame_ref": "frames/f0007.jpg",
       "status": "identified",
@@ -1558,7 +1558,7 @@
     },
     {
       "id": "B029",
-      "shelf": "Unit A · Shelf 8",
+      "shelf": "Unit A · Shelf 4",
       "position": 2,
       "frame_ref": "frames/f0007.jpg",
       "status": "needs_appraisal",
@@ -1613,7 +1613,7 @@
     },
     {
       "id": "B030",
-      "shelf": "Unit A · Shelf 8",
+      "shelf": "Unit A · Shelf 4",
       "position": 3,
       "frame_ref": "frames/f0007.jpg",
       "status": "identified",
@@ -1668,7 +1668,7 @@
     },
     {
       "id": "B031",
-      "shelf": "Unit A · Shelf 8",
+      "shelf": "Unit A · Shelf 4",
       "position": 4,
       "frame_ref": "frames/f0007.jpg",
       "status": "identified",
@@ -1722,8 +1722,8 @@
     },
     {
       "id": "B032",
-      "shelf": "Unit A · Shelf 6",
-      "position": 1,
+      "shelf": "Unit A · Shelf 4",
+      "position": 5,
       "frame_ref": "frames/f0007.jpg",
       "status": "identified",
       "title": "Range",
@@ -1777,8 +1777,8 @@
     },
     {
       "id": "B033",
-      "shelf": "Unit A · Shelf 7",
-      "position": 1,
+      "shelf": "Unit A · Shelf 4",
+      "position": 6,
       "frame_ref": "frames/f0007.jpg",
       "status": "identified",
       "title": "Sapiens",
@@ -1832,8 +1832,8 @@
     },
     {
       "id": "B034",
-      "shelf": "Unit A · Shelf 8",
-      "position": 5,
+      "shelf": "Unit A · Shelf 4",
+      "position": 7,
       "frame_ref": "frames/f0007.jpg",
       "status": "identified",
       "title": "Gitanjali",
@@ -2268,7 +2268,7 @@
     },
     {
       "id": "B042",
-      "shelf": "Unit B · Shelf 4",
+      "shelf": "Unit B · Shelf 2",
       "position": 1,
       "frame_ref": "frames/f0013.jpg",
       "status": "identified",
@@ -2323,7 +2323,7 @@
     },
     {
       "id": "B043",
-      "shelf": "Unit B · Shelf 4",
+      "shelf": "Unit B · Shelf 2",
       "position": 2,
       "frame_ref": "frames/f0013.jpg",
       "status": "identified",
@@ -2378,7 +2378,7 @@
     },
     {
       "id": "B044",
-      "shelf": "Unit B · Shelf 4",
+      "shelf": "Unit B · Shelf 2",
       "position": 3,
       "frame_ref": "frames/f0013.jpg",
       "status": "identified",
@@ -2433,7 +2433,7 @@
     },
     {
       "id": "B045",
-      "shelf": "Unit B · Shelf 4",
+      "shelf": "Unit B · Shelf 2",
       "position": 4,
       "frame_ref": "frames/f0013.jpg",
       "status": "identified",
@@ -2489,7 +2489,7 @@
     {
       "id": "B046",
       "shelf": "Unit B · Shelf 2",
-      "position": 1,
+      "position": 6,
       "frame_ref": "frames/f0015.jpg",
       "status": "identified",
       "title": "The Pragmatic Programmer",
@@ -2542,8 +2542,8 @@
     },
     {
       "id": "B047",
-      "shelf": "Unit B · Shelf 3",
-      "position": 1,
+      "shelf": "Unit B · Shelf 2",
+      "position": 5,
       "frame_ref": "frames/f0015.jpg",
       "status": "identified",
       "title": "Pride and Prejudice",
@@ -2596,8 +2596,8 @@
     },
     {
       "id": "B048",
-      "shelf": "Unit B · Shelf 4",
-      "position": 5,
+      "shelf": "Unit B · Shelf 2",
+      "position": 7,
       "frame_ref": "frames/f0015.jpg",
       "status": "identified",
       "title": "The Namesake",
@@ -2650,7 +2650,7 @@
     },
     {
       "id": "B049",
-      "shelf": "Unit B · Shelf 5",
+      "shelf": "Unit B · Shelf 3",
       "position": 1,
       "frame_ref": "frames/f0015.jpg",
       "status": "identified",
@@ -2706,7 +2706,7 @@
     },
     {
       "id": "B050",
-      "shelf": "Unit B · Shelf 5",
+      "shelf": "Unit B · Shelf 3",
       "position": 2,
       "frame_ref": "frames/f0015.jpg",
       "status": "identified",
@@ -2762,7 +2762,7 @@
     },
     {
       "id": "B051",
-      "shelf": "Unit B · Shelf 5",
+      "shelf": "Unit B · Shelf 3",
       "position": 3,
       "frame_ref": "frames/f0015.jpg",
       "status": "unidentified",
@@ -2814,7 +2814,7 @@
     },
     {
       "id": "B052",
-      "shelf": "Unit B · Shelf 5",
+      "shelf": "Unit B · Shelf 3",
       "position": 4,
       "frame_ref": "frames/f0015.jpg",
       "status": "unidentified",
@@ -2866,7 +2866,7 @@
     },
     {
       "id": "B053",
-      "shelf": "Unit B · Shelf 5",
+      "shelf": "Unit B · Shelf 3",
       "position": 5,
       "frame_ref": "frames/f0015.jpg",
       "status": "identified",
@@ -2922,7 +2922,7 @@
     },
     {
       "id": "B054",
-      "shelf": "Unit B · Shelf 5",
+      "shelf": "Unit B · Shelf 3",
       "position": 6,
       "frame_ref": "frames/f0017.jpg",
       "status": "identified",
@@ -2976,7 +2976,7 @@
     },
     {
       "id": "B055",
-      "shelf": "Unit B · Shelf 5",
+      "shelf": "Unit B · Shelf 3",
       "position": 7,
       "frame_ref": "frames/f0017.jpg",
       "status": "identified",
@@ -3030,7 +3030,7 @@
     },
     {
       "id": "B056",
-      "shelf": "Unit B · Shelf 7",
+      "shelf": "Unit B · Shelf 4",
       "position": 1,
       "frame_ref": "frames/f0018.jpg",
       "status": "identified",
@@ -3086,7 +3086,7 @@
     },
     {
       "id": "B057",
-      "shelf": "Unit B · Shelf 7",
+      "shelf": "Unit B · Shelf 4",
       "position": 2,
       "frame_ref": "frames/f0018.jpg",
       "status": "identified",
@@ -3142,8 +3142,8 @@
     },
     {
       "id": "B058",
-      "shelf": "Unit B · Shelf 6",
-      "position": 1,
+      "shelf": "Unit B · Shelf 4",
+      "position": 3,
       "frame_ref": "frames/f0018.jpg",
       "status": "identified",
       "title": "The Great Gatsby",
@@ -3197,8 +3197,8 @@
     },
     {
       "id": "B059",
-      "shelf": "Unit B · Shelf 7",
-      "position": 3,
+      "shelf": "Unit B · Shelf 4",
+      "position": 4,
       "frame_ref": "frames/f0018.jpg",
       "status": "identified",
       "title": "The Catcher in the Rye",
@@ -3252,8 +3252,8 @@
     },
     {
       "id": "B060",
-      "shelf": "Unit B · Shelf 7",
-      "position": 4,
+      "shelf": "Unit B · Shelf 4",
+      "position": 5,
       "frame_ref": "frames/f0018.jpg",
       "status": "identified",
       "title": "The Body",
@@ -3847,14 +3847,14 @@
   },
   "stages": {
     "latency_s": {
-      "capture_frame": 2.31,
-      "vision_spines": 0.0,
-      "vision_items": 0.02,
+      "capture_frame": 2.55,
+      "vision_spines": 0.02,
+      "vision_items": 0.0,
       "vision_backlog_after_sweep": 0.0,
-      "identification": 10.75,
+      "identification": 10.78,
       "pricing_books": 0.14,
       "pricing_items": 0.0,
-      "pricing_second_locale": 0.02,
+      "pricing_second_locale": 0.01,
       "room": 0.0
     },
     "time_to_packet_s": 11.0,

@@ -30,7 +30,7 @@ ANCHORS_MIN = 3  # read spines that must agree before a frame is moved
 ANCHOR_SHIFT_MIN = 0.3  # ...by at least this share of a spine's thickness
 ANCHOR_SPREAD_MAX = 0.25  # ...and agree to within this share
 SAME_SPINE_OVERLAP = 0.5  # 1-D overlap along the thickness axis to be the same spine
-SHELF_GAP_FRACTION = 0.5  # a new shelf row starts when a box bottom is this far (in book lengths) below the row
+SAME_ROW_SHARE = 0.5  # a book is on the current shelf row when this share of its height lies in the row's band
 
 Box = tuple[float, float, float, float]  # x0, y0, x1, y1
 
@@ -404,17 +404,21 @@ class Inventory:
         planes = sorted({b.plane_id for b in self.books})
         for index, plane_id in enumerate(planes):
             unit = unit_names.get(plane_id) or f"Unit {chr(ord('A') + index)}"
-            books = sorted((b for b in self.books if b.plane_id == plane_id), key=lambda b: b.box[3])
+            # A shelf row is the vertical band its books occupy. A book joins the current row when most of
+            # its height lies inside that band. Comparing bottoms instead split each book of a flat stack
+            # (2-3 cm tall, resting on the one below) into a "shelf" of its own: a 4-shelf unit got 8.
+            books = sorted((b for b in self.books if b.plane_id == plane_id), key=lambda b: (b.box[1] + b.box[3]) / 2)
             rows: list[list[InventoryBook]] = []
+            band = (0.0, 0.0)
             for book in books:
-                x0, y0, x1, y1 = book.box
-                if rows:
-                    row_bottom = statistics.median(b.box[3] for b in rows[-1])
-                    row_height = statistics.median(b.box[3] - b.box[1] for b in rows[-1])
-                    if y1 - row_bottom <= SHELF_GAP_FRACTION * row_height:
-                        rows[-1].append(book)
-                        continue
+                top, bottom = book.box[1], book.box[3]
+                inside = max(0.0, min(bottom, band[1]) - max(top, band[0]))
+                if rows and inside >= SAME_ROW_SHARE * (bottom - top):
+                    rows[-1].append(book)
+                    band = (min(band[0], top), max(band[1], bottom))
+                    continue
                 rows.append([book])
+                band = (top, bottom)
             for row_number, row in enumerate(rows, start=1):
                 for position, book in enumerate(sorted(row, key=lambda b: b.box[0]), start=1):
                     book.shelf = f"{unit} · Shelf {row_number}"

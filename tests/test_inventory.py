@@ -265,3 +265,17 @@ def test_an_excluded_row_stays_excluded_after_relabelling_and_catches_later_book
     by_title = {b.best.title: b for b in inv.books}
     assert by_title["Dune"].excluded and by_title["Sapiens"].excluded and by_title["Later"].excluded
     assert not by_title["Higher"].excluded
+
+
+def test_a_flat_stack_is_on_the_same_shelf_as_the_upright_books_beside_it():
+    inv = Inventory()
+    upright = [C("f1", (x, 4, x + 2.5, 32), title=f"Upright {i}", legible=True) for i, x in enumerate((0, 3, 6))]
+    stack = [C("f1", (10, 32 - 2.5 * (i + 1), 32, 32 - 2.5 * i), title=f"Flat {i}", legible=True, orientation="flat")
+             for i in range(3)]
+    lower = [C("f1", (0, 36, 2.5, 64), title="Lower shelf", legible=True)]
+    for s in upright + stack + lower:
+        inv.add("A", s)
+    inv.assign_shelves()
+    shelves = {b.best.title: b.shelf for b in inv.books}
+    assert {shelves[t] for t in ("Upright 0", "Upright 2", "Flat 0", "Flat 2")} == {"Unit A · Shelf 1"}
+    assert shelves["Lower shelf"] == "Unit A · Shelf 2"
