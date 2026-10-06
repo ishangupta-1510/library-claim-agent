@@ -46,8 +46,9 @@ Restart `python -m library_claim` after editing `.env`; its first lines say whic
 ### Size reference (live sweeps)
 
 Open http://localhost:8000/marker on a second screen (laptop, tablet or phone) at full brightness, or
-print `/marker.png`. Measure the black square with a ruler and set `MARKER_SIZE_CM` in `.env`. Hold or
-stand it flat against each shelving unit at the start of that unit. Without it the sweep still counts
+print `/marker.png`. Measure the black square with a ruler and type it in the **Marker … cm** box next
+to Start sweep (its default comes from `MARKER_SIZE_CM` in `.env`). Hold or stand it flat against each
+shelving unit at the start of that unit. Without it the sweep still counts
 and reads books, but sizes stay empty.
 
 ### Phone (camera + room measurement)
@@ -61,6 +62,19 @@ tailscale serve --bg 8000      # prints https://<this-computer>.<tailnet>.ts.net
 
 Open that address in Chrome on an ARCore phone. **Start AR sweep** adds room measurement: tap
 **Mark corner** at each floor corner and **Mark ceiling** once.
+
+### Live agent on recorded footage (OBS Virtual Camera)
+
+To try the real camera path and the live agent without shelves: make a video of the built-in shelf,
+play it in OBS as a Media Source and start OBS's **Virtual Camera**:
+
+```bash
+ffmpeg -framerate 0.4 -i dev_data/synthetic/frames/%04d.jpg -vf "fps=30,format=yuv420p" synthetic-shelf-sweep.mp4
+```
+
+On the page pick **OBS Virtual Camera** in the camera list, set **Marker** to **10** cm (the marker
+printed in that footage) and press **Start sweep**. Results from this route are on the synthetic
+library, not a real room.
 
 ### Without the browser
 

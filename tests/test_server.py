@@ -49,3 +49,10 @@ def test_mock_flow_needs_no_keys_and_confirms_the_country(monkeypatch):
         ws.send_json({"type": "text", "text": "I'm in India"})
         events = [ws.receive_json() for _ in range(3)]
         assert {"type": "locale", "country": "IN", "currency": "INR"} in events
+
+
+def test_marker_size_from_the_page_is_bounded():
+    from library_claim.server import _marker_cm
+
+    assert _marker_cm("4.3") == 4.3 and _marker_cm("10") == 10.0
+    assert _marker_cm("0") is None and _marker_cm("abc") is None and _marker_cm("500") is None and _marker_cm(None) is None

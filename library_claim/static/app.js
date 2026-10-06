@@ -294,12 +294,18 @@ async function start({ ar = false, demo = false } = {}) {
   } else {
     mediaStream = await navigator.mediaDevices.getUserMedia({
       audio,
-      video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } },
+      // The camera picked in the list (a laptop can have several, e.g. OBS Virtual Camera); else the back camera.
+      video: $("camera").value
+        ? { deviceId: { exact: $("camera").value }, width: { ideal: 1920 }, height: { ideal: 1080 } }
+        : { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } },
     });
     $("preview").srcObject = mediaStream;
+    listCameras();
   }
   const scheme = location.protocol === "https:" ? "wss" : "ws";
-  ws = new WebSocket(`${scheme}://${location.host}/ws/sweep${demo ? "?demo=1" : ""}`);
+  const marker = $("marker-cm").value ? `marker_cm=${encodeURIComponent($("marker-cm").value)}` : "";
+  const query = [demo ? "demo=1" : "", demo ? "" : marker].filter(Boolean).join("&");
+  ws = new WebSocket(`${scheme}://${location.host}/ws/sweep${query ? "?" + query : ""}`);
   ws.onmessage = (e) => handle(JSON.parse(e.data));
   ws.onclose = () => { status("Disconnected"); stopCapture(); };
   await new Promise((resolve, reject) => { ws.onopen = resolve; ws.onerror = reject; });
@@ -316,6 +322,32 @@ const fail = (e) => {
 $("start").onclick = () => start().catch(fail);
 $("start-ar").onclick = () => start({ ar: true }).catch(fail);
 $("start-demo").onclick = () => start({ demo: true }).catch(fail);
+
+// Cameras are named only after the page has camera permission; the list refills once a sweep starts.
+async function listCameras() {
+  const select = $("camera");
+  const chosen = select.value;
+  const cameras = (await navigator.mediaDevices.enumerateDevices()).filter((d) => d.kind === "videoinput");
+  select.replaceChildren(new Option("Default camera", ""),
+    ...cameras.map((c, i) => new Option(c.label || `Camera ${i + 1}`, c.deviceId)));
+  select.value = chosen;
+  return cameras;
+}
+
+// Opening the list the first time asks for camera permission, so the cameras get their names
+// (before it, a browser reports a single unnamed camera).
+$("camera").addEventListener("pointerdown", async () => {
+  const cameras = await listCameras();
+  if (cameras.some((c) => c.label)) return;
+  try {
+    const probe = await navigator.mediaDevices.getUserMedia({ video: true });
+    probe.getTracks().forEach((t) => t.stop());
+    await listCameras();
+  } catch { /* permission refused: the default camera is used */ }
+}, { once: true });
+navigator.mediaDevices?.addEventListener?.("devicechange", listCameras);
+listCameras().catch(() => {});
+fetch("/api/health").then((r) => r.json()).then((h) => { $("marker-cm").value = h.marker_size_cm; }).catch(() => {});
 $("start-mock").onclick = () => startMock().catch(fail);
 fetch("/api/demo").then((r) => r.json()).then((m) => {
   if (m.frames?.length) $("start-demo").style.display = "inline-block";

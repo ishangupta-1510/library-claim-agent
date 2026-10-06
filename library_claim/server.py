@@ -97,6 +97,15 @@ def health() -> dict:
             "marker_size_cm": cfg.marker_size_cm}
 
 
+def _marker_cm(value: str | None) -> float | None:
+    """A marker side length from the page, in cm, if it is a plausible one."""
+    try:
+        size = float(value) if value else None
+    except ValueError:
+        return None
+    return size if size is not None and 1.0 <= size <= 60.0 else None
+
+
 @app.websocket("/ws/sweep")
 async def sweep_socket(websocket: WebSocket) -> None:
     await websocket.accept()
@@ -144,6 +153,10 @@ async def sweep_socket(websocket: WebSocket) -> None:
     vision = GeminiVision(cfg.google_api_key, cfg.vision_model)
     device = websocket.headers.get("user-agent", "")[:120]
     session_cfg = cfg
+    marker_cm = _marker_cm(websocket.query_params.get("marker_cm"))
+    if marker_cm:
+        # The marker shown in this sweep (a phone screen, a print): set on the page, no restart needed.
+        session_cfg = replace(cfg, marker_size_cm=marker_cm)
     manifest = _demo_manifest() if websocket.query_params.get("demo") == "1" else None
     if manifest:
         # The demo footage carries its own marker; its size is part of the footage, not this room's setting.
