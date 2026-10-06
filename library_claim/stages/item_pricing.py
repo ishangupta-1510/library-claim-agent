@@ -69,8 +69,11 @@ async def price_item(
     query = " ".join(part for part in (material, description or category) if part)
     if is_artwork:
         query += " print"
+    failed_before = getattr(client, "failed_searches", 0)
     listings = _trim_outliers([l for l in await client.shopping(query, locale) if l.condition == "new"])
     if not listings:
+        if getattr(client, "failed_searches", 0) > failed_before:
+            return ItemPricing("range", PriceRange(), [f"price search for '{query}' failed (network); retry before settling"])
         return ItemPricing("range", PriceRange(), [f"no listings found for '{query}'"])
     basis = f"interquartile range of {len(listings)} new listing(s) for '{query}'"
     notes = ["brand/model not legible: priced as a market range"]

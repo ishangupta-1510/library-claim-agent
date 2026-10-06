@@ -144,3 +144,27 @@ async def test_cached_search_keeps_its_original_date(tmp_path):
     assert calls == ["Sapiens Harari book"]  # the second run used the cache
     assert a[0].retrieved_at == b[0].retrieved_at != ""
     assert first.live_searches == 1 and second.live_searches == 0
+
+
+async def test_a_search_that_keeps_timing_out_leaves_the_line_unpriced(tmp_path, monkeypatch):
+    import httpx
+
+    from library_claim import net
+    from library_claim.stages.pricing import PriceClient
+
+    monkeypatch.setattr(net.asyncio, "sleep", _no_sleep)
+    attempts = []
+
+    def handler(request):
+        attempts.append(1)
+        raise httpx.ReadTimeout("slow", request=request)
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as http:
+        client = PriceClient(http, "key", cache_dir=tmp_path)
+        listings = await client.shopping("Sapiens Harari book", IN)
+    assert listings == [] and client.failed_searches == 1
+    assert len(attempts) == net.RETRIES + 1  # retried before giving up
+
+
+async def _no_sleep(_):
+    return None

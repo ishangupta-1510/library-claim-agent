@@ -24,6 +24,8 @@ from pathlib import Path
 import httpx
 from rapidfuzz import fuzz
 
+from .. import net
+
 from ..config import Locale
 from ..schemas import Price
 
@@ -162,6 +164,7 @@ class PriceClient:
         self.budget_exhausted = False
         self.raw: list[dict] = []  # every search used for this packet, with its response
         self.live_searches = 0
+        self.failed_searches = 0
         self._fx: dict[tuple[str, str], FxRate] = {}
 
     def _cache_path(self, params: dict) -> Path | None:
@@ -183,9 +186,14 @@ class PriceClient:
         if self.max_live_searches is not None and self.live_searches >= self.max_live_searches:
             self.budget_exhausted = True
             return {}, ""
-        response = await self.http.get(SERPAPI, params={**params, "api_key": self.serpapi_key})
+        response = await net.get(self.http, SERPAPI, params={**params, "api_key": self.serpapi_key}, timeout=45)
         self.live_searches += 1
         retrieved_at = now()
+        if response is None:
+            # Kept failing (timeouts): the line goes unpriced and is flagged, the packet still builds.
+            self.failed_searches += 1
+            self.raw.append({"params": params, "retrieved_at": retrieved_at, "status": "failed", "response": {}})
+            return {}, ""
         payload = response.json() if response.status_code == 200 else {"error": response.text[:200]}
         entry = {"params": params, "retrieved_at": retrieved_at, "status": response.status_code, "response": payload}
         self.raw.append(entry)
@@ -210,8 +218,8 @@ class PriceClient:
 
     async def fx(self, base: str, quote: str) -> FxRate | None:
         if (base, quote) not in self._fx:
-            response = await self.http.get(FX_API, params={"from": base, "to": quote})
-            if response.status_code != 200:
+            response = await net.get(self.http, FX_API, params={"from": base, "to": quote})
+            if response is None or response.status_code != 200:
                 return None
             payload = response.json()
             self._fx[(base, quote)] = FxRate(float(payload["rates"][quote]), payload["date"])
@@ -258,6 +266,7 @@ async def price_book(
 
     query = f"{isbn}" if isbn else f"{title} {author} book"
     retrieved_at = now()
+    failed_before = getattr(client, "failed_searches", 0)
     listings = [l for l in await client.shopping(query, locale) if relevant(l.title, title, author)]
     new = pick(listings, "new")
     used = pick(listings, "used")
@@ -273,7 +282,9 @@ async def price_book(
             if converted:
                 used_value = converted
                 out_notes.append(f"used value converted from {fallback.country} eBay listings")
-    if replacement.amount is None and getattr(client, "budget_exhausted", False):
+    if replacement.amount is None and getattr(client, "failed_searches", 0) > failed_before:
+        out_notes.append("not priced: the price search failed (network); retry before settling")
+    elif replacement.amount is None and getattr(client, "budget_exhausted", False):
         out_notes.append("not priced: price-search budget for this run was used up")
     elif replacement.amount is None:
         out_notes.append("no new listing found in local market")

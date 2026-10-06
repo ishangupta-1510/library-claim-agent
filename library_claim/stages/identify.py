@@ -18,6 +18,8 @@ from dataclasses import dataclass, field
 import httpx
 from rapidfuzz import fuzz
 
+from .. import net
+
 GOOGLE_BOOKS = "https://www.googleapis.com/books/v1/volumes"
 OPEN_LIBRARY = "https://openlibrary.org/search.json"
 
@@ -161,14 +163,14 @@ async def fetch_candidates(
     if google_api_key:
         # Keyless access shares a global daily quota that is routinely exhausted (HTTP 429).
         params["key"] = google_api_key
-    google = await client.get(GOOGLE_BOOKS, params=params)
-    if google.status_code == 200:
+    google = await net.get(client, GOOGLE_BOOKS, params=params)
+    if google is not None and google.status_code == 200:
         candidates += _google_candidates(google.json())
     params = {"title": reading.title, "limit": 10, "fields": "key,title,subtitle,author_name,publisher,first_publish_year"}
     if reading.author:
         params["author"] = reading.author
-    library = await client.get(OPEN_LIBRARY, params=params)
-    if library.status_code == 200:
+    library = await net.get(client, OPEN_LIBRARY, params=params)
+    if library is not None and library.status_code == 200:
         candidates += _openlibrary_candidates(library.json())
     return candidates
 
@@ -239,11 +241,11 @@ def pin_edition(result: Identification, spine_publisher: str, editions: list[Edi
 
 async def fetch_editions(work_url: str, client: httpx.AsyncClient) -> list[Edition]:
     """All editions of an Open Library work (publisher, ISBN-13, year, language)."""
-    response = await client.get(
-        f"{work_url}/editions.json",
+    response = await net.get(
+        client, f"{work_url}/editions.json",
         params={"limit": 1000, "fields": "key,publishers,isbn_13,publish_date,languages"},
     )
-    if response.status_code != 200:
+    if response is None or response.status_code != 200:
         return []
     editions = []
     for entry in response.json().get("entries", []):

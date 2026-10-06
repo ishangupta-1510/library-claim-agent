@@ -163,21 +163,22 @@ def build_unit(name, books, rng, width_cm=50, shelf_heights=(34, 34, 34, 30)):
 
 
 def pan_frames(faces, out_dir, rng, size=(1280, 720)):
-    """A handheld pan down each unit, framed like a phone held ~60 cm from a narrow bookcase.
+    """A handheld pan down each unit, framed like a phone held ~70 cm from a narrow bookcase.
 
-    Each view is 1.3x the unit's width (65 cm for a 50 cm unit), so a whole shelf
-    row fits in one frame, as in a real sweep. Consecutive views overlap ~60%
-    vertically (a 0.7 s keyframe interval at a slow downward pan).
+    Each view is 1.8x the unit's width (90 x 50 cm for a 50 cm unit), so whole
+    shelf rows (34 cm) fit inside frames, as in a real sweep. Consecutive views
+    overlap ~70% vertically (a 0.7 s keyframe interval at a slow downward pan),
+    which puts every row wholly inside at least one frame.
     """
     out_dir.mkdir(parents=True, exist_ok=True)
     w, h = size
     index = 0
     for face in faces:
         fh, fw = face.shape[:2]
-        view_w = int(fw * 1.3)
+        view_w = int(fw * 1.8)
         view_h = int(view_w * h / w)
         left = (fw - view_w) / 2
-        for top in np.arange(-view_h * 0.1, fh - view_h * 0.9, view_h * 0.4):
+        for top in np.arange(-view_h * 0.1, fh - view_h * 0.9, view_h * 0.3):
             jitter = rng.uniform(-0.03, 0.03, 8).reshape(4, 2) * [view_w, view_h]
             src = np.float32([[left, top], [left + view_w, top], [left + view_w, top + view_h], [left, top + view_h]]) + jitter.astype(np.float32)
             tilt = rng.uniform(-0.05, 0.05) * w
