@@ -42,7 +42,10 @@ async def run(args) -> Path:
     frames = sorted(Path(args.frames).glob("*.jpg"))
     print(f"Replaying {len(frames)} frames into sweep {sweep.id}")
     for path in frames:
+        sent = time.monotonic()
         feedback = await sweep.add_frame(path.read_bytes())
+        # Arrive like a capture does: the phone client sends a keyframe at most every 0.7 s.
+        await asyncio.sleep(max(0.0, args.interval - (time.monotonic() - sent)))
         if feedback["problems"]:
             print(f"  {feedback['frame_id']} ({path.name}): {feedback['problems']}")
     if args.ar_points:
@@ -60,6 +63,8 @@ def main() -> None:
     parser.add_argument("--marker-cm", type=float)
     parser.add_argument("--ar-points")
     parser.add_argument("--price-budget", type=int, help="cap on live price searches for this run")
+    parser.add_argument("--interval", type=float, default=0.7,
+                        help="seconds between keyframes, as captured (0 = as fast as possible)")
     args = parser.parse_args()
     sweep_dir = asyncio.run(run(args))
     if args.truth:

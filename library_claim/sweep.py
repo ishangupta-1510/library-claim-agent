@@ -32,7 +32,7 @@ from .config import Settings, locale_for
 from .report import write_report
 from .schemas import Book, ClaimPacket, Dimensions, Item, Price, PriceRange, Room, Sweep
 from .stages import identify as identify_stage
-from .stages.inventory import Inventory, InventoryBook, Sighting
+from .stages.inventory import Inventory, InventoryBook, Sighting, orientation_of
 from .stages.item_pricing import price_item
 from .stages.pricing import PriceClient, price_book
 from .stages.quality import FrameQuality, QualityMeter
@@ -45,7 +45,14 @@ from .totals import finalize
 Emit = Callable[[dict], Awaitable[None]]
 
 NEW_COVERAGE_FOR_VISION = 0.5  # each spine still lands in 2-3 vision frames at ~70% frame overlap
+# Coverage counts only the inside of a sent frame: spines in this border band are usually cut off,
+# so the band is not "seen" until another frame shows it away from its edge.
+COVERAGE_INSET = 0.12
+# When a pass over a unit ends, its last unsent frame goes to vision if this share of it is still unseen.
+# The end of a pass is where the last row (often the bottom shelf) is seen whole for the only time.
+END_OF_PASS_GAIN = 0.2
 ITEM_SCAN_EVERY_S = 6.0
+VISION_CONCURRENCY = 3
 COVERAGE_CELL = 2.0  # plane units per coverage cell (cm on metric planes)
 RECTIFIED_PX_PER_CM = 12.0  # fallback only; normally the frame's native resolution is kept
 MIN_RECTIFIED_PX_PER_CM = 8.0
@@ -121,6 +128,34 @@ def _cut_edges(box_px, view, shape) -> frozenset[str]:
     return frozenset(cut)
 
 
+REPEAT_CONFIDENCE = 0.6  # below the review bar, so a suspected misread is checked before it is paid
+
+
+def _flag_repeated_titles(records: list[Book], books: list[InventoryBook]) -> None:
+    """The same title on two spines: keep the well-seen one, send the weakly seen ones to review.
+
+    Two copies of one book are rare, while the vision model sometimes repeats
+    a neighbour's title for a spine it saw only partly. A copy is weakly seen
+    when it rests on a single sighting or only on partial ones; its confidence
+    drops below the review bar and the note names the other copy.
+    """
+    groups: dict[str, list[int]] = {}
+    for i, record in enumerate(records):
+        if record.status == "identified" and record.title:
+            groups.setdefault(record.title.lower(), []).append(i)
+    for indices in groups.values():
+        if len(indices) < 2:
+            continue
+        for i in indices:
+            sightings = books[i].sightings
+            if len(sightings) > 1 and not all(s.partial for s in sightings if s.legible):
+                continue
+            others = ", ".join(records[j].id for j in indices if j != i)
+            records[i].id_confidence = min(records[i].id_confidence, REPEAT_CONFIDENCE)
+            records[i].notes.append(f"same title also read on {others}; this spine was seen only partly or once, "
+                                    "so the reading may be a misread: check the frame")
+
+
 def _spread(items: list, n: int) -> list:
     """Up to n items evenly spread over the list (always including the last)."""
     if len(items) <= n:
@@ -141,6 +176,8 @@ class Plane:
     # Features of registered frames, kept to rejoin fragments of this unit later (loop closure).
     keyframes: list[tuple[str, Features]] = field(default_factory=list)
     created_at_frame: int = 0
+    # The latest usable frame not sent to vision: (frame_id, image, quality). Sent when the pass ends if it adds enough.
+    held: tuple | None = None
 
 
 @dataclass
@@ -175,12 +212,16 @@ class SweepSession:
         self.planes: list[Plane] = []
         self.current: Plane | None = None
         self.last_frame: tuple[str, np.ndarray] | None = None
+        self.pass_plane: Plane | None = None  # the unit the current pass is on
         self.recent_frames: list[tuple[str, Features]] = []  # registered frames of the current unit, with features
         self.frame_log: list[dict] = []
         self.item_sightings: list[dict] = []
         self.last_item_scan = -ITEM_SCAN_EVERY_S
         self.queue: asyncio.Queue = asyncio.Queue()
-        self.worker = asyncio.create_task(self._vision_worker())
+        # Several vision calls in flight (the client's per-minute limiter still applies): one call takes
+        # 5-15 s, so a single worker left most of a sweep's frames waiting until after it ended.
+        # Inventory updates stay safe: each runs synchronously on the event loop once its call returns.
+        self.workers = [asyncio.create_task(self._vision_worker()) for _ in range(VISION_CONCURRENCY)]
         self.clock = StageClock()
         self.ar_points: list[dict] = []
         self.notes: list[dict] = []  # policyholder statements, with the book/item they apply to
@@ -188,6 +229,8 @@ class SweepSession:
         self.art_answers: dict[int, bool] = {}  # item sighting index -> is print
         self.ended_at: float | None = None
         self.merges: list[dict] = []  # loop closures, for the stage report
+        self.split_merges = 0  # spines a detection split in two, merged after the sweep
+        self.service_events: list[str] = []  # services that degraded during the run, for the stage report
 
     # ---------------- during the sweep ----------------
 
@@ -232,10 +275,17 @@ class SweepSession:
         if plane is not None:
             record.update(plane=plane.id, metric=plane.metric, marker=marker)
             feedback.update(plane=plane.id, marker=marker, metric=plane.metric)
+            if self.pass_plane is not None and self.pass_plane is not plane:
+                jobs += self._end_pass(self.pass_plane)
+            self.pass_plane = plane
             gain = self._coverage_gain(plane, frame_id, image.shape)
             record["new_coverage"] = round(gain, 2)
             if gain >= NEW_COVERAGE_FOR_VISION:
+                self._mark_covered(plane, frame_id, image.shape)
                 jobs.append(("spines", frame_id, image, plane, quality))
+                plane.held = None
+            else:
+                plane.held = (frame_id, image, quality)
             if self.elapsed() - self.last_item_scan >= ITEM_SCAN_EVERY_S:
                 self.last_item_scan = self.elapsed()
                 jobs.append(("items", frame_id, image, plane, quality))
@@ -320,6 +370,9 @@ class SweepSession:
                     s.box_plane = _map_box(s.box_plane, into_from_fragment)
                     s.metric = into.metric
         into.keyframes.extend(fragment.keyframes)
+        into.held, fragment.held = fragment.held or into.held, None
+        if self.pass_plane is fragment:
+            self.pass_plane = into
         into.covered.clear()  # coverage cells were in the fragment's units; recomputed as frames arrive
         self.planes.remove(fragment)
         self.recent_frames = [(fid, f) for fid, f in self.recent_frames if fid in into.from_frame]
@@ -363,29 +416,46 @@ class SweepSession:
         plane.covered.clear()
         plane.metric = True
 
-    def _footprint(self, plane: Plane, frame_id: str, shape) -> np.ndarray:
+    def _footprint(self, plane: Plane, frame_id: str, shape, inset: float = 0.0) -> np.ndarray:
         h, w = shape[:2]
-        corners = np.array([[[0, 0]], [[w, 0]], [[w, h]], [[0, h]]], np.float64)
+        dx, dy = inset * w, inset * h
+        corners = np.array([[[dx, dy]], [[w - dx, dy]], [[w - dx, h - dy]], [[dx, h - dy]]], np.float64)
         return cv2.perspectiveTransform(corners, plane.from_frame[frame_id]).reshape(4, 2)
 
-    def _coverage_gain(self, plane: Plane, frame_id: str, shape) -> float:
-        """Share of this frame's footprint on the plane not yet sent to vision."""
-        quad = self._footprint(plane, frame_id, shape)
+    def _cells(self, plane: Plane, frame_id: str, shape, inset: float = 0.0) -> set[tuple[int, int]] | None:
+        """Coverage cells inside the frame's footprint on the plane (None if the footprint is degenerate-huge)."""
+        quad = np.clip(self._footprint(plane, frame_id, shape, inset), -5000, 5000)
         cell = COVERAGE_CELL if plane.metric else 20.0
-        quad = np.clip(quad, -5000, 5000)
         (x0, y0), (x1, y1) = quad.min(axis=0), quad.max(axis=0)
         xs = np.arange(np.floor(x0 / cell), np.ceil(x1 / cell))
         ys = np.arange(np.floor(y0 / cell), np.ceil(y1 / cell))
         if len(xs) * len(ys) > 400_000:
-            return 1.0
+            return None
         contour = quad.astype(np.float32).reshape(-1, 1, 2)
-        cells = {(int(x), int(y)) for x in xs for y in ys if cv2.pointPolygonTest(contour, ((x + 0.5) * cell, (y + 0.5) * cell), False) >= 0}
-        if not cells:
-            return 0.0
-        gain = len(cells - plane.covered) / len(cells)
-        if gain >= NEW_COVERAGE_FOR_VISION:
-            plane.covered |= cells
-        return gain
+        return {(int(x), int(y)) for x in xs for y in ys if cv2.pointPolygonTest(contour, ((x + 0.5) * cell, (y + 0.5) * cell), False) >= 0}
+
+    def _coverage_gain(self, plane: Plane, frame_id: str, shape) -> float:
+        """Share of this frame's footprint on the plane not yet seen whole (inside a frame sent to vision)."""
+        cells = self._cells(plane, frame_id, shape)
+        if cells is None:
+            return 1.0
+        return len(cells - plane.covered) / len(cells) if cells else 0.0
+
+    def _mark_covered(self, plane: Plane, frame_id: str, shape) -> None:
+        plane.covered |= self._cells(plane, frame_id, shape, COVERAGE_INSET) or set()
+
+    def _end_pass(self, plane: Plane) -> list[tuple]:
+        """The capture moved off this unit (or the sweep ended): send its last frame if it shows unseen shelf."""
+        held, plane.held = plane.held, None
+        if held is None or held[0] not in plane.from_frame:
+            return []
+        frame_id, image, quality = held
+        gain = self._coverage_gain(plane, frame_id, image.shape)
+        if gain < END_OF_PASS_GAIN:
+            return []
+        self._mark_covered(plane, frame_id, image.shape)
+        self.frame_log[int(frame_id[1:])]["end_of_pass_gain"] = round(gain, 2)
+        return [("spines", frame_id, image, plane, quality)]
 
     async def _vision_worker(self) -> None:
         while True:
@@ -428,14 +498,12 @@ class SweepSession:
         payload = await self._call_vision("vision_spines", jpeg.tobytes(), SPINE_PROMPT, SPINE_SCHEMA, frame_id)
         detections = parse_spines(payload, sent.shape[1], sent.shape[0])
 
-        new_books = 0
+        sightings = []
         for det in detections:
+            # The reading is kept even when the spine is cut off: the sighting is marked
+            # partial, a whole reading from another frame is preferred, and a partial
+            # one is only identified together with a matching author.
             cut = _cut_edges(det.box_px, view, image.shape)
-            if cut and det.legible:
-                # Part of this spine is outside the frame, so its text is partial
-                # ("MELUHA" for "The Immortals of Meluha"). Count it; read it elsewhere.
-                det.title = det.author = ""
-                det.legible = False
             if view is not None:
                 x0, y0, x1, y1 = det.box_px
                 ox, oy = view.origin_cm
@@ -443,10 +511,12 @@ class SweepSession:
             else:
                 pts = to_plane_cm(PlaneScale(homography, -1, 1, 1, 0), np.array([[det.box_px[0], det.box_px[1]], [det.box_px[2], det.box_px[3]]]))
                 box = (float(pts[0, 0]), float(pts[0, 1]), float(pts[1, 0]), float(pts[1, 1]))
-            sighting = Sighting(frame_id, box, plane.metric, det.orientation, det.title, det.author, det.publisher,
+            sighting = Sighting(frame_id, box, plane.metric, orientation_of(box, det.orientation, cut), det.title, det.author, det.publisher,
                                 det.all_text, det.legible, det.age_cues, 1 - quality.blur_effect, cut)
-            _, is_new = self.inventory.add(plane.id, sighting)
-            new_books += is_new
+            sightings.append(sighting)
+        new_books, shift = self.inventory.add_frame(plane.id, sightings)
+        if any(shift):
+            self.frame_log[int(frame_id[1:])]["text_anchor_shift"] = [round(v, 2) for v in shift]
         self.inventory.assign_shelves()
         legible = sum(d.legible for d in detections)
         await self.emit({
@@ -547,16 +617,23 @@ class SweepSession:
         duration = round(self.ended_at - self.started, 1)
         await self.emit({"type": "phase", "phase": "processing"})
         t0 = time.monotonic()
+        for plane in self.planes:
+            for job in self._end_pass(plane):
+                await self.queue.put(job)
         await self.queue.join()
-        self.worker.cancel()
+        for worker in self.workers:
+            worker.cancel()
         self.clock.add("vision_backlog_after_sweep", time.monotonic() - t0)
+        self.split_merges = self.inventory.resolve_splits()
         self.inventory.assign_shelves()
 
         locale = locale_for(self.country)
         fallback = locale_for(self.settings.compare_country)
         async with httpx.AsyncClient(timeout=30) as http:
             prices = PriceClient(http, self.settings.serpapi_key, max_live_searches=self.settings.price_search_budget)
-            books = await self._identify_and_price(http, prices, locale, fallback)
+            catalogs = identify_stage.Catalogs(http, self.settings.google_api_key)
+            books = await self._identify_and_price(catalogs, prices, locale, fallback)
+            self.service_events += catalogs.events
             items = await self._price_items(prices, locale)
             comparison = await self._locale_comparison(books, prices, fallback)
             self.clock.count("pricing_searches", searches=prices.live_searches, cached=len(prices.raw) - prices.live_searches)
@@ -574,6 +651,7 @@ class SweepSession:
         finalize(packet)
         packet.stages = self._stage_report(time.monotonic() - self.ended_at)
         (self.dir / "frames.json").write_text(json.dumps(self.frame_log, indent=1), encoding="utf-8")
+        (self.dir / "raw" / "inventory.json").write_text(json.dumps(self._inventory_trail(), indent=1), encoding="utf-8")
         (self.dir / "claim_packet.json").write_text(packet.model_dump_json(indent=2), encoding="utf-8")
         write_report(packet, self.dir)
         await self.emit({"type": "packet", "sweep_id": self.id, "totals": packet.totals.model_dump(),
@@ -583,19 +661,19 @@ class SweepSession:
     def _notes_for(self, book: InventoryBook) -> list[str]:
         return [n["statement"] for n in self.notes if n["target"] == id(book)]
 
-    async def _identify_and_price(self, http, prices, locale, fallback) -> list[Book]:
+    async def _identify_and_price(self, catalogs, prices, locale, fallback) -> list[Book]:
         t_id = time.monotonic()
         sem = asyncio.Semaphore(4)
         cache: dict[tuple[str, str, str], identify_stage.Identification] = {}
 
         async def ident(book: InventoryBook):
             best = book.best
-            key = (best.title.lower(), best.author.lower(), best.publisher.lower())
+            key = (best.title.lower(), best.author.lower(), best.publisher.lower(), best.partial)
             if key not in cache:
                 async with sem:
                     cache[key] = await identify_stage.identify(
-                        identify_stage.SpineReading(best.title, best.author, best.publisher, best.all_text),
-                        http, self.settings.google_api_key)
+                        identify_stage.SpineReading(best.title, best.author, best.publisher, best.all_text, best.partial),
+                        catalogs)
             return cache[key]
 
         idents = await asyncio.gather(*(ident(b) for b in self.inventory.books))
@@ -642,6 +720,7 @@ class SweepSession:
                 excluded=book.shelf in self.excluded_shelves,
             )
             out.append(record)
+        _flag_repeated_titles(out, self.inventory.books)
         return out
 
     async def _price_items(self, prices, locale) -> list[Item]:
@@ -709,6 +788,15 @@ class SweepSession:
             total += width * height / 10_000
         return round(total, 2) if total else None
 
+    def _inventory_trail(self) -> list[dict]:
+        """Every sighting behind every book (frame, plane box, edges cut, reading), in packet order."""
+        return [{
+            "book_id": f"B{i:03d}", "plane": book.plane_id, "orientation": book.orientation,
+            "sightings": [{"frame_id": s.frame_id, "box_plane": [round(v, 2) for v in s.box_plane],
+                           "orientation": s.orientation, "cut": sorted(s.cut), "legible": s.legible,
+                           "title": s.title, "author": s.author} for s in book.sightings],
+        } for i, book in enumerate(self.inventory.books, start=1)]
+
     def _stage_report(self, after_sweep_s: float) -> dict:
         usage = self.clock.usage
         tokens_in = sum(u.get("input_tokens", 0) for u in usage.values())
@@ -721,6 +809,9 @@ class SweepSession:
             "usage": usage,
             "frames": len(self.frame_log),
             "loop_closures": self.merges,
+            # Degraded services during the run (e.g. a catalog skipped), so a reviewer knows why lookups are thin.
+            "service_events": self.service_events,
+            "split_spines_merged": self.split_merges,
             "units": len([p for p in self.planes if any(b.plane_id == p.id for b in self.inventory.books)]),
             "frames_sent_to_vision": usage.get("vision_spines", {}).get("calls", 0) + usage.get("vision_items", {}).get("calls", 0),
             "cost_usd_estimate": {

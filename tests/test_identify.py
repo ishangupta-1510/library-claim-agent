@@ -78,3 +78,64 @@ def test_foreign_language_editions_ignored():
     editions = [Edition("Penguin", "9788700000000", "2019", "dan", "u1")]
     result = pin_edition(_work(), "Penguin", editions)
     assert result.isbn == "" and result.edition == ""
+
+
+def test_a_partial_reading_needs_the_author():
+    from library_claim.stages.identify import Candidate, SpineReading, score
+
+    cand = Candidate("Homo Deus", ["Yuval Noah Harari"], "Vintage", "", "2017", "Google Books", "u")
+    assert not score(SpineReading("Homo Deus", "", "", "", partial=True), cand)[0]
+    accepted, _, reasons = score(SpineReading("Homo Deus", "Yuval Noah Harari", "", "", partial=True), cand)
+    assert accepted and "read from a spine partly outside the frame" in reasons
+    assert not score(SpineReading("DEUS", "Yuval Noah Harari", "", "", partial=True), cand)[0]
+
+
+def test_accented_and_native_script_author_names_match():
+    from library_claim.stages.identify import score
+
+    ikigai = Candidate("Ikigai", ["Héctor García", "Francesc Miralles"], "", "", "2016", "Open Library", "u")
+    assert score(SpineReading("IKIGAI", "Hector Garcia", "", ""), ikigai)[0]
+    wood = Candidate("Norwegian Wood", ["村上春樹"], "", "", "1987", "Open Library", "u",
+                     author_aliases=["MURAKAMI HARUKI", "村上春树", "Haruki Murakami"])
+    result = choose(SpineReading("NORWEGIAN WOOD", "Haruki Murakami", "", ""), [wood])
+    assert result.status == "identified" and result.author == "Haruki Murakami"
+
+
+def test_subtitle_folded_into_the_catalog_title_still_matches():
+    cand = Candidate("Man's Search for Meaning : An Introduction to Logotherapy", ["Viktor Emil Frankl"], "", "", "1959",
+                     "Open Library", "u")
+    assert choose(SpineReading("MAN'S SEARCH FOR MEANING", "Viktor E. Frankl", "", ""), [cand]).status == "identified"
+
+
+def test_folded_subtitle_is_not_shown_as_the_title():
+    cand = Candidate("Man's Search for Meaning : An Introduction to Logotherapy", ["Viktor Emil Frankl"], "", "", "1959",
+                     "Open Library", "u")
+    assert choose(SpineReading("MAN'S SEARCH FOR MEANING", "Frankl", "", ""), [cand]).title == "Man's Search for Meaning"
+
+
+async def test_google_books_is_dropped_for_the_run_once_unusable(monkeypatch):
+    import httpx
+
+    from library_claim import net
+    from library_claim.stages.identify import Catalogs, fetch_candidates
+
+    async def no_sleep(_):
+        return None
+
+    monkeypatch.setattr(net.asyncio, "sleep", no_sleep)
+    calls = []
+
+    def handler(request):
+        calls.append((request.url.host, "key" in request.url.params))
+        if request.url.host == "www.googleapis.com":
+            return httpx.Response(401 if "key" in request.url.params else 429, json={})
+        return httpx.Response(200, json={"docs": [{"title": "Ikigai", "author_name": ["Héctor García"], "key": "/works/X"}]})
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as http:
+        catalogs = Catalogs(http, "gemini-only-key")
+        first = await fetch_candidates(SpineReading("IKIGAI", "Hector Garcia", "", ""), catalogs)
+        google_calls = sum(host == "www.googleapis.com" for host, _ in calls)
+        second = await fetch_candidates(SpineReading("SAPIENS", "Harari", "", ""), catalogs)
+    assert first and second  # Open Library still answers
+    assert sum(host == "www.googleapis.com" for host, _ in calls) == google_calls  # no Google calls after it failed
+    assert len(catalogs.events) == 2 and not catalogs.google_available

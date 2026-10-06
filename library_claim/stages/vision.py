@@ -16,6 +16,8 @@ import time
 from dataclasses import dataclass, field
 from typing import Protocol
 
+from rapidfuzz import fuzz
+
 SPINE_PROMPT = """You are cataloguing books on a shelf for an insurance record.
 
 Find EVERY book whose spine is visible: upright books, books lying flat, and books in stacks.
@@ -137,11 +139,16 @@ def parse_spines(payload: dict, width: int, height: int) -> list[SpineDetection]
         legible = bool(book.get("legible"))
         # If the model says the title is not legible, discard any title it wrote anyway.
         title = (book.get("title") or "").strip() if legible else ""
+        author = (book.get("author") or "").strip() if legible else ""
+        if title and author and fuzz.ratio(title.lower(), author.lower()) >= 90:
+            # The author's name copied into the title (the title was cut off or unread):
+            # identifying "Michelle Obama" as a title matched a biography instead of "Becoming".
+            title = ""
         out.append(SpineDetection(
             box_px=box,
             orientation=book.get("orientation") or "upright",
             title=title,
-            author=(book.get("author") or "").strip() if legible else "",
+            author=author,
             publisher=(book.get("publisher") or "").strip(),
             all_text=(book.get("all_text") or "").strip(),
             legible=legible and bool(title),

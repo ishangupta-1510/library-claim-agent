@@ -46,15 +46,17 @@ def evaluate(packet: dict, truth: dict) -> dict:
     legible_truth = [b for b in true_books if b.get("legible") and b.get("title")]
     identified = [b for b in books if b["status"] in ("identified", "needs_appraisal") and b.get("title")]
     unmatched_truth = list(legible_truth)
-    correct, wrong = 0, []
-    for book in identified:
+    correct, wrong_books = 0, []
+    # Confident identifications claim truth rows first, so a low-confidence repeat of a title is the one marked wrong.
+    for book in sorted(identified, key=lambda b: -b.get("id_confidence", 0)):
         match = next((t for t in unmatched_truth if _same_title(book["title"], t["title"])), None)
         if match:
             correct += 1
             unmatched_truth.remove(match)
         else:
-            wrong.append(book["title"])
-    confident_wrong = [b for b in identified if b["title"] in wrong and b.get("id_confidence", 0) >= 0.75]
+            wrong_books.append(book)
+    wrong = [b["title"] for b in wrong_books]
+    confident_wrong = [b for b in wrong_books if b.get("id_confidence", 0) >= 0.75]
     rate = correct / len(legible_truth) if legible_truth else 0
     wrong_rate = len(confident_wrong) / max(1, len(identified))
     results["titles"] = {
