@@ -60,7 +60,7 @@ def settings() -> Settings:
         google_api_key=os.getenv("GOOGLE_API_KEY", ""),
         serpapi_key=os.getenv("SERPAPI_KEY", ""),
         live_model=os.getenv("LIVE_MODEL", "gemini-3.8-live"),
-        vision_model=os.getenv("VISION_MODEL", "gemini-3.5-flash"),
+        vision_model=os.getenv("VISION_MODEL", "gemini-3.5-flash-lite"),
         country=os.getenv("COUNTRY", "IN"),
         compare_country=os.getenv("COMPARE_COUNTRY", "US"),
         marker_size_cm=float(os.getenv("MARKER_SIZE_CM", "15.0")),

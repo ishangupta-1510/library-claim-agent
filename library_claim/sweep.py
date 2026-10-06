@@ -44,10 +44,12 @@ from .totals import finalize
 
 Emit = Callable[[dict], Awaitable[None]]
 
-NEW_COVERAGE_FOR_VISION = 0.25
+NEW_COVERAGE_FOR_VISION = 0.5  # each spine still lands in 2-3 vision frames at ~70% frame overlap
 ITEM_SCAN_EVERY_S = 6.0
 COVERAGE_CELL = 2.0  # plane units per coverage cell (cm on metric planes)
-RECTIFIED_PX_PER_CM = 12.0  # ~30 px across a 2.5 cm spine: enough for the model to read it
+RECTIFIED_PX_PER_CM = 12.0  # fallback only; normally the frame's native resolution is kept
+MIN_RECTIFIED_PX_PER_CM = 8.0
+MAX_RECTIFIED_PX_PER_CM = 40.0
 RECTIFIED_MAX_PX = 2400
 MIN_MARKER_PX = 40  # smaller markers give unreliable corners
 LINK_CANDIDATES = 6  # recent frames of the current unit tried when chaining a new frame
@@ -69,6 +71,39 @@ def _map_box(box: tuple[float, float, float, float], homography: np.ndarray) -> 
     mapped = cv2.perspectiveTransform(corners, homography).reshape(4, 2)
     (mx0, my0), (mx1, my1) = mapped.min(axis=0), mapped.max(axis=0)
     return float(mx0), float(my0), float(mx1), float(my1)
+
+
+def _native_px_per_cm(plane_from_frame: np.ndarray, shape) -> float:
+    """The frame's own resolution on the shelf plane, measured at its centre.
+
+    Rectifying at a fixed 12 px/cm halved the resolution of close-up frames
+    (about 23 px/cm), shrinking spine text before the model read it. Keeping
+    the native resolution preserves every legible letter.
+    """
+    h, w = shape[:2]
+    centre = np.array([[[w / 2, h / 2]], [[w / 2 + 1, h / 2]], [[w / 2, h / 2 + 1]]], np.float64)
+    mapped = cv2.perspectiveTransform(centre, plane_from_frame).reshape(3, 2)
+    cm_per_px = (np.linalg.norm(mapped[1] - mapped[0]) + np.linalg.norm(mapped[2] - mapped[0])) / 2
+    return float(np.clip(1 / cm_per_px, MIN_RECTIFIED_PX_PER_CM, MAX_RECTIFIED_PX_PER_CM)) if cm_per_px > 0 else RECTIFIED_PX_PER_CM
+
+
+EDGE_MARGIN = 0.015  # share of the frame size treated as "touching the edge"
+
+
+def _cut_off(box_px, view, shape) -> bool:
+    """Whether a detected spine box touches the original frame's border.
+
+    On a rectified view, the box is mapped back into the original frame first,
+    since the rectified canvas is larger than the area the camera saw.
+    """
+    h, w = shape[:2]
+    x0, y0, x1, y1 = box_px
+    corners = np.array([[[x0, y0]], [[x1, y0]], [[x1, y1]], [[x0, y1]]], np.float64)
+    if view is not None:
+        corners = cv2.perspectiveTransform(corners, np.linalg.inv(view.image_to_rectified))
+    pts = corners.reshape(4, 2)
+    mx, my = EDGE_MARGIN * w, EDGE_MARGIN * h
+    return bool((pts[:, 0] < mx).any() or (pts[:, 0] > w - mx).any() or (pts[:, 1] < my).any() or (pts[:, 1] > h - my).any())
 
 
 def _spread(items: list, n: int) -> list:
@@ -363,7 +398,7 @@ class SweepSession:
         homography = plane.from_frame[frame_id]
         if plane.metric:
             scale = PlaneScale(homography, -1, self.settings.marker_size_cm, 1.0, 0.0)
-            view = rectify(image, scale, px_per_cm=RECTIFIED_PX_PER_CM)
+            view = rectify(image, scale, px_per_cm=_native_px_per_cm(homography, image.shape))
             # An oblique frame covers a lot of plane; keep the image the model sees to a sane size
             # by lowering the resolution (measurements stay exact: they divide by px_per_cm).
             longest = max(view.image.shape[:2])
@@ -380,6 +415,11 @@ class SweepSession:
 
         new_books = 0
         for det in detections:
+            if det.legible and _cut_off(det.box_px, view, image.shape):
+                # Part of this spine is outside the frame, so its text is partial
+                # ("MELUHA" for "The Immortals of Meluha"). Count it; read it elsewhere.
+                det.title = det.author = ""
+                det.legible = False
             if view is not None:
                 x0, y0, x1, y1 = det.box_px
                 ox, oy = view.origin_cm

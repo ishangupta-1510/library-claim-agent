@@ -63,3 +63,10 @@ def test_conflicting_readings_are_detected():
     book, _ = inv.add("A", S("f1", (0, 0, 3, 24), "Sapiens", True))
     inv.add("A", S("f2", (0, 0, 3, 24), "Homo Deus", True))
     assert book.readings_disagree()
+
+
+def test_spine_cut_off_by_the_frame_edge_is_not_read():
+    from library_claim.sweep import _cut_off
+
+    assert _cut_off((0, 100, 40, 600), None, (720, 1280, 3))  # touches the left edge
+    assert not _cut_off((300, 100, 340, 600), None, (720, 1280, 3))

@@ -83,6 +83,17 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the one-page diagram. In sh
 Based on [insurance_claim_live_agent_team](https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/voice_ai_agents/insurance_claim_live_agent_team),
 which I read and ran first.
 
+**Running it (2026-10-06, same free-tier key):**
+- The live session ran on `gemini-3.8-live`, and typed and spoken turns worked.
+- Its background claim team started up: the policy desk looked up the policy number and interrupted
+  the agent with "no match".
+- The claim writer failed every update. Its extraction model (`gemini-3.8-flash`, hardcoded) returned
+  "503 high demand", and with no retry the notebook stayed at 0% collected.
+- The sketch artist also failed, because there's no image-model quota on the free key.
+
+Lesson carried over: every model call here retries on 429/5xx with backoff, and models are
+configurable through `.env`.
+
 - **Kept:** the interaction pattern (one WebSocket relaying mic PCM and camera JPEGs into a Gemini Live
   session, transcripts and audio back, function calls run server-side, interruptions handled).
 - **Changed:**
