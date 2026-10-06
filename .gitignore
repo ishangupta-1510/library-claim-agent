@@ -5,3 +5,8 @@ __pycache__/
 sweeps/
 .pytest_cache/
 dev_data/raw/
+
+# Generated media: rebuild with `python -m dev_data.synthetic`
+dev_data/synthetic/sweep.*
+dev_data/synthetic/_preview_*.png
+dev_data/photos/*-preview.png

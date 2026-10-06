@@ -8,7 +8,7 @@ real spines have fonts, wear, glare and depth this renderer does not.
 Outputs (dev_data/synthetic/):
     unit_A.png, unit_B.png         the flat shelf faces (10 px per cm)
     frames/NNNN.jpg                the pan, 1280x720
-    sweep.y4m                      the pan as a video Chrome can use as a fake camera
+    sweep.mjpeg                    the pan as a video Chrome can use as a fake camera
     ground_truth.json              every book: unit, shelf, title, author, height, thickness, flat?
 
 Usage:  python dev_data/synthetic.py
@@ -206,9 +206,10 @@ def main(seed=11):
         "unit_faces_cm": [list(np.array(face_a.shape[1::-1]) / PX), list(np.array(face_b.shape[1::-1]) / PX)],
         "books": truth, "frames": frames, "unshelved": left + left_b,
     }, indent=1))
-    # Chrome's fake camera loops a .y4m file; 1 frame per 1.2 s of "walking" at 25 fps.
+    # Chrome's fake camera loops an MJPEG file (compressed, unlike .y4m which was 2 GB here).
+    # Each view is held for 1.2 s at 10 fps, like a person pausing on each part of the shelf.
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-framerate", "0.83", "-i", str(OUT / "frames" / "%04d.jpg"),
-                    "-vf", "fps=25,format=yuv420p", str(OUT / "sweep.y4m")], check=True)
+                    "-vf", "fps=10", "-q:v", "3", str(OUT / "sweep.mjpeg")], check=True)
     print(f"{len(truth)} books ({sum(b['legible'] for b in truth)} legible), {frames} frames -> {OUT}")
 
 
