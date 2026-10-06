@@ -199,3 +199,10 @@ def test_an_item_box_on_the_marker_is_the_marker_not_an_item():
     assert _covers((95, 95, 205, 210), marker)  # "marker tag sticker artwork"
     assert not _covers((0, 0, 1000, 700), marker)  # the bookcase the marker stands on
     assert not _covers((400, 100, 500, 200), marker)  # something beside it
+
+
+def test_an_item_described_as_a_book_is_not_an_item():
+    from library_claim.sweep import _is_a_book
+
+    assert _is_a_book("Book spine") and _is_a_book("stack of books")
+    assert not _is_a_book("Wooden bookshelf") and not _is_a_book("brass bookends")

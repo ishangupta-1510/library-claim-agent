@@ -18,6 +18,7 @@ import asyncio
 import json
 import logging
 import math
+import re
 import threading
 import time
 import uuid
@@ -160,6 +161,11 @@ def _flag_repeated_titles(records: list[Book], books: list[InventoryBook]) -> No
             records[i].id_confidence = min(records[i].id_confidence, REPEAT_CONFIDENCE)
             records[i].notes.append(f"same title also read on {others}; this spine was seen only partly or once, "
                                     "so the reading may be a misread: check the frame")
+
+
+def _is_a_book(description: str) -> bool:
+    """Books are counted from their spines; an "item" the model describes as a book or spine is a double count."""
+    return bool(re.search(r"\b(books?|spines?|novels?|paperbacks?|hardcovers?)\b", description, re.I))
 
 
 def _covers(box, quad: np.ndarray, share: float = 0.5) -> bool:
@@ -610,7 +616,7 @@ class SweepSession:
         # artwork" and asked whether it was an original.
         markers = [m.corners.reshape(-1, 2) for m in detect_markers(image)]
         for det in parse_items(payload, image.shape[1], image.shape[0]):
-            if any(_covers(det.box_px, quad) for quad in markers):
+            if any(_covers(det.box_px, quad) for quad in markers) or _is_a_book(det.description):
                 continue
             dims = None
             if plane is not None and plane.metric and frame_id in plane.from_frame:
