@@ -10,3 +10,4 @@ dev_data/raw/
 dev_data/synthetic/sweep.*
 dev_data/synthetic/_preview_*.png
 dev_data/photos/*-preview.png
+.cache/

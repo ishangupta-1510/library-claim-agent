@@ -122,3 +122,25 @@ def test_rarity_words_and_year():
     assert appraisal_check("Dune", "1990", [], "", []).needed is False
     assert appraisal_check("Ulysses", "1922", [], "", []).needed is True
     assert appraisal_check("Dune", "", [], "SIGNED BY AUTHOR", []).needed is True
+
+
+async def test_cached_search_keeps_its_original_date(tmp_path):
+    import httpx
+
+    from library_claim.stages.pricing import PriceClient
+
+    calls = []
+
+    def handler(request):
+        calls.append(request.url.params["q"])
+        return httpx.Response(200, json={"shopping_results": [
+            {"title": "Sapiens", "extracted_price": 499, "source": "Amazon.in", "product_link": "https://a/1"}]})
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as http:
+        first = PriceClient(http, "key", cache_dir=tmp_path)
+        a = await first.shopping("Sapiens Harari book", IN)
+        second = PriceClient(http, "key", cache_dir=tmp_path)
+        b = await second.shopping("Sapiens Harari book", IN)
+    assert calls == ["Sapiens Harari book"]  # the second run used the cache
+    assert a[0].retrieved_at == b[0].retrieved_at != ""
+    assert first.live_searches == 1 and second.live_searches == 0

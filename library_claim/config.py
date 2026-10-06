@@ -40,6 +40,7 @@ class Settings:
     marker_size_cm: float
     appraisal_threshold: float
     sweeps_dir: Path
+    price_search_budget: int | None
 
     @property
     def locale(self) -> Locale:
@@ -58,11 +59,12 @@ def settings() -> Settings:
     return Settings(
         google_api_key=os.getenv("GOOGLE_API_KEY", ""),
         serpapi_key=os.getenv("SERPAPI_KEY", ""),
-        live_model=os.getenv("LIVE_MODEL", "gemini-2.5-flash-native-audio-preview-09-2025"),
-        vision_model=os.getenv("VISION_MODEL", "gemini-2.5-flash"),
+        live_model=os.getenv("LIVE_MODEL", "gemini-3.8-live"),
+        vision_model=os.getenv("VISION_MODEL", "gemini-3.5-flash"),
         country=os.getenv("COUNTRY", "IN"),
         compare_country=os.getenv("COMPARE_COUNTRY", "US"),
         marker_size_cm=float(os.getenv("MARKER_SIZE_CM", "15.0")),
         appraisal_threshold=float(os.getenv("APPRAISAL_THRESHOLD", "10000")),
         sweeps_dir=Path(os.getenv("SWEEPS_DIR", "sweeps")),
+        price_search_budget=int(os.environ["PRICE_SEARCH_BUDGET"]) if os.getenv("PRICE_SEARCH_BUDGET") else None,
     )

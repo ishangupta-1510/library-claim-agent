@@ -14,9 +14,12 @@ threshold, are flagged for a human and not priced.
 
 from __future__ import annotations
 
+import hashlib
+import json
 import statistics
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 import httpx
 from rapidfuzz import fuzz
@@ -44,6 +47,7 @@ class Listing:
     merchant: str
     url: str
     condition: str  # "new" | "used" | ""
+    retrieved_at: str = ""  # when the search that returned this listing ran
 
 
 @dataclass
@@ -88,7 +92,7 @@ def pick(listings: list[Listing], condition: str) -> tuple[float, list[Listing]]
     return round(statistics.median(l.amount for l in chosen), 2), chosen
 
 
-def parse_google_shopping(payload: dict, currency: str) -> list[Listing]:
+def parse_google_shopping(payload: dict, currency: str, retrieved_at: str = "") -> list[Listing]:
     out = []
     for result in payload.get("shopping_results", []) or []:
         amount = result.get("extracted_price")
@@ -102,11 +106,12 @@ def parse_google_shopping(payload: dict, currency: str) -> list[Listing]:
             merchant=result.get("source", ""),
             url=result.get("product_link") or result.get("link") or "",
             condition="used" if condition in ("used", "pre-owned", "refurbished") else "new",
+            retrieved_at=retrieved_at,
         ))
     return out
 
 
-def parse_ebay(payload: dict, currency: str) -> list[Listing]:
+def parse_ebay(payload: dict, currency: str, retrieved_at: str = "") -> list[Listing]:
     out = []
     for result in payload.get("organic_results", []) or []:
         price = result.get("price") or {}
@@ -121,6 +126,7 @@ def parse_ebay(payload: dict, currency: str) -> list[Listing]:
             merchant="eBay",
             url=result.get("link", ""),
             condition="new" if "brand new" in condition else "used",
+            retrieved_at=retrieved_at,
         ))
     return out
 
@@ -132,35 +138,75 @@ class FxRate:
     source: str = "European Central Bank via frankfurter.dev"
 
 
-class PriceClient:
-    """Fetches listings and FX. Keeps every raw response for the audit trail."""
+CACHE_DAYS = 7
 
-    def __init__(self, http: httpx.AsyncClient, serpapi_key: str):
+
+class PriceClient:
+    """Fetches listings and FX. Keeps every raw response for the audit trail.
+
+    Searches are cached on disk for CACHE_DAYS, keyed by their exact
+    parameters. A cached result keeps its original retrieval time, so prices
+    are never presented as fresher than they are, and re-running a sweep does
+    not spend the search quota again.
+    """
+
+    def __init__(
+        self, http: httpx.AsyncClient, serpapi_key: str, cache_dir: Path | None = Path(".cache/serpapi"),
+        max_live_searches: int | None = None,
+    ):
         self.http = http
         self.serpapi_key = serpapi_key
-        self.raw: list[dict] = []  # (query, response) pairs, saved with the packet
+        self.cache_dir = cache_dir
+        # Optional cap on paid searches per packet (development runs); None = unlimited.
+        self.max_live_searches = max_live_searches
+        self.budget_exhausted = False
+        self.raw: list[dict] = []  # every search used for this packet, with its response
+        self.live_searches = 0
         self._fx: dict[tuple[str, str], FxRate] = {}
 
-    async def _serpapi(self, params: dict) -> dict:
+    def _cache_path(self, params: dict) -> Path | None:
+        if self.cache_dir is None:
+            return None
+        key = hashlib.sha256(json.dumps(params, sort_keys=True).encode()).hexdigest()[:32]
+        return self.cache_dir / f"{key}.json"
+
+    async def _serpapi(self, params: dict) -> tuple[dict, str]:
         if not self.serpapi_key:
-            return {}
+            return {}, ""
+        path = self._cache_path(params)
+        if path and path.exists():
+            cached = json.loads(path.read_text(encoding="utf-8"))
+            age = datetime.now(timezone.utc) - datetime.fromisoformat(cached["retrieved_at"])
+            if age < timedelta(days=CACHE_DAYS):
+                self.raw.append({**cached, "from_cache": True})
+                return cached["response"], cached["retrieved_at"]
+        if self.max_live_searches is not None and self.live_searches >= self.max_live_searches:
+            self.budget_exhausted = True
+            return {}, ""
         response = await self.http.get(SERPAPI, params={**params, "api_key": self.serpapi_key})
+        self.live_searches += 1
+        retrieved_at = now()
         payload = response.json() if response.status_code == 200 else {"error": response.text[:200]}
-        self.raw.append({"params": params, "retrieved_at": now(), "status": response.status_code, "response": payload})
-        return payload
+        entry = {"params": params, "retrieved_at": retrieved_at, "status": response.status_code, "response": payload}
+        self.raw.append(entry)
+        if path and response.status_code == 200:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(json.dumps(entry), encoding="utf-8")
+        return payload, retrieved_at
 
     async def shopping(self, query: str, locale: Locale) -> list[Listing]:
-        payload = await self._serpapi({
+        payload, retrieved_at = await self._serpapi({
             "engine": "google_shopping", "q": query, "gl": locale.google_gl, "hl": locale.google_hl,
             "google_domain": locale.google_domain,
         })
-        return parse_google_shopping(payload, locale.currency)
+        return parse_google_shopping(payload, locale.currency, retrieved_at)
 
     async def ebay_used(self, query: str, locale: Locale) -> list[Listing]:
         if not locale.ebay_domain:
             return []
-        payload = await self._serpapi({"engine": "ebay", "_nkw": query, "ebay_domain": locale.ebay_domain, "LH_ItemCondition": "3000"})
-        return parse_ebay(payload, locale.currency)
+        payload, retrieved_at = await self._serpapi(
+            {"engine": "ebay", "_nkw": query, "ebay_domain": locale.ebay_domain, "LH_ItemCondition": "3000"})
+        return parse_ebay(payload, locale.currency, retrieved_at)
 
     async def fx(self, base: str, quote: str) -> FxRate | None:
         if (base, quote) not in self._fx:
@@ -178,7 +224,7 @@ def _price_from(result: tuple[float, list[Listing]], condition: str, retrieved_a
     merchants = sorted({l.merchant for l in listings if l.merchant})
     return Price(
         amount=amount, currency=listings[0].currency, source=", ".join(merchants) or "Google Shopping",
-        url=closest.url, retrieved_at=retrieved_at, condition_assumed=condition,
+        url=closest.url, retrieved_at=closest.retrieved_at or retrieved_at, condition_assumed=condition,
         basis=f"median of {len(listings)} {condition} listing(s)",
     )
 
@@ -227,7 +273,9 @@ async def price_book(
             if converted:
                 used_value = converted
                 out_notes.append(f"used value converted from {fallback.country} eBay listings")
-    if replacement.amount is None:
+    if replacement.amount is None and getattr(client, "budget_exhausted", False):
+        out_notes.append("not priced: price-search budget for this run was used up")
+    elif replacement.amount is None:
         out_notes.append("no new listing found in local market")
     if used_value.amount is None:
         out_notes.append("no used listing found")

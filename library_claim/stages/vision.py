@@ -164,6 +164,9 @@ def parse_items(payload: dict, width: int, height: int) -> list[ItemDetection]:
     return out
 
 
+RETRIES = 4
+
+
 class GeminiVision:
     """google-genai implementation with a simple per-minute rate limit for the free tier."""
 
@@ -189,15 +192,28 @@ class GeminiVision:
     async def generate_json(self, image_jpeg: bytes, prompt: str, schema: dict) -> tuple[dict, dict]:
         from google.genai import types
 
-        await self._throttle()
+        from google.genai import errors
+
         started = time.monotonic()
-        response = await self.client.aio.models.generate_content(
-            model=self.model,
-            contents=[types.Part.from_bytes(data=image_jpeg, mime_type="image/jpeg"), prompt],
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json", response_schema=schema, temperature=0,
-            ),
-        )
+        attempts = 0
+        while True:
+            await self._throttle()
+            try:
+                response = await self.client.aio.models.generate_content(
+                    model=self.model,
+                    contents=[types.Part.from_bytes(data=image_jpeg, mime_type="image/jpeg"), prompt],
+                    config=types.GenerateContentConfig(
+                        response_mime_type="application/json", response_schema=schema, temperature=0,
+                        automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
+                    ),
+                )
+                break
+            except errors.APIError as exc:
+                # 429 (rate limit) and 5xx (overload) are transient on the free tier; back off and retry.
+                attempts += 1
+                if exc.code not in (429, 500, 502, 503, 504) or attempts > RETRIES:
+                    raise
+                await asyncio.sleep(min(30, 2 ** attempts))
         usage = response.usage_metadata
         info = {
             "model": self.model,

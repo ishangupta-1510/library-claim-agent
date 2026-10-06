@@ -45,7 +45,7 @@ def _range(listings: list[Listing], basis: str, retrieved_at: str) -> PriceRange
     return PriceRange(
         low=round(low, 2), high=round(high, 2), currency=listings[0].currency,
         source=", ".join(sorted({l.merchant for l in listings if l.merchant})) or "Google Shopping",
-        url=closest.url, retrieved_at=retrieved_at, basis=basis,
+        url=closest.url, retrieved_at=closest.retrieved_at or retrieved_at, basis=basis,
         listings=[{"title": l.title, "amount": l.amount, "merchant": l.merchant, "url": l.url} for l in listings[:10]],
     )
 

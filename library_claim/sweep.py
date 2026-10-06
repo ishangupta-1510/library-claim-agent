@@ -389,11 +389,11 @@ class SweepSession:
         locale = locale_for(self.country)
         fallback = locale_for(self.settings.compare_country)
         async with httpx.AsyncClient(timeout=30) as http:
-            prices = PriceClient(http, self.settings.serpapi_key)
+            prices = PriceClient(http, self.settings.serpapi_key, max_live_searches=self.settings.price_search_budget)
             books = await self._identify_and_price(http, prices, locale, fallback)
             items = await self._price_items(prices, locale)
             comparison = await self._locale_comparison(books, prices, fallback)
-            self.clock.count("pricing_searches", searches=len(prices.raw))
+            self.clock.count("pricing_searches", searches=prices.live_searches, cached=len(prices.raw) - prices.live_searches)
             (self.dir / "raw" / "price_searches.json").write_text(json.dumps(prices.raw, indent=1))
 
         t0 = time.monotonic()

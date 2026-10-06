@@ -26,6 +26,8 @@ async def run(args) -> Path:
     cfg = settings()
     if args.marker_cm:
         cfg = replace(cfg, marker_size_cm=args.marker_cm)
+    if args.price_budget is not None:
+        cfg = replace(cfg, price_search_budget=args.price_budget)
     if not cfg.google_api_key:
         raise SystemExit("GOOGLE_API_KEY is not set in .env")
 
@@ -57,6 +59,7 @@ def main() -> None:
     parser.add_argument("--truth")
     parser.add_argument("--marker-cm", type=float)
     parser.add_argument("--ar-points")
+    parser.add_argument("--price-budget", type=int, help="cap on live price searches for this run")
     args = parser.parse_args()
     sweep_dir = asyncio.run(run(args))
     if args.truth:
