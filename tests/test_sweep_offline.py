@@ -122,3 +122,80 @@ async def test_daily_vision_quota_stops_calls_and_the_packet_still_builds(cfg, m
     assert packet.totals.book_count >= 1  # what was read before still counts
     assert any("quota" in e for e in packet.stages["service_events"])
     assert packet.stages["vision_jobs_not_run"] >= 1
+
+
+class SlowVision(FakeVision):
+    """Holds each answer until released, so the unit can change while a call is in flight."""
+
+    def __init__(self):
+        super().__init__()
+        import asyncio
+        self.release = asyncio.Event()
+
+    async def generate_json(self, image_jpeg, prompt, schema, call_id=""):
+        await self.release.wait()
+        return await super().generate_json(image_jpeg, prompt, schema, call_id)
+
+
+async def test_an_answer_arriving_after_its_unit_was_merged_lands_on_the_merged_unit(cfg, monkeypatch):
+    import asyncio
+
+    async def no_candidates(*a, **k):
+        return []
+    monkeypatch.setattr("library_claim.stages.identify.fetch_candidates", no_candidates)
+
+    async def emit(event):
+        pass
+
+    vision = SlowVision()
+    sweep = SweepSession(cfg, vision, emit, device="test")
+    frames, _ = _pan(_shelf_face(), n=3)
+    for _, image in frames:
+        ok, jpeg = cv2.imencode(".jpg", image, [cv2.IMWRITE_JPEG_QUALITY, 95])
+        await sweep.add_frame(jpeg.tobytes())
+    await asyncio.sleep(0.05)  # calls are now in flight, holding the plane they were queued with
+    # Merge the unit into a fresh one, as loop closure does, while the answers are pending.
+    old = sweep.planes[0]
+    target = sweep._new_plane(metric=old.metric)
+    shift = np.array([[1, 0, 100.0], [0, 1, 0], [0, 0, 1]])
+    sweep._absorb(into=target, fragment=old, into_from_fragment=shift)
+    vision.release.set()
+    packet = await sweep.finish()
+
+    assert {b.shelf.split(" · ")[0] for b in packet.books} == {"Unit A"}  # one unit, no orphans
+    assert all(b.plane_id == target.id for b in sweep.inventory.books)
+    assert target.id != old.id
+
+
+async def test_appraisal_threshold_is_converted_to_the_claim_currency(cfg):
+    from library_claim.stages.pricing import FxRate
+
+    class Rates:
+        async def fx(self, base, quote):
+            return FxRate(1 / 96.3, "2026-10-05") if (base, quote) == ("INR", "USD") else None
+
+    async def emit(event):
+        pass
+
+    sweep = SweepSession(replace(cfg, appraisal_threshold=10000, appraisal_threshold_currency="INR"), None, emit)
+    assert await sweep._appraisal_threshold(Rates(), "INR") == 10000
+    assert await sweep._appraisal_threshold(Rates(), "USD") == pytest.approx(103.84, abs=0.01)  # not $10,000
+
+
+async def test_malformed_room_points_are_refused(cfg):
+    async def emit(event):
+        pass
+
+    sweep = SweepSession(cfg, None, emit)
+    assert sweep.add_ar_point("floor_corner", ["a", 0, 0]) == {"applied": False}
+    assert sweep.add_ar_point("floor_corner", [float("nan"), 0, 0]) == {"applied": False}
+    assert sweep.add_ar_point("floor_corner", [1, 0, 2])["applied"]
+
+
+def test_an_item_box_on_the_marker_is_the_marker_not_an_item():
+    from library_claim.sweep import _covers
+
+    marker = np.array([[100, 100], [200, 100], [200, 200], [100, 200]], float)
+    assert _covers((95, 95, 205, 210), marker)  # "marker tag sticker artwork"
+    assert not _covers((0, 0, 1000, 700), marker)  # the bookcase the marker stands on
+    assert not _covers((400, 100, 500, 200), marker)  # something beside it

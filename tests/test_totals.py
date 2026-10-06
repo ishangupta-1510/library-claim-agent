@@ -58,3 +58,18 @@ def test_report_and_packet_survive_non_latin_text(tmp_path):
     packet = finalize(_packet([priced(1, 300, title="Ḳuṭub al-Ṣiḥḥa", author="Ibn Sīnā")]))
     (tmp_path / "claim_packet.json").write_text(packet.model_dump_json(), encoding="utf-8")
     assert "Ḳuṭub" in write_report(packet, tmp_path).read_text(encoding="utf-8")
+
+
+def test_a_priced_book_awaiting_identification_review_is_held_out_of_the_total():
+    sure, doubtful = priced(1, 500), priced(2, 500).model_copy(update={"id_confidence": 0.6})
+    totals = finalize(_packet([sure, doubtful])).totals
+    assert totals.books_replacement_cost == 500 and totals.books_pending_review_cost == 500
+
+
+def test_report_links_are_web_links_only(tmp_path):
+    from library_claim.report import write_report
+
+    bad = priced(1, 300).model_copy(update={"title": "Dune", "id_url": "javascript:alert(1)"})
+    bad.replacement_cost.url = "javascript:alert(2)"
+    html = write_report(finalize(_packet([bad])), tmp_path).read_text(encoding="utf-8")
+    assert "javascript:" not in html

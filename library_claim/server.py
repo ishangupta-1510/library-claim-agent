@@ -27,6 +27,9 @@ from .sweep import SweepSession
 
 logger = logging.getLogger("library_claim")
 logging.basicConfig(level=logging.INFO)
+# httpx logs every request URL at INFO, and SerpAPI takes its key as a query parameter: keep keys out of logs.
+for noisy in ("httpx", "httpcore", "google_genai"):
+    logging.getLogger(noisy).setLevel(logging.WARNING)
 
 STATIC = Path(__file__).parent / "static"
 # Demo camera: the synthetic sweep, played in the browser as the camera so the live flow can be tried
@@ -151,7 +154,7 @@ async def sweep_socket(websocket: WebSocket) -> None:
 
     async def end_sweep() -> dict:
         if "task" not in finishing:
-            finishing["task"] = asyncio.create_task(sweep.finish())
+            finishing["task"] = asyncio.create_task(sweep.finish_or_report())
             await send({"type": "phase", "phase": "processing"})
         return {"started": True, "message": "Building the claim packet now; a summary will follow."}
 
@@ -193,35 +196,43 @@ async def sweep_socket(websocket: WebSocket) -> None:
                 turn_complete=True,
             )
 
+            async def on_message(message: dict) -> None:
+                kind = message.get("type")
+                if kind == "audio":
+                    await live.send_realtime_input(audio=types.Blob(data=base64.b64decode(message["data"]), mime_type="audio/pcm;rate=16000"))
+                elif kind == "video":
+                    await live.send_realtime_input(video=types.Blob(data=base64.b64decode(message["data"]), mime_type="image/jpeg"))
+                elif kind == "keyframe":
+                    if "task" in finishing:
+                        return
+                    feedback = await sweep.add_frame(base64.b64decode(message["data"]))
+                    await send({"type": "feedback", **feedback})
+                    said = narrator.on_frame(feedback)
+                    if said:
+                        await tell_agent(*said)
+                elif kind == "ar_point":
+                    result = sweep.add_ar_point(str(message.get("kind")), list(message.get("position", []))[:3])
+                    await send({"type": "ar_point", **result})
+                    if result.get("applied"):
+                        await tell_agent(f"[system] Room point recorded ({message.get('kind')}). Floor corners so far: {result['floor_corners']}.", False)
+                elif kind == "text":
+                    await live.send_client_content(turns=types.Content(role="user", parts=[types.Part(text=str(message.get("text", ""))[:2000])]), turn_complete=True)
+                elif kind == "end":
+                    await end_sweep()
+                    await tell_agent("[system] The policyholder pressed End sweep. Tell them the packet is being built.", True)
+
             async def browser_to_gemini() -> None:
                 while True:
                     raw = await websocket.receive_text()
                     if len(raw) > MAX_MESSAGE:
+                        # Always answer a keyframe: the page sends the next one only after feedback arrives.
+                        await send({"type": "feedback", "problems": ["frame too large to process"]})
                         continue
-                    message = json.loads(raw)
-                    kind = message.get("type")
-                    if kind == "audio":
-                        await live.send_realtime_input(audio=types.Blob(data=base64.b64decode(message["data"]), mime_type="audio/pcm;rate=16000"))
-                    elif kind == "video":
-                        await live.send_realtime_input(video=types.Blob(data=base64.b64decode(message["data"]), mime_type="image/jpeg"))
-                    elif kind == "keyframe":
-                        if "task" in finishing:
-                            continue
-                        feedback = await sweep.add_frame(base64.b64decode(message["data"]))
-                        await send({"type": "feedback", **feedback})
-                        said = narrator.on_frame(feedback)
-                        if said:
-                            await tell_agent(*said)
-                    elif kind == "ar_point":
-                        result = sweep.add_ar_point(str(message.get("kind")), list(message.get("position", [])))
-                        await send({"type": "ar_point", **result})
-                        if result.get("applied"):
-                            await tell_agent(f"[system] Room point recorded ({message.get('kind')}). Floor corners so far: {result['floor_corners']}.", False)
-                    elif kind == "text":
-                        await live.send_client_content(turns=types.Content(role="user", parts=[types.Part(text=str(message.get("text", ""))[:2000])]), turn_complete=True)
-                    elif kind == "end":
-                        await end_sweep()
-                        await tell_agent("[system] The policyholder pressed End sweep. Tell them the packet is being built.", True)
+                    try:
+                        await on_message(json.loads(raw))
+                    except (ValueError, KeyError, TypeError) as exc:  # one malformed message must not end the sweep
+                        logger.warning("Ignored a malformed %s message: %s", type(exc).__name__, exc)
+                        await send({"type": "feedback", "problems": ["unreadable message"]})
 
             async def gemini_to_browser() -> None:
                 while True:
@@ -260,7 +271,9 @@ async def sweep_socket(websocket: WebSocket) -> None:
     finally:
         # A dropped connection must not lose the sweep: finish the packet from what was captured.
         if "task" not in finishing and sweep.frame_log:
-            finishing["task"] = asyncio.create_task(sweep.finish())
+            finishing["task"] = asyncio.create_task(sweep.finish_or_report())
         if "task" in finishing:
             with contextlib.suppress(Exception):
                 await asyncio.wait_for(asyncio.shield(finishing["task"]), timeout=600)
+        else:
+            sweep.close()

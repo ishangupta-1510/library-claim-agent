@@ -16,6 +16,9 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
+import math
+import threading
 import time
 import uuid
 from collections.abc import Awaitable, Callable
@@ -69,6 +72,9 @@ CLOSURE_MIN_INLIERS = 40  # stricter than chaining: a wrong merge is worse than 
 # Published per-token prices (USD per 1M tokens) used for the cost report; update with your model's rates.
 MODEL_PRICES_USD = {"input": 0.30, "output": 2.50}
 SERPAPI_USD_PER_SEARCH = 0.015  # paid-plan rate; the free plan costs nothing but caps searches
+
+
+logger = logging.getLogger("library_claim.sweep")
 
 
 def _map_box(box: tuple[float, float, float, float], homography: np.ndarray) -> tuple[float, float, float, float]:
@@ -156,6 +162,18 @@ def _flag_repeated_titles(records: list[Book], books: list[InventoryBook]) -> No
                                     "so the reading may be a misread: check the frame")
 
 
+def _covers(box, quad: np.ndarray, share: float = 0.5) -> bool:
+    """The box covers at least `share` of the quad's bounding box (an item detected on top of the marker)."""
+    qx0, qy0 = quad.min(axis=0)
+    qx1, qy1 = quad.max(axis=0)
+    ix = max(0.0, min(box[2], qx1) - max(box[0], qx0))
+    iy = max(0.0, min(box[3], qy1) - max(box[1], qy0))
+    area = (qx1 - qx0) * (qy1 - qy0)
+    box_area = (box[2] - box[0]) * (box[3] - box[1])
+    # Mostly the marker itself, not a large object (a bookcase) that merely contains it.
+    return area > 0 and ix * iy >= share * area and box_area <= 4 * area
+
+
 def _spread(items: list, n: int) -> list:
     """Up to n items evenly spread over the list (always including the last)."""
     if len(items) <= n:
@@ -241,12 +259,15 @@ class SweepSession:
         self.clock = StageClock()
         self.ar_points: list[dict] = []
         self.notes: list[dict] = []  # policyholder statements, with the book/item they apply to
-        self.excluded_shelves: set[str] = set()
         self.art_answers: dict[int, bool] = {}  # item sighting index -> is print
         self.ended_at: float | None = None
         self.merges: list[dict] = []  # loop closures, for the stage report
         self.split_merges = 0  # spines a detection split in two, merged after the sweep
         self.service_events: list[str] = []
+        self.plane_seq = 0
+        # Guards the inventory and plane geometry: the frame thread merges units and rescales them
+        # while vision answers are added on the event loop.
+        self.geometry_lock = threading.Lock()
         self.vision_unavailable = False  # set when the vision model's daily quota runs out
         self.frames_unread = 0  # vision jobs skipped because vision was unavailable  # services that degraded during the run, for the stage report
 
@@ -312,7 +333,9 @@ class SweepSession:
         return feedback, jobs
 
     def _new_plane(self, metric: bool) -> Plane:
-        plane = Plane(id=f"P{len(self.planes) + 1}", metric=metric, created_at_frame=len(self.frame_log))
+        # Ids are never reused: a merged-away unit's id must not come back as a different unit.
+        self.plane_seq += 1
+        plane = Plane(id=f"P{self.plane_seq}", metric=metric, created_at_frame=len(self.frame_log))
         self.planes.append(plane)
         return plane
 
@@ -379,6 +402,14 @@ class SweepSession:
         return plane
 
     def _absorb(self, into: Plane, fragment: Plane, into_from_fragment: np.ndarray) -> None:
+        with self.geometry_lock:
+            self._absorb_locked(into, fragment, into_from_fragment)
+
+    def _plane_of(self, frame_id: str) -> Plane | None:
+        """The unit a frame belongs to now (a fragment it was on may since have been merged away)."""
+        return next((p for p in self.planes if frame_id in p.from_frame), None)
+
+    def _absorb_locked(self, into: Plane, fragment: Plane, into_from_fragment: np.ndarray) -> None:
         for fid, homography in fragment.from_frame.items():
             into.from_frame[fid] = into_from_fragment @ homography
         for book in self.inventory.books:
@@ -423,16 +454,17 @@ class SweepSession:
     def _make_metric(self, plane: Plane, frame_id: str, plane_from_frame: np.ndarray, cm_from_frame: np.ndarray) -> None:
         """A marker appeared on a unit tracked in pixels: convert the whole unit to centimetres."""
         cm_from_plane = cm_from_frame @ np.linalg.inv(plane_from_frame)
-        for fid, homography in plane.from_frame.items():
-            plane.from_frame[fid] = cm_from_plane @ homography
-        for book in self.inventory.books:
-            if book.plane_id != plane.id:
-                continue
-            for s in book.sightings:
-                s.box_plane = _map_box(s.box_plane, cm_from_plane)
-                s.metric = True
-        plane.covered.clear()
-        plane.metric = True
+        with self.geometry_lock:
+            for fid, homography in plane.from_frame.items():
+                plane.from_frame[fid] = cm_from_plane @ homography
+            for book in self.inventory.books:
+                if book.plane_id != plane.id:
+                    continue
+                for s in book.sightings:
+                    s.box_plane = _map_box(s.box_plane, cm_from_plane)
+                    s.metric = True
+            plane.covered.clear()
+            plane.metric = True
 
     def _footprint(self, plane: Plane, frame_id: str, shape, inset: float = 0.0) -> np.ndarray:
         h, w = shape[:2]
@@ -507,8 +539,10 @@ class SweepSession:
         return payload
 
     async def _detect_spines(self, frame_id: str, image: np.ndarray, plane: Plane, quality: FrameQuality) -> None:
-        homography = plane.from_frame[frame_id]
-        if plane.metric:
+        with self.geometry_lock:
+            homography = plane.from_frame[frame_id].copy()
+            metric = plane.metric
+        if metric:
             scale = PlaneScale(homography, -1, self.settings.marker_size_cm, 1.0, 0.0)
             view = rectify(image, scale, px_per_cm=_native_px_per_cm(homography, image.shape))
             # An oblique frame covers a lot of plane; keep the image the model sees to a sane size
@@ -538,25 +572,46 @@ class SweepSession:
             else:
                 pts = to_plane_cm(PlaneScale(homography, -1, 1, 1, 0), np.array([[det.box_px[0], det.box_px[1]], [det.box_px[2], det.box_px[3]]]))
                 box = (float(pts[0, 0]), float(pts[0, 1]), float(pts[1, 0]), float(pts[1, 1]))
-            sighting = Sighting(frame_id, box, plane.metric, orientation_of(box, det.orientation, cut), det.title, det.author, det.publisher,
-                                det.all_text, det.legible, det.age_cues, 1 - quality.blur_effect, cut)
-            sightings.append(sighting)
-        new_books, shift = self.inventory.add_frame(plane.id, sightings)
+            sightings.append((box, det, cut))
+
+        with self.geometry_lock:
+            # The vision call took seconds: the frame's unit may have been merged into another or gained a
+            # marker meanwhile. Map the boxes from the geometry they were measured in to the unit's current one.
+            current = self._plane_of(frame_id)
+            if current is None:
+                return
+            now_from_then = current.from_frame[frame_id] @ np.linalg.inv(homography)
+            moved = not np.allclose(now_from_then, np.eye(3), atol=1e-9)
+            placed = []
+            for box, det, cut in sightings:
+                box = _map_box(box, now_from_then) if moved else box
+                placed.append(Sighting(frame_id, box, current.metric, orientation_of(box, det.orientation, cut), det.title,
+                                       det.author, det.publisher, det.all_text, det.legible, det.age_cues,
+                                       1 - quality.blur_effect, cut))
+            new_books, shift = self.inventory.add_frame(current.id, placed)
+            self.inventory.assign_shelves()
+            self.inventory.apply_exclusions()  # books first seen on an excluded row
+            books = self.live_books()
         if any(shift):
             self.frame_log[int(frame_id[1:])]["text_anchor_shift"] = [round(v, 2) for v in shift]
-        self.inventory.assign_shelves()
         legible = sum(d.legible for d in detections)
         await self.emit({
-            "type": "inventory", "frame_id": frame_id, "plane": plane.id, "detected": len(detections),
-            "legible": legible, "new_books": new_books, "book_count": len(self.inventory.books),
-            "books": self.live_books(),
+            "type": "inventory", "frame_id": frame_id, "plane": current.id, "detected": len(detections),
+            "legible": legible, "new_books": new_books, "book_count": len(books),
+            "books": books,
         })
 
     async def _detect_items(self, frame_id: str, image: np.ndarray, plane: Plane | None) -> None:
         ok, jpeg = cv2.imencode(".jpg", image, [cv2.IMWRITE_JPEG_QUALITY, 85])
         payload = await self._call_vision("vision_items", jpeg.tobytes(), ITEM_PROMPT, ITEM_SCHEMA, frame_id)
+        plane = self._plane_of(frame_id)  # as for spines: the unit as it is now, not when the call was queued
         added = []
+        # The size marker is ours, not the policyholder's: the model once logged it as "marker tag sticker
+        # artwork" and asked whether it was an original.
+        markers = [m.corners.reshape(-1, 2) for m in detect_markers(image)]
         for det in parse_items(payload, image.shape[1], image.shape[0]):
+            if any(_covers(det.box_px, quad) for quad in markers):
+                continue
             dims = None
             if plane is not None and plane.metric and frame_id in plane.from_frame:
                 pts = to_plane_cm(PlaneScale(plane.from_frame[frame_id], -1, 1, 1, 0), np.array([[det.box_px[0], det.box_px[1]], [det.box_px[2], det.box_px[3]]]))
@@ -588,13 +643,17 @@ class SweepSession:
             height, thickness = book.dimensions_cm()
             out.append({"id": f"B{i + 1:03d}", "shelf": book.shelf, "position": book.position, "title": best.title,
                         "author": best.author, "legible": best.legible, "height_cm": height, "thickness_cm": thickness,
-                        "frame_ref": book.frame_ref(), "excluded": book.shelf in self.excluded_shelves})
+                        "frame_ref": book.frame_ref(), "excluded": bool(book.excluded)})
         return out
 
     # ---------------- voice corrections ----------------
 
     def book_in_view(self) -> InventoryBook | None:
-        """The book closest to the centre of the most recent frame."""
+        """The book closest to the centre of the most recent frame, among books inside that frame.
+
+        Without the frame check, a note spoken while vision lagged behind went to
+        the nearest book already read, which could be on another shelf.
+        """
         if self.last_frame is None or self.current is None:
             return None
         fid, image = self.last_frame
@@ -602,7 +661,9 @@ class SweepSession:
             return None
         h, w = image.shape[:2]
         centre = to_plane_cm(PlaneScale(self.current.from_frame[fid], -1, 1, 1, 0), np.array([[w / 2, h / 2]]))[0]
-        books = [b for b in self.inventory.books if b.plane_id == self.current.id]
+        frame = self._footprint(self.current, fid, image.shape).astype(np.float32).reshape(-1, 1, 2)
+        books = [b for b in self.inventory.books if b.plane_id == self.current.id
+                 and cv2.pointPolygonTest(frame, ((b.box[0] + b.box[2]) / 2, (b.box[1] + b.box[3]) / 2), False) >= 0]
         if not books:
             return None
         return min(books, key=lambda b: np.hypot((b.box[0] + b.box[2]) / 2 - centre[0], (b.box[1] + b.box[3]) / 2 - centre[1]))
@@ -611,7 +672,8 @@ class SweepSession:
         book = self.book_in_view()
         if book is None:
             return {"applied": False, "reason": "no book on screen yet"}
-        self.notes.append({"target": id(book), "statement": statement, "t": self.elapsed()})
+        book.statements.append(statement)
+        self.notes.append({"statement": statement, "t": self.elapsed(), "frame_id": self.last_frame[0]})
         index = self.inventory.books.index(book)
         return {"applied": True, "book_id": f"B{index + 1:03d}", "title_read": book.best.title or "(unreadable spine)", "shelf": book.shelf}
 
@@ -619,9 +681,10 @@ class SweepSession:
         book = self.book_in_view()
         if book is None or not book.shelf:
             return {"applied": False, "reason": "no shelf on screen yet"}
-        self.excluded_shelves.add(book.shelf)
-        self.notes.append({"target": book.shelf, "statement": reason, "t": self.elapsed()})
-        return {"applied": True, "shelf": book.shelf}
+        shelf = book.shelf
+        self.inventory.exclude_row_of(book, reason or "not the policyholder's")
+        self.notes.append({"statement": reason, "t": self.elapsed(), "frame_id": self.last_frame[0], "excluded_shelf": shelf})
+        return {"applied": True, "shelf": shelf}
 
     def answer_art_question(self, is_print: bool) -> dict:
         pending = [i for i, item in enumerate(self.item_sightings) if item["is_artwork"] and i not in self.art_answers]
@@ -633,11 +696,34 @@ class SweepSession:
     def add_ar_point(self, kind: str, position: list[float]) -> dict:
         if kind not in ("floor_corner", "ceiling") or len(position) != 3:
             return {"applied": False}
-        self.ar_points.append({"kind": kind, "position": [float(v) for v in position], "t": self.elapsed(),
+        try:
+            coords = [float(v) for v in position]
+        except (TypeError, ValueError):
+            return {"applied": False}
+        if not all(math.isfinite(v) and abs(v) < 100 for v in coords):  # metres from the AR origin
+            return {"applied": False}
+        self.ar_points.append({"kind": kind, "position": coords, "t": self.elapsed(),
                                "frame_ref": self.last_frame[0] if self.last_frame else ""})
         return {"applied": True, "floor_corners": sum(p["kind"] == "floor_corner" for p in self.ar_points)}
 
     # ---------------- after the sweep ----------------
+
+    def close(self) -> None:
+        """Stop the vision workers of a session that ends without a packet (no frames were captured)."""
+        for worker in self.workers:
+            worker.cancel()
+
+    async def finish_or_report(self) -> ClaimPacket | None:
+        """finish(), with a failure reported to the page instead of leaving it on "Building claim packet…"."""
+        try:
+            return await self.finish()
+        except Exception as exc:
+            logger.exception("Building the claim packet failed for sweep %s", self.id)
+            await self.emit({"type": "error", "message": f"Building the claim packet failed: {type(exc).__name__}. "
+                                                         f"Frames are saved in sweeps/{self.id}; it can be rebuilt with scripts.replay."})
+            return None
+        finally:
+            self.close()
 
     async def finish(self) -> ClaimPacket:
         self.ended_at = time.monotonic()
@@ -653,6 +739,7 @@ class SweepSession:
         self.clock.add("vision_backlog_after_sweep", time.monotonic() - t0)
         self.split_merges = self.inventory.resolve_splits()
         self.inventory.assign_shelves()
+        self.inventory.apply_exclusions()  # books first seen on an excluded row
 
         locale = locale_for(self.country)
         fallback = locale_for(self.settings.compare_country)
@@ -691,9 +778,21 @@ class SweepSession:
         return packet
 
     def _notes_for(self, book: InventoryBook) -> list[str]:
-        return [n["statement"] for n in self.notes if n["target"] == id(book)]
+        return list(book.statements)
+
+    async def _appraisal_threshold(self, prices: PriceClient, currency: str) -> float:
+        """The appraisal threshold in the claim's currency (it is configured in one currency)."""
+        threshold, base = self.settings.appraisal_threshold, self.settings.appraisal_threshold_currency
+        if currency == base:
+            return threshold
+        rate = await prices.fx(base, currency)
+        if rate is None:
+            self.service_events.append(f"No {base}->{currency} rate: appraisal threshold applied unconverted")
+            return threshold
+        return threshold * rate.rate
 
     async def _identify_and_price(self, catalogs, prices, locale, fallback) -> list[Book]:
+        threshold = await self._appraisal_threshold(prices, locale.currency)
         t_id = time.monotonic()
         sem = asyncio.Semaphore(4)
         cache: dict[tuple[str, str, str], identify_stage.Identification] = {}
@@ -714,13 +813,13 @@ class SweepSession:
         t_price = time.monotonic()
 
         async def price(book: InventoryBook, ident):
-            if ident.status != "identified" or book.shelf in self.excluded_shelves:
+            if ident.status != "identified" or book.excluded:
                 return None
             async with sem:
                 return await price_book(
                     title=ident.title, author=ident.author, isbn=ident.isbn, edition_year=ident.year if ident.isbn else "",
                     notes=self._notes_for(book), spine_text=book.best.all_text, visual_flags=book.best.age_cues,
-                    locale=locale, fallback=fallback, threshold=self.settings.appraisal_threshold, client=prices)
+                    locale=locale, fallback=fallback, threshold=threshold, client=prices)
 
         priced = await asyncio.gather(*(price(b, i) for b, i in zip(self.inventory.books, idents)))
         self.clock.add("pricing_books", time.monotonic() - t_price)
@@ -735,8 +834,8 @@ class SweepSession:
             status = ident.status
             if bp is not None and bp.appraisal.needed:
                 status = "needs_appraisal"
-            if book.shelf in self.excluded_shelves:
-                notes.append("policyholder excluded this shelf (not theirs)")
+            if book.excluded:
+                notes.append(f"policyholder excluded this shelf: {book.excluded}")
             record = Book(
                 id=f"B{index:03d}", shelf=book.shelf, position=book.position, frame_ref=f"frames/{book.frame_ref()}.jpg",
                 status=status, orientation=best.orientation, spine_text=best.all_text,
@@ -749,7 +848,7 @@ class SweepSession:
                 replacement_cost=bp.replacement if bp else Price(),
                 used_value=bp.used if bp else Price(),
                 notes=notes + (bp.notes if bp else []),
-                excluded=book.shelf in self.excluded_shelves,
+                excluded=bool(book.excluded),
             )
             out.append(record)
         _flag_repeated_titles(out, self.inventory.books)
@@ -804,7 +903,7 @@ class SweepSession:
             shelved_wall_area_ft2=to_ft2(shelved), shape=geometry.shape,
             scale_method=f"ARCore WebXR hit tests ({len(corners)} floor corners, {len(ceilings)} ceiling point(s)); "
                          "spine scale from ArUco marker plane",
-            confidence=0.85 if ceilings else 0.6,
+            confidence=0.85 if geometry.height_m else 0.6,
             evidence=[p["frame_ref"] for p in self.ar_points],
         )
 

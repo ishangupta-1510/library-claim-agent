@@ -101,7 +101,7 @@ async def run(websocket: WebSocket, send: Send, cfg: Settings, demo: Path) -> No
 
     async def end() -> None:
         if "task" not in finishing:
-            finishing["task"] = asyncio.create_task(sweep.finish())
+            finishing["task"] = asyncio.create_task(sweep.finish_or_report())
             await send({"type": "phase", "phase": "processing"})
             await say("That's everything. I'm building your claim packet now.")
 
@@ -139,10 +139,12 @@ async def run(websocket: WebSocket, send: Send, cfg: Settings, demo: Path) -> No
     finally:
         # Same rule as a live sweep: a dropped connection still finishes the packet from what was captured.
         if "task" not in finishing and sweep.frame_log:
-            finishing["task"] = asyncio.create_task(sweep.finish())
+            finishing["task"] = asyncio.create_task(sweep.finish_or_report())
         if "task" in finishing:
             with contextlib.suppress(Exception):
                 await asyncio.wait_for(asyncio.shield(finishing["task"]), timeout=600)
+        else:
+            sweep.close()
 
 
 async def _answer(text: str, sweep: SweepSession, agent: ScriptedAgent, send: Send, say) -> None:

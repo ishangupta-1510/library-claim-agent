@@ -76,6 +76,9 @@ def self_intersects(points_xz: np.ndarray) -> bool:
     return False
 
 
+CEILING_RANGE_M = (1.8, 6.0)  # plausible room heights; outside it the ceiling tap hit something else
+
+
 def measure_room(floor_corners_m: list[tuple[float, float, float]], ceiling_y_m: float | None) -> RoomGeometry:
     """Floor corners as (x, y, z) world points in metres; y is up."""
     if len(floor_corners_m) < 3:
@@ -94,6 +97,9 @@ def measure_room(floor_corners_m: list[tuple[float, float, float]], ceiling_y_m:
     shape = "rectangle" if fill >= RECTANGLE_FILL and len(xz) == 4 else f"polygon ({len(xz)} corners, fills {fill:.0%} of its bounding rectangle)"
 
     height = round(ceiling_y_m - floor_y, 3) if ceiling_y_m is not None else None
+    if height is not None and not CEILING_RANGE_M[0] <= height <= CEILING_RANGE_M[1]:
+        # A "ceiling" tap that hit a table or a shelf top: no height, so no wall area, rather than a wrong one.
+        height = None
     walls = round(perim * height, 2) if height else None
     return RoomGeometry(
         length_m=round(float(length), 3), width_m=round(float(width), 3), height_m=height,

@@ -1,6 +1,6 @@
 import pytest
 
-from library_claim.stages.inventory import Inventory, Sighting
+from library_claim.stages.inventory import Inventory, InventoryBook, Sighting
 
 
 def S(frame, box, title="", legible=False, orientation="upright", metric=True, sharp=100.0):
@@ -241,3 +241,27 @@ def test_one_box_running_into_the_next_row_does_not_stretch_the_spine():
     book = inv.books[0]
     assert len(inv.books) == 1 and book.dimensions_cm()[0] == pytest.approx(27.8, abs=0.1)
     assert book.box[3] < 107  # the row below is not inside this book's box
+
+
+def test_a_statement_survives_when_its_book_is_merged_into_another():
+    inv = Inventory()
+    a, _ = inv.add("A", C("f1", (10, 0, 12.5, 25), title="Dune", legible=True))
+    b = InventoryBook("A", [C("f2", (10.1, 0, 12.6, 25))], statements=["user: this one is signed"])
+    inv.books.append(b)
+    inv.merge_overlaps("A")
+    assert len(inv.books) == 1 and inv.books[0].statements == ["user: this one is signed"]
+
+
+def test_an_excluded_row_stays_excluded_after_relabelling_and_catches_later_books():
+    inv = Inventory()
+    inv.add_frame("A", _shelf_row("f1", [10, 12.6], ["Dune", "Sapiens"]))  # row at y 2-30
+    inv.assign_shelves()
+    inv.exclude_row_of(inv.books[0], "my flatmate's books")
+    # A higher row discovered later renumbers the labels; a new book on the excluded row arrives too.
+    inv.add_frame("A", [C("f2", (10, -40, 12.5, -12), title="Higher", legible=True),
+                        C("f2", (20, 2, 22.5, 30), title="Later", legible=True)])
+    inv.assign_shelves()
+    inv.apply_exclusions()
+    by_title = {b.best.title: b for b in inv.books}
+    assert by_title["Dune"].excluded and by_title["Sapiens"].excluded and by_title["Later"].excluded
+    assert not by_title["Higher"].excluded

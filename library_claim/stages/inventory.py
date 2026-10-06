@@ -107,6 +107,15 @@ class InventoryBook:
     sightings: list[Sighting] = field(default_factory=list)
     shelf: str = ""
     position: int = 0
+    # What the policyholder said about this book ("this one is signed"); kept on the book so merges carry it.
+    statements: list[str] = field(default_factory=list)
+    excluded: str = ""  # why the policyholder excluded it (not theirs); empty when claimed
+
+    def absorb(self, other: "InventoryBook") -> None:
+        """Take over another record of the same spine: its sightings and what was said about it."""
+        self.sightings.extend(other.sightings)
+        self.statements.extend(s for s in other.statements if s not in self.statements)
+        self.excluded = self.excluded or other.excluded
 
     @property
     def orientation(self) -> str:
@@ -229,6 +238,24 @@ def iou(a: Box, b: Box) -> float:
 class Inventory:
     def __init__(self) -> None:
         self.books: list[InventoryBook] = []
+        # Shelf rows the policyholder excluded, by position on their unit (labels are renumbered as rows
+        # are discovered): (plane id, top, bottom, reason). Books seen there later are excluded too.
+        self.excluded_rows: list[tuple[str, float, float, str]] = []
+
+    def exclude_row_of(self, book: "InventoryBook", reason: str) -> tuple[float, float]:
+        """Exclude the shelf row this book stands on; returns the row's extent on its unit."""
+        row = [b for b in self.books if b.plane_id == book.plane_id and b.shelf == book.shelf] or [book]
+        top, bottom = min(b.box[1] for b in row), max(b.box[3] for b in row)
+        self.excluded_rows.append((book.plane_id, top, bottom, reason))
+        self.apply_exclusions()
+        return top, bottom
+
+    def apply_exclusions(self) -> None:
+        for book in self.books:
+            centre = (book.box[1] + book.box[3]) / 2
+            for plane_id, top, bottom, reason in self.excluded_rows:
+                if book.plane_id == plane_id and top <= centre <= bottom:
+                    book.excluded = book.excluded or reason
 
     def add(self, plane_id: str, sighting: Sighting) -> tuple[InventoryBook, bool]:
         """Add a sighting; returns the book it belongs to and whether the book is new."""
@@ -331,7 +358,7 @@ class Inventory:
                 continue
             for other in books[i + 1:]:
                 if other in self.books and all(book.matches(s) for s in other.sightings[:1]):
-                    book.sightings.extend(other.sightings)
+                    book.absorb(other)
                     self.books.remove(other)
                     merged += 1
         return merged
@@ -352,7 +379,7 @@ class Inventory:
                 spanning = {s.frame_id for s in a.sightings + b.sightings if _spans(s, a) and _spans(s, b)}
                 separate = {s.frame_id for s in a.sightings} & {s.frame_id for s in b.sightings}
                 if len(spanning) > len(separate - spanning):
-                    a.sightings.extend(b.sightings)
+                    a.absorb(b)
                     self.books.remove(b)
                     merged += 1
                     changed = True

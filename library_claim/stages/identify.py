@@ -214,7 +214,8 @@ class Catalogs:
             return []
         params = {"q": query, "maxResults": 10, "printType": "books"}
         if self.google_key:
-            response = await net.get(self.http, GOOGLE_BOOKS, params={**params, "key": self.google_key})
+            # The key goes in a header, not the URL, so it never appears in logs or recorded URLs.
+            response = await net.get(self.http, GOOGLE_BOOKS, params=params, headers={"x-goog-api-key": self.google_key})
             if response is not None and response.status_code in (400, 401, 403):
                 # The key is not enabled for the Books API (e.g. a Gemini-only key).
                 self.google_key = ""

@@ -126,9 +126,10 @@ async def test_google_books_is_dropped_for_the_run_once_unusable(monkeypatch):
     calls = []
 
     def handler(request):
-        calls.append((request.url.host, "key" in request.url.params))
+        calls.append((request.url.host, "x-goog-api-key" in request.headers))
+        assert "key" not in request.url.params  # the key never travels in the URL
         if request.url.host == "www.googleapis.com":
-            return httpx.Response(401 if "key" in request.url.params else 429, json={})
+            return httpx.Response(401 if "x-goog-api-key" in request.headers else 429, json={})
         return httpx.Response(200, json={"docs": [{"title": "Ikigai", "author_name": ["Héctor García"], "key": "/works/X"}]})
 
     async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as http:

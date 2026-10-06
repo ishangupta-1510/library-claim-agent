@@ -130,6 +130,8 @@ class Totals(BaseModel):
     shelf_run_m: float = 0
     books_replacement_cost: float = 0
     books_used_value: float = 0
+    # Priced books whose identification awaits review (low confidence): shown, not in the claim total.
+    books_pending_review_cost: float = 0
     items_replacement_cost_low: float = 0
     items_replacement_cost_high: float = 0
     excluded_from_totals: int = 0

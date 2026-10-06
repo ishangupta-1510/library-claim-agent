@@ -49,3 +49,11 @@ def test_too_few_corners_is_an_error():
 def test_ft2_conversion():
     assert to_ft2(10.0) == pytest.approx(107.6, abs=0.1)
     assert to_ft2(None) is None
+
+
+def test_a_ceiling_tap_on_a_table_gives_no_height_rather_than_a_wrong_one():
+    from library_claim.stages.room import measure_room
+
+    corners = [(0, 0, 0), (4, 0, 0), (4, 0, 3), (0, 0, 3)]
+    room = measure_room(corners, 0.75)
+    assert room.height_m is None and room.wall_area_m2 is None and room.floor_area_m2 == 12.0

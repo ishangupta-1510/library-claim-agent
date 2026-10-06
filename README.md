@@ -6,52 +6,71 @@ identified, measured and priced in their currency. Other contents are listed and
 is measured. Afterwards a claim packet (`claim_packet.json` plus an HTML report) is built where every
 figure traces back to a saved frame and a dated price source.
 
-> Status: the pipeline, the live agent and the tests are complete. Results on a real room are still
-> to come. See [Results](#results).
+## Try it
 
-## Run it (about 10 minutes)
-
-Requirements: Python 3.12, Chrome. `ffmpeg` is needed only to regenerate the synthetic test video.
+Requirements: **Python 3.12** and **Chrome** (or Edge). Windows, macOS and Linux.
 
 ```bash
 git clone <repo> && cd library-claim-agent
 python -m venv .venv
-.venv\Scripts\activate            # macOS/Linux: source .venv/bin/activate
+# Windows:      .venv\Scripts\activate
+# macOS/Linux:  source .venv/bin/activate
 pip install -r requirements.txt
-copy .env.example .env            # then fill in the keys below
-uvicorn library_claim.server:app --host 0.0.0.0 --port 8000
+python -m library_claim
+```
+
+Open **http://localhost:8000**. The page offers three ways to run, from no setup to the real thing:
+
+| Button | Needs | What happens |
+|---|---|---|
+| **Mock flow (no APIs)** | nothing: no keys, no network, no camera, no microphone | The whole user journey, offline. Built-in shelf footage plays as the camera; a scripted agent talks (browser voice) and answers for you; the real pipeline counts, reads and measures the spines from **recorded** model answers and prices them from **recorded** searches; the room is marked; the claim packet and report are built. About 90 seconds. |
+| **Start demo sweep** | `GOOGLE_API_KEY` (and `SERPAPI_KEY` for live prices) | The same built-in footage, but with the real Gemini Live agent (talk to it with your microphone), live spine reading and live price searches. |
+| **Start sweep** | both keys, a webcam or phone, real shelves | The real thing. Show the size marker on each shelving unit (below). |
+
+When the packet is ready, **Open claim packet** shows the HTML report; the JSON and every saved frame
+and raw model/price response are in `sweeps/<sweep id>/`.
+
+### Keys (for demo and live sweeps)
+
+```bash
+cp .env.example .env        # Windows: copy .env.example .env
 ```
 
 | Key | Where | Used for |
 |---|---|---|
-| `GOOGLE_API_KEY` | https://aistudio.google.com/apikey (free tier works) | live voice agent, spine reading, item detection |
-| `SERPAPI_KEY` | https://serpapi.com (free plan: 100 searches/month) | Google Shopping and eBay listings for prices |
+| `GOOGLE_API_KEY` | https://aistudio.google.com/apikey (free tier works; vision is limited to ~500 calls/day) | live voice agent, spine reading, item detection |
+| `SERPAPI_KEY` | https://serpapi.com (free plan) | Google Shopping and eBay listings for prices |
 
-Then open http://localhost:8000 and press **Start sweep**.
+Restart `python -m library_claim` after editing `.env`; its first lines say which modes are ready.
 
-**Size reference.** Open http://localhost:8000/marker on a laptop at full brightness, measure the black
-square with a tape, set `MARKER_SIZE_CM` in `.env`, and stand the laptop on each shelving unit. A
-printed A4 copy of `/marker.png` works too.
+### Size reference (live sweeps)
 
-**Phone (room measurement).** WebXR needs HTTPS, so expose the server over an HTTPS tunnel (for example
-`tailscale serve 8000`), open it in Chrome on an ARCore phone and press **Start AR sweep**. The agent
-then asks you to tap **Mark corner** at each floor corner and **Mark ceiling** once.
+Open http://localhost:8000/marker on a second screen (laptop, tablet or phone) at full brightness, or
+print `/marker.png`. Measure the black square with a ruler and set `MARKER_SIZE_CM` in `.env`. Hold or
+stand it flat against each shelving unit at the start of that unit. Without it the sweep still counts
+and reads books, but sizes stay empty.
 
-**Mock camera (no phone, no books).** Chrome can play a video file as its webcam:
+### Phone (camera + room measurement)
 
-```bash
-python -m dev_data.synthetic       # renders 2 units, 60 books, exact ground truth, sweep.mjpeg
-chrome --use-fake-device-for-media-stream --use-file-for-fake-video-capture=dev_data/synthetic/sweep.mjpeg http://localhost:8000
-```
-
-**Without voice:** replay a folder of frames through the pipeline and score it:
+Browsers only give the camera to `localhost` or HTTPS pages. Put an HTTPS proxy in front of the app,
+for example with Tailscale on both devices:
 
 ```bash
-python scripts/replay.py dev_data/synthetic/frames --truth dev_data/synthetic/ground_truth.json
-python scripts/evaluate.py sweeps/<sweep_id> ground_truth/ground_truth.json
+tailscale serve --bg 8000      # prints https://<this-computer>.<tailnet>.ts.net
 ```
 
-**Tests:** `pip install -r requirements-dev.txt && pytest`. They run fully offline, with network and models faked.
+Open that address in Chrome on an ARCore phone. **Start AR sweep** adds room measurement: tap
+**Mark corner** at each floor corner and **Mark ceiling** once.
+
+### Without the browser
+
+```bash
+python -m scripts.replay dev_data/synthetic/frames --truth dev_data/synthetic/ground_truth.json --marker-cm 10
+python -m scripts.evaluate sweeps/<sweep id> ground_truth/ground_truth.json
+```
+
+`replay` feeds a folder of frames through the pipeline (needs `GOOGLE_API_KEY`) and scores it against
+every pass bar. Tests run fully offline: `pip install -r requirements-dev.txt && pytest`.
 
 ## How it works
 
@@ -132,12 +151,27 @@ Where the brief is ambiguous I decided as follows:
 
 ## Results
 
-To be filled in from the real capture: `ground_truth/` holds the hand-collected sheet, and
-`scripts/evaluate.py` writes each sweep's numbers against every pass bar.
+**Synthetic library** (two units, 60 books, exact ground truth; `dev_data/synthetic`). Two live-model
+replays at real capture pace (`python -m scripts.replay ... --truth ...`), Gemini Flash-Lite vision:
+
+| Pass bar | Target | Run 1 | Run 2 |
+|---|---|---|---|
+| Book count | within 5% | 60 / 60 | 60 / 60 |
+| Titles | ≥ 70% right, ≤ 3% confidently wrong | 98.2%, 0 wrong | 98.2%, 0 wrong |
+| Spine dimensions | 20 books within 15% | 18 / 20 (median error: height 0.6%, thickness 4.5%) | 19 / 20 (0.7%, 3.9%) |
+| Time to packet | under 5 minutes | 112 s | 122 s |
+
+The dimension misses are the thinnest spines (1.5 cm): the model's boxes run about 0.3 cm wide, which
+alone is 20% there. Snapping box sides to image edges was tried and made it worse (see the failure log).
+Prices, items and room areas need a real room: prices against hand-checked listings, items against a
+hand list, areas against a tape.
+
+**Real room:** to be filled in from the capture. `ground_truth/` holds the hand-collected sheet, and
+`python -m scripts.evaluate` scores a sweep against every pass bar.
 
 ## Tools used
 
 Gemini (Live API for voice, Flash for spine and item vision), Google Books and Open Library APIs,
-SerpAPI (Google Shopping, eBay), frankfurter.dev (ECB exchange rates), OpenCV (ArUco, ORB,
+SerpAPI (Google Shopping, eBay), frankfurter.dev (ECB exchange rates), OpenCV (ArUco, SIFT,
 homographies), WebXR with ARCore (room points), FastAPI. Code written with Claude Code (Anthropic) as
 an AI coding assistant.

@@ -12,7 +12,7 @@ for the real capture, ground_truth/ground_truth.json is filled in by hand):
   "room":   {"floor_area_m2": 12.1, "wall_area_m2": 38.0}                                     # optional
 }
 
-Usage: python scripts/evaluate.py <sweep_dir> <ground_truth.json>
+Usage: python -m scripts.evaluate <sweep_dir> <ground_truth.json>
 """
 
 from __future__ import annotations

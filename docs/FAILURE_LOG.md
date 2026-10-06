@@ -58,6 +58,60 @@
 - **Decision.** Vision runs on `gemini-3.5-flash-lite` (larger free quota). Coverage gating sends only
   frames that add 25%+ new shelf area. Price searches are cached and budgeted.
 
+### 6. Used values summed to 50 times the replacement cost
+- **Symptom.** Books' used value ₹949,372 against replacement ₹18,458 (*Long Walk to Freedom* used: ₹404,395).
+- **Root causes.** Signed first editions from rare-book dealers were medianed as "used, good"; short titles
+  matched unrelated products ("Deep Work" matched JDM wheel rims via fuzzy partial matching).
+- **Fix.** A listing counts only if it starts with the book's title, any "by" names the author, and it is
+  not another format, a translation, a lot or a collectible copy. Listings without a link are not
+  evidence. A used value exists only beside a replacement and never above it.
+- **Measured.** Used ₹2,256 against replacement ₹13,863; *The Midnight Library* ₹300 instead of ₹2,437.
+
+### 7. Bottom shelves were never read
+- **Symptom.** 16 of 17 missed titles were on the bottom shelf of each unit.
+- **Root cause.** The frame that shows the last row whole adds little new area (32%) and was never sent to
+  vision; earlier frames showed that row only cut off at their border.
+- **Fix.** Coverage counts only a sent frame's interior; when a pass over a unit ends, its last unsent
+  frame is sent if 20%+ of it is still unseen.
+- **Measured.** Titles 59% → 98%; book count 54 → 60 of 60.
+
+### 8. Catalog lookups failed for well-known books
+- **Root causes.** Accented names lost their letters ("Héctor García" → "h ctor garc a"); Open Library
+  lists some authors only in native script (村上春樹); subtitles folded into catalog titles.
+- **Fix.** Accent folding, Open Library alternative names, matching on the main title.
+
+### 9. One spine counted twice
+- **Root causes.** The model labelled upright spines "flat" in one frame; one frame was offset by a spine
+  width; one detection split a spine in two; one box ran into the next row and stretched a spine to 41 cm.
+- **Fixes.** Orientation from box shape on the rectified plane; read titles used as landmarks to shift a
+  misregistered frame; neighbouring columns merged when more frames saw one spine; spine ends as medians.
+- **Measured.** Count 61–64 → 60 in both runs; confidently wrong titles 6 → 0.
+
+### 10. Snapping box sides to image edges (reverted)
+- **Idea.** Thin spines measure ~0.3 cm too thick because the model's boxes are loose; snap each side to
+  the strongest nearby vertical edge.
+- **Measured.** Dimension passes fell from 19/20 to 9–14/20: the strongest edge is often a band or
+  lettering on the spine, not its boundary. Reverted.
+
+### 11. Live agent: looped on the marker, and set the currency from noise
+- **Symptoms.** The agent asked for "the laptop marker" every few seconds without saying what it is (the
+  tester held up the laptop itself); separately it set USD after the microphone heard "Sh".
+- **Fixes.** The opening explains the marker; the request is made at most twice, a minute apart, and
+  the sweep never waits on it. `set_locale` must quote the policyholder's words, and the server refuses
+  it unless they name the country or currency.
+
+### 12. Late vision answers and policyholder notes landing on the wrong unit or book (code review)
+- **Root causes.** A queued vision job kept the unit object it was queued with, after that unit had been
+  merged into another; unit ids were reused; spoken notes were keyed by object id and shelf labels.
+- **Fixes.** Stable unit ids; an answer is mapped into the frame's current unit geometry when it arrives;
+  notes and exclusions live on the books (exclusions by position on the unit) and survive merges.
+
+### 13. Daily vision quota ran out mid-sweep
+- **Root cause.** Free tier: 500 Flash-Lite requests a day; development runs used them up, and the packet
+  then waited on retries that could not succeed.
+- **Fix.** A per-day 429 stops vision for the sweep at once; the packet builds from what was read and
+  its stage report says how many frames were not read.
+
 ## Cost per sweep and latency per stage
 
 Recorded in each packet under `stages` (`latency_s`, `usage`, `cost_usd_estimate`); figures from the

@@ -26,7 +26,7 @@ class Locale:
 # Words that confirm a country when the policyholder says them (country, people, currency).
 LOCALE_WORDS: dict[str, tuple[str, ...]] = {
     "IN": ("india", "indian", "bharat", "rupee", "rupees", "inr"),
-    "US": ("united states", "america", "american", "usa", "us", "dollar", "dollars", "usd"),
+    "US": ("united states", "america", "american", "usa", "dollar", "dollars", "usd"),
     "GB": ("united kingdom", "uk", "britain", "british", "england", "scotland", "wales", "pound", "pounds", "gbp"),
 }
 
@@ -34,6 +34,8 @@ LOCALE_WORDS: dict[str, tuple[str, ...]] = {
 def confirms_country(code: str, words: str) -> bool:
     """The policyholder's words name this country or its currency (whole words, any case)."""
     said = " " + " ".join(re.findall(r"[a-z]+", words.lower())) + " "
+    if code == "US" and re.search(r"\b(US|U\.S\.?)(?![a-z])", words):
+        return True  # "the US", "U.S." -- but not the pronoun "us"
     return any(f" {w} " in said for w in LOCALE_WORDS.get(code, ()))
 
 
@@ -54,6 +56,7 @@ class Settings:
     compare_country: str
     marker_size_cm: float
     appraisal_threshold: float
+    appraisal_threshold_currency: str  # the threshold is converted at the day's rate for claims in other currencies
     sweeps_dir: Path
     price_search_budget: int | None
 
@@ -71,7 +74,7 @@ def locale_for(country: str) -> Locale:
 
 @lru_cache
 def settings() -> Settings:
-    return Settings(
+    cfg = Settings(
         google_api_key=os.getenv("GOOGLE_API_KEY", ""),
         serpapi_key=os.getenv("SERPAPI_KEY", ""),
         live_model=os.getenv("LIVE_MODEL", "gemini-3.8-live"),
@@ -80,6 +83,11 @@ def settings() -> Settings:
         compare_country=os.getenv("COMPARE_COUNTRY", "US"),
         marker_size_cm=float(os.getenv("MARKER_SIZE_CM", "15.0")),
         appraisal_threshold=float(os.getenv("APPRAISAL_THRESHOLD", "10000")),
+        appraisal_threshold_currency=os.getenv("APPRAISAL_THRESHOLD_CURRENCY", "INR").upper(),
         sweeps_dir=Path(os.getenv("SWEEPS_DIR", "sweeps")),
         price_search_budget=int(os.environ["PRICE_SEARCH_BUDGET"]) if os.getenv("PRICE_SEARCH_BUDGET") else None,
     )
+    # Fail at startup, not after a policyholder has walked the whole room.
+    locale_for(cfg.country)
+    locale_for(cfg.compare_country)
+    return cfg

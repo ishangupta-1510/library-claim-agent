@@ -26,3 +26,26 @@ def test_a_country_is_set_only_from_words_that_name_it():
     assert confirms_country("US", "the US") and confirms_country("GB", "UK")
     assert not confirms_country("US", "Sh")
     assert not confirms_country("US", "use it") and not confirms_country("IN", "")
+
+
+def test_the_pronoun_us_does_not_confirm_the_usa():
+    from library_claim.config import confirms_country
+
+    assert not confirms_country("US", "can you help us") and confirms_country("US", "We're in the U.S.")
+
+
+def test_mock_flow_needs_no_keys_and_confirms_the_country(monkeypatch):
+    import library_claim.server as server
+    from dataclasses import replace
+
+    monkeypatch.setattr(server, "cfg", replace(server.cfg, google_api_key="", serpapi_key=""))
+    client = TestClient(app)
+    with client.websocket_connect("/ws/sweep?mock=1") as ws:
+        ready = ws.receive_json()
+        assert ready["type"] == "ready" and ready["mock"]
+        greeting = ws.receive_json()
+        assert greeting["speaker"] == "agent" and "country" in greeting["text"]
+        ws.receive_json()  # turn_complete
+        ws.send_json({"type": "text", "text": "I'm in India"})
+        events = [ws.receive_json() for _ in range(3)]
+        assert {"type": "locale", "country": "IN", "currency": "INR"} in events

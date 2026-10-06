@@ -32,7 +32,7 @@ TEMPLATE = """<!doctype html>
 <h2>Totals <span class="muted">(computed in code from the lines below)</span></h2>
 <div class="cards">
  <div class="card"><span class="muted">Books counted</span><b>{{ t.book_count }}</b>{{ t.books_identified }} identified · {{ t.books_unidentified }} unidentified · {{ t.books_needs_appraisal }} for appraisal{% if t.books_excluded_by_policyholder %} · {{ t.books_excluded_by_policyholder }} excluded{% endif %}</div>
- <div class="card"><span class="muted">Books, replacement</span><b>{{ money(t.books_replacement_cost) }}</b>used value {{ money(t.books_used_value) }}</div>
+ <div class="card"><span class="muted">Books, replacement</span><b>{{ money(t.books_replacement_cost) }}</b>used value {{ money(t.books_used_value) }}{% if t.books_pending_review_cost %}<br>pending review {{ money(t.books_pending_review_cost) }}{% endif %}</div>
  <div class="card"><span class="muted">Other contents</span><b>{{ money(t.items_replacement_cost_low) }} – {{ money(t.items_replacement_cost_high) }}</b>replacement range</div>
  <div class="card"><span class="muted">Shelf run</span><b>{{ t.shelf_run_m }} m</b>summed measured spine thickness</div>
  <div class="card"><span class="muted">Lines excluded from totals</span><b>{{ t.excluded_from_totals }}</b>no sourced price, or appraisal needed</div>
@@ -52,7 +52,7 @@ TEMPLATE = """<!doctype html>
 <table><tr><th>ID</th><th>Shelf · pos</th><th>Status</th><th>Title / author</th><th>Edition · ISBN</th><th class="num">H × T (cm)</th><th class="num">Replacement</th><th class="num">Used</th><th>Evidence</th></tr>
 {% for b in p.books %}<tr>
 <td>{{ b.id }}</td><td>{{ b.shelf }} · {{ b.position }}</td><td><span class="tag {{ b.status }}">{{ b.status }}</span>{% if b.excluded %} <span class="tag">excluded</span>{% endif %}</td>
-<td>{% if b.title %}<b>{{ b.title }}</b><br>{{ b.author }}<br><span class="muted">conf {{ b.id_confidence }} · <a href="{{ b.id_url }}">{{ b.id_source }}</a></span>{% else %}<span class="muted">spine: "{{ b.spine_text or "unreadable" }}"</span>{% endif %}</td>
+<td>{% if b.title %}<b>{{ b.title }}</b><br>{{ b.author }}<br><span class="muted">conf {{ b.id_confidence }} · <a href="{{ b.id_url|safe_url }}">{{ b.id_source }}</a></span>{% else %}<span class="muted">spine: "{{ b.spine_text or "unreadable" }}"</span>{% endif %}</td>
 <td>{{ b.edition }}{% if b.isbn %}<br>{{ b.isbn }}{% endif %}</td>
 <td class="num">{{ dim(b.spine_height_cm) }} × {{ dim(b.spine_thickness_cm) }}</td>
 <td class="num">{{ price(b.replacement_cost) }}</td><td class="num">{{ price(b.used_value) }}</td>
@@ -64,7 +64,7 @@ TEMPLATE = """<!doctype html>
 {% for i in p.items %}<tr><td>{{ i.id }}</td><td>{{ i.category }}</td><td>{{ i.description }}{% if i.material %}<br><span class="muted">{{ i.material }}</span>{% endif %}</td>
 <td>{{ i.brand_model or "—" }}</td><td>{% if i.dimensions_cm.w %}{{ i.dimensions_cm.w }} × {{ i.dimensions_cm.h }}{% else %}—{% endif %}</td>
 <td><span class="tag {{ i.status }}">{{ i.status }}</span></td>
-<td class="num">{% if i.replacement_cost.low is not none %}{{ money(i.replacement_cost.low) }}{% if i.replacement_cost.high != i.replacement_cost.low %} – {{ money(i.replacement_cost.high) }}{% endif %}<br><a href="{{ i.replacement_cost.url }}">{{ i.replacement_cost.source }}</a> <span class="muted">{{ i.replacement_cost.retrieved_at[:10] }}</span>{% else %}—{% endif %}</td>
+<td class="num">{% if i.replacement_cost.low is not none %}{{ money(i.replacement_cost.low) }}{% if i.replacement_cost.high != i.replacement_cost.low %} – {{ money(i.replacement_cost.high) }}{% endif %}<br><a href="{{ i.replacement_cost.url|safe_url }}">{{ i.replacement_cost.source }}</a> <span class="muted">{{ i.replacement_cost.retrieved_at[:10] }}</span>{% else %}—{% endif %}</td>
 <td><a href="{{ i.frame_ref }}">frame</a></td></tr>{% endfor %}
 </table>
 
@@ -94,6 +94,11 @@ def write_report(packet: ClaimPacket, sweep_dir: Path) -> Path:
     def dim(value) -> str:
         return "—" if value is None else f"{value:.1f}"
 
+    def safe_url(url: str) -> str:
+        """Only web links and the sweep's own relative files; anything else (javascript:, data:) becomes inert."""
+        url = url or ""
+        return url if url.startswith(("https://", "http://", "frames/")) else "#"
+
     def price(p) -> str:
         if p.amount is None:
             return "—"
@@ -109,16 +114,17 @@ def write_report(packet: ClaimPacket, sweep_dir: Path) -> Path:
 
     env = Environment(autoescape=select_autoescape(default=True))
     env.globals.update(money=money, dim=dim)
+    env.filters["safe_url"] = safe_url
     # price() builds trusted markup from escaped-at-source fields; mark it safe explicitly.
     from markupsafe import Markup, escape
 
     def safe_price(p):
         if p.amount is None:
             return "—"
-        return Markup(price(p.model_copy(update={"source": str(escape(p.source)), "url": str(escape(p.url))})))
+        return Markup(price(p.model_copy(update={"source": str(escape(p.source)), "url": str(escape(safe_url(p.url)))})))
 
     def safe_raw(p):
-        return Markup(raw_price({**p, "url": str(escape(p.get("url", "")))}))
+        return Markup(raw_price({**p, "url": str(escape(safe_url(p.get("url", ""))))}))
 
     html = env.from_string(TEMPLATE).render(p=packet, t=packet.totals, r=packet.room, price=safe_price, raw_price=safe_raw)
     path = sweep_dir / "report.html"

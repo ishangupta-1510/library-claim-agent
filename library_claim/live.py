@@ -88,6 +88,9 @@ def live_config(voice: str = "Kore") -> types.LiveConnectConfig:
         input_audio_transcription=types.AudioTranscriptionConfig(),
         output_audio_transcription=types.AudioTranscriptionConfig(),
         realtime_input_config=types.RealtimeInputConfig(activity_handling=types.ActivityHandling.START_OF_ACTIVITY_INTERRUPTS),
+        # Audio+video sessions end after about two minutes without compression; a library walk is longer.
+        # A sliding window keeps the session open by dropping the oldest turns once the context fills.
+        context_window_compression=types.ContextWindowCompressionConfig(sliding_window=types.SlidingWindow()),
         tools=TOOLS,
     )
 

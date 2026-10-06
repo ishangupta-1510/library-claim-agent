@@ -29,10 +29,14 @@ def book_counts_in_total(book: Book) -> bool:
 def compute_totals(packet: ClaimPacket) -> Totals:
     books, items = packet.books, packet.items
     excluded = 0
-    replacement = used = 0.0
+    replacement = used = pending = 0.0
 
     for book in books:
-        if book_counts_in_total(book):
+        if book_counts_in_total(book) and book.id_confidence < REVIEW_CONFIDENCE:
+            # Priced, but the identification itself is in the review queue: held apart, not claimed yet.
+            pending += book.replacement_cost.amount or 0
+            excluded += 1
+        elif book_counts_in_total(book):
             replacement += book.replacement_cost.amount or 0
             if book.used_value.amount is not None and book.used_value.url:
                 used += book.used_value.amount
@@ -59,6 +63,7 @@ def compute_totals(packet: ClaimPacket) -> Totals:
         shelf_run_m=round(sum(thickness) / 100, 2),
         books_replacement_cost=_money(replacement),
         books_used_value=_money(used),
+        books_pending_review_cost=_money(pending),
         items_replacement_cost_low=_money(low),
         items_replacement_cost_high=_money(high),
         excluded_from_totals=excluded,
@@ -91,6 +96,8 @@ def _item_reasons(item: Item) -> list[str]:
         reasons.append("Art or unique item: needs appraisal, not auto-priced")
     if item.status != "needs_appraisal" and item.replacement_cost.low is None:
         reasons.append("No retrievable price found; excluded from totals")
+    elif item.status != "needs_appraisal" and not item.replacement_cost.url:
+        reasons.append("Price has no source link; excluded from totals")
     if item.status == "range" and item.replacement_cost.low is not None:
         reasons.append("Brand/model unknown: priced as a sourced range")
     if item.confidence < REVIEW_CONFIDENCE:

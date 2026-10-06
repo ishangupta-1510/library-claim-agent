@@ -199,6 +199,7 @@ def parse_items(payload: dict, width: int, height: int) -> list[ItemDetection]:
 
 
 RETRIES = 4
+CALL_TIMEOUT_S = 90
 
 
 class VisionQuotaExhausted(RuntimeError):
@@ -242,15 +243,20 @@ class GeminiVision:
         while True:
             await self._throttle()
             try:
-                response = await self.client.aio.models.generate_content(
+                # A call that never returns would hold the sweep's vision queue (and the packet) forever.
+                response = await asyncio.wait_for(self.client.aio.models.generate_content(
                     model=self.model,
                     contents=[types.Part.from_bytes(data=image_jpeg, mime_type="image/jpeg"), prompt],
                     config=types.GenerateContentConfig(
                         response_mime_type="application/json", response_schema=schema, temperature=0,
                         automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
                     ),
-                )
+                ), timeout=CALL_TIMEOUT_S)
                 break
+            except asyncio.TimeoutError:
+                attempts += 1
+                if attempts > RETRIES:
+                    raise
             except errors.APIError as exc:
                 # 429 (rate limit) and 5xx (overload) are transient on the free tier; back off and retry.
                 attempts += 1

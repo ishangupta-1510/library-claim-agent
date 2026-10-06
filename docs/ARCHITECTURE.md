@@ -56,3 +56,19 @@
 - **The model never produces a price.** With no listing, the amount stays empty, the line goes to the
   review queue and it's excluded from totals.
 - **Raw responses are kept.** Every API response is saved in `sweeps/<id>/raw/` for audit.
+
+## Mock flow (offline)
+
+The **Mock flow** button runs the same pipeline with every external call replaced by a recording, so a
+reviewer can see the whole journey with no keys, network, camera or microphone:
+
+- **Vision.** `RecordedVision` answers each call by its id (`vision_spines-f0003`) from a real run over
+  the built-in footage. The pipeline is deterministic on the same frames, so it asks for the same ids.
+- **Catalogs and FX.** `cassette.py` replays recorded HTTP responses, keyed by URL with credentials
+  removed. A request that wasn't recorded gets a 404, which the lookup code treats as "nothing found".
+- **Prices.** `PriceClient(offline=True)` answers only from recorded searches.
+- **Agent.** `mock.py` stands in for Gemini Live. It speaks the same capture directions the live agent is
+  given (from the same `Narrator`), and the page answers for the policyholder and marks a 4.2 × 3.6 m room.
+
+`python -m scripts.record_mock_fixtures <sweep>` rebuilds the recordings from a real replay without
+spending quota. `tests/test_mock_flow.py` runs the mock pipeline with the network blocked.
