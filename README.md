@@ -165,23 +165,27 @@ Where the brief is ambiguous I decided as follows:
 
 ## Results
 
-**Synthetic library** (two units, 60 books, exact ground truth; `dev_data/synthetic`). Two live-model
-replays at real capture pace (`python -m scripts.replay ... --truth ...`), Gemini Flash-Lite vision:
+No real room was available, so all results are on the **synthetic library** (two units, 60 books, exact
+ground truth; `dev_data/synthetic`). Gemini Flash-Lite vision throughout.
 
-| Pass bar | Target | Run 1 | Run 2 |
-|---|---|---|---|
-| Book count | within 5% | 60 / 60 | 60 / 60 |
-| Titles | ≥ 70% right, ≤ 3% confidently wrong | 98.2%, 0 wrong | 98.2%, 0 wrong |
-| Spine dimensions | 20 books within 15% | 18 / 20 (median error: height 0.6%, thickness 4.5%) | 19 / 20 (0.7%, 3.9%) |
-| Time to packet | under 5 minutes | 112 s | 122 s |
+| Pass bar | Target | Replay 1 | Replay 2 | Live agent demo |
+|---|---|---|---|---|
+| Book count | within 5% | 60 / 60 | 60 / 60 | 61 / 60 |
+| Titles | ≥ 70% right, ≤ 3% confidently wrong | 98.2%, 0 wrong | 98.2%, 0 wrong | 98.2%, 1 wrong (1.7%) |
+| Spine dimensions | 20 books within 15% | 18 / 20 (median error: height 0.6%, thickness 4.5%) | 19 / 20 (0.7%, 3.9%) | 17 / 20 (0.65%, 5.4%) |
+| Time to packet | under 5 minutes | 112 s | 122 s | 118 s |
+
+Replays feed the frames at capture pace (`python -m scripts.replay ... --truth ...`). The live agent demo
+is the full app with the Gemini Live agent and a synthesized policyholder voice
+([`submission/live_demo_run/`](submission/live_demo_run/), with its unedited video).
 
 The dimension misses are the thinnest spines (1.5 cm): the model's boxes run about 0.3 cm wide, which
 alone is 20% there. Snapping box sides to image edges was tried and made it worse (see the failure log).
 Prices, items and room areas need a real room: prices against hand-checked listings, items against a
 hand list, areas against a tape.
 
-**Real room:** to be filled in from the capture. `ground_truth/` holds the hand-collected sheet, and
-`python -m scripts.evaluate` scores a sweep against every pass bar.
+**Real room:** not captured. `ground_truth/` holds the sheet a real capture would be scored against, and
+`python -m scripts.evaluate <sweep> <truth.json>` scores any sweep against every pass bar.
 
 ## Tools used
 

@@ -1,0 +1,59 @@
+{
+  "book_count": {
+    "truth": 60,
+    "system": 61,
+    "error_pct": 1.7,
+    "pass": true
+  },
+  "titles": {
+    "legible_truth": 56,
+    "correct": 55,
+    "correct_pct": 98.2,
+    "confidently_wrong": 1,
+    "confidently_wrong_pct": 1.7,
+    "wrong_titles": [
+      "Five Point Someone",
+      "Susan Cain",
+      "Sophie's world"
+    ],
+    "pass": true
+  },
+  "spine_dimensions": {
+    "sample": 20,
+    "within_15pct": 17,
+    "median_height_err_pct": 0.6499999999999999,
+    "median_thickness_err_pct": 5.4,
+    "worst": [
+      {
+        "title": "Clean Code",
+        "height_err_pct": 35.4,
+        "thickness_err_pct": 4.2
+      },
+      {
+        "title": "Five Point Someone",
+        "height_err_pct": 30.3,
+        "thickness_err_pct": 0.0
+      },
+      {
+        "title": "The Old Man and the Sea",
+        "height_err_pct": 0.7,
+        "thickness_err_pct": 20.0
+      },
+      {
+        "title": "The Hobbit",
+        "height_err_pct": 1.2,
+        "thickness_err_pct": 13.0
+      },
+      {
+        "title": "The White Tiger",
+        "height_err_pct": 0.4,
+        "thickness_err_pct": 11.1
+      }
+    ],
+    "pass": false
+  },
+  "time_to_packet_s": {
+    "system": 118.0,
+    "pass": true
+  }
+}

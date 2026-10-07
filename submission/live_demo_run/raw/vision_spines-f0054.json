@@ -1,0 +1,192 @@
+{
+ "usage": {
+  "model": "gemini-3.5-flash-lite",
+  "latency_s": 46.66,
+  "input_tokens": 1351,
+  "output_tokens": 1244
+ },
+ "response": {
+  "books": [
+   {
+    "box_2d": [
+     14,
+     269,
+     203,
+     301
+    ],
+    "orientation": "upright",
+    "title": "MALGUDI DAYS",
+    "author": "",
+    "publisher": "",
+    "all_text": "MALGUDI DAYS",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     12,
+     300,
+     204,
+     329
+    ],
+    "orientation": "upright",
+    "title": "HOMO DEUS",
+    "author": "",
+    "publisher": "",
+    "all_text": "HOMO DEUS",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     11,
+     328,
+     205,
+     351
+    ],
+    "orientation": "upright",
+    "title": "",
+    "author": "",
+    "publisher": "",
+    "all_text": "",
+    "legible": false,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     10,
+     350,
+     205,
+     378
+    ],
+    "orientation": "upright",
+    "title": "SOPHIE'S WORLD",
+    "author": "",
+    "publisher": "",
+    "all_text": "SOPHIE'S WORLD",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     8,
+     377,
+     206,
+     416
+    ],
+    "orientation": "upright",
+    "title": "TO KILL A MOCKING",
+    "author": "",
+    "publisher": "",
+    "all_text": "TO KILL A MOCKING",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     9,
+     416,
+     207,
+     448
+    ],
+    "orientation": "upright",
+    "title": "LIFE OF PI",
+    "author": "",
+    "publisher": "",
+    "all_text": "LIFE OF PI",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     8,
+     447,
+     208,
+     480
+    ],
+    "orientation": "upright",
+    "title": "RICH DAD POOR D",
+    "author": "",
+    "publisher": "",
+    "all_text": "RICH DAD POOR D",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     371,
+     263,
+     815,
+     290
+    ],
+    "orientation": "upright",
+    "title": "THE PALACE OF ILLUSIONS",
+    "author": "Chitra Banerjee Divakaruni",
+    "publisher": "Picador",
+    "all_text": "THE PALACE OF ILLUSIONS Chitra Banerjee Divakaruni Picador",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     376,
+     283,
+     816,
+     315
+    ],
+    "orientation": "upright",
+    "title": "THINKING, FAST AND SLOW",
+    "author": "Daniel Kahneman",
+    "publisher": "Penguin",
+    "all_text": "THINKING, FAST AND SLOW Daniel Kahneman Penguin",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     679,
+     315,
+     719,
+     547
+    ],
+    "orientation": "flat",
+    "title": "THE GREAT GATSBY",
+    "author": "F. Scott Fitzgerald",
+    "publisher": "Penguin",
+    "all_text": "THE GREAT GATSBY F. Scott Fitzgerald Penguin",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     718,
+     315,
+     775,
+     537
+    ],
+    "orientation": "flat",
+    "title": "THE CATCHER IN THE RYE",
+    "author": "J. D. Salinger",
+    "publisher": "Penguin",
+    "all_text": "THE CATCHER IN THE RYE J. D. Salinger Penguin",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     773,
+     314,
+     821,
+     536
+    ],
+    "orientation": "flat",
+    "title": "THE BODY",
+    "author": "Bill Bryson",
+    "publisher": "Black Swan",
+    "all_text": "THE BODY Bill Bryson Black Swan",
+    "legible": true,
+    "age_cues": []
+   }
+  ]
+ }
+}

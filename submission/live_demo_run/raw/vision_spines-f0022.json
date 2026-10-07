@@ -1,0 +1,252 @@
+{
+ "usage": {
+  "model": "gemini-3.5-flash-lite",
+  "latency_s": 40.39,
+  "input_tokens": 1339,
+  "output_tokens": 1623
+ },
+ "response": {
+  "books": [
+   {
+    "box_2d": [
+     14,
+     258,
+     182,
+     301
+    ],
+    "orientation": "upright",
+    "title": "THE INHERITANCE OF LO",
+    "author": "",
+    "publisher": "",
+    "all_text": "THE INHERITANCE OF LO",
+    "legible": false,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     15,
+     300,
+     183,
+     342
+    ],
+    "orientation": "upright",
+    "title": "THE SILENT PATIE",
+    "author": "",
+    "publisher": "",
+    "all_text": "THE SILENT PATIE",
+    "legible": false,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     16,
+     342,
+     187,
+     366
+    ],
+    "orientation": "upright",
+    "title": "QUIET",
+    "author": "",
+    "publisher": "",
+    "all_text": "QUIET",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     18,
+     366,
+     189,
+     403
+    ],
+    "orientation": "upright",
+    "title": "THE SELFISH G",
+    "author": "",
+    "publisher": "",
+    "all_text": "THE SELFISH G",
+    "legible": false,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     20,
+     403,
+     191,
+     429
+    ],
+    "orientation": "upright",
+    "title": "TRAIN TO PAKI",
+    "author": "",
+    "publisher": "",
+    "all_text": "TRAIN TO PAKI",
+    "legible": false,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     21,
+     429,
+     192,
+     463
+    ],
+    "orientation": "upright",
+    "title": "IKIGAI",
+    "author": "",
+    "publisher": "",
+    "all_text": "IKIGAI",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     24,
+     463,
+     193,
+     481
+    ],
+    "orientation": "upright",
+    "title": "A BRIEF HISTOR",
+    "author": "",
+    "publisher": "",
+    "all_text": "A BRIEF HISTOR",
+    "legible": false,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     29,
+     501,
+     194,
+     510
+    ],
+    "orientation": "upright",
+    "title": "OF MICE AND M",
+    "author": "",
+    "publisher": "",
+    "all_text": "OF MICE AND M",
+    "legible": false,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     31,
+     528,
+     195,
+     555
+    ],
+    "orientation": "upright",
+    "title": "MAN'S SEARCH",
+    "author": "",
+    "publisher": "",
+    "all_text": "MAN'S SEARCH",
+    "legible": false,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     311,
+     259,
+     772,
+     292
+    ],
+    "orientation": "upright",
+    "title": "GUNS, GERMS, AND STEEL",
+    "author": "Jared Diamond",
+    "publisher": "Vintage",
+    "all_text": "GUNS, GERMS, AND STEEL Jared Diamond Vintage",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     313,
+     292,
+     776,
+     333
+    ],
+    "orientation": "upright",
+    "title": "MIDNIGHT'S CHILDREN",
+    "author": "Salman Rushdie",
+    "publisher": "Vintage",
+    "all_text": "MIDNIGHT'S CHILDREN Salman Rushdie Vintage",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     288,
+     334,
+     777,
+     355
+    ],
+    "orientation": "upright",
+    "title": "OUTLIERS",
+    "author": "Malcolm Gladwell",
+    "publisher": "Penguin",
+    "all_text": "OUTLIERS Malcolm Gladwell Penguin",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     374,
+     355,
+     779,
+     385
+    ],
+    "orientation": "upright",
+    "title": "A SUITABLE BOY",
+    "author": "Vikram Seth",
+    "publisher": "Penguin",
+    "all_text": "A SUITABLE BOY Vikram Seth Penguin",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     648,
+     387,
+     692,
+     587
+    ],
+    "orientation": "flat",
+    "title": "RANGE",
+    "author": "David Epstein",
+    "publisher": "Macmillan",
+    "all_text": "RANGE David Epstein Macmillan",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     691,
+     387,
+     747,
+     621
+    ],
+    "orientation": "flat",
+    "title": "SAPIENS",
+    "author": "Yuval Noah Harari",
+    "publisher": "Vintage",
+    "all_text": "SAPIENS Yuval Noah Harari Vintage",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     743,
+     387,
+     799,
+     614
+    ],
+    "orientation": "flat",
+    "title": "GITANJALI",
+    "author": "Rabindranath Tagore",
+    "publisher": "Fingerprint",
+    "all_text": "GITANJALI Rabindranath Tagore Fingerprint",
+    "legible": true,
+    "age_cues": []
+   }
+  ]
+ }
+}

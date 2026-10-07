@@ -1,0 +1,25 @@
+{
+ "usage": {
+  "model": "gemini-3.5-flash-lite",
+  "latency_s": 49.34,
+  "input_tokens": 1234,
+  "output_tokens": 91
+ },
+ "response": {
+  "items": [
+   {
+    "box_2d": [
+     0,
+     237,
+     1000,
+     779
+    ],
+    "category": "shelving",
+    "description": "Wooden bookshelf filled with various books",
+    "material": "wood",
+    "brand_model": "",
+    "is_artwork": false
+   }
+  ]
+ }
+}

@@ -1,0 +1,222 @@
+{
+ "usage": {
+  "model": "gemini-3.5-flash-lite",
+  "latency_s": 4.98,
+  "input_tokens": 1327,
+  "output_tokens": 1482
+ },
+ "response": {
+  "books": [
+   {
+    "box_2d": [
+     110,
+     269,
+     458,
+     310
+    ],
+    "orientation": "upright",
+    "title": "THE INHERITANCE OF LOSS",
+    "author": "Kiran Desai",
+    "publisher": "Penguin",
+    "all_text": "THE INHERITANCE OF LOSS Kiran Desai Penguin",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     117,
+     311,
+     464,
+     350
+    ],
+    "orientation": "upright",
+    "title": "THE SILENT PATIENT",
+    "author": "Alex Michaelides",
+    "publisher": "Orion",
+    "all_text": "THE SILENT PATIENT Alex Michaelides Orion",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     2,
+     350,
+     467,
+     374
+    ],
+    "orientation": "upright",
+    "title": "QUIET",
+    "author": "Susan Cain",
+    "publisher": "",
+    "all_text": "QUIET Susan Cain",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     21,
+     374,
+     469,
+     408
+    ],
+    "orientation": "upright",
+    "title": "THE SELFISH GENE",
+    "author": "Richard Dawkins",
+    "publisher": "Oxford",
+    "all_text": "THE SELFISH GENE Richard Dawkins Oxford",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     6,
+     408,
+     470,
+     432
+    ],
+    "orientation": "upright",
+    "title": "TRAIN TO PAKISTAN",
+    "author": "Khushwant Singh",
+    "publisher": "",
+    "all_text": "TRAIN TO PAKISTAN Khushwant Singh",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     9,
+     432,
+     471,
+     465
+    ],
+    "orientation": "upright",
+    "title": "IKIGAI",
+    "author": "Hector Garcia",
+    "publisher": "Pe",
+    "all_text": "IKIGAI Hector Garcia Pe",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     9,
+     465,
+     473,
+     483
+    ],
+    "orientation": "upright",
+    "title": "A BRIEF HISTORY OF TIME",
+    "author": "Stephen Hawking",
+    "publisher": "Bantam",
+    "all_text": "A BRIEF HISTORY OF TIME Stephen Hawking Bantam",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     7,
+     483,
+     475,
+     526
+    ],
+    "orientation": "upright",
+    "title": "OF MICE AND MEN",
+    "author": "John Steinbeck",
+    "publisher": "Pen",
+    "all_text": "OF MICE AND MEN John Steinbeck Pen",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     9,
+     526,
+     476,
+     553
+    ],
+    "orientation": "upright",
+    "title": "MAN'S SEARCH FOR MEANING",
+    "author": "Viktor E. Frankl",
+    "publisher": "",
+    "all_text": "MAN'S SEARCH FOR MEANING Viktor E. Frankl",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     597,
+     269,
+     959,
+     304
+    ],
+    "orientation": "upright",
+    "title": "RMS, AND STEEL",
+    "author": "Jared Diamond",
+    "publisher": "Vintage",
+    "all_text": "RMS, AND STEEL Jared Diamond Vintage",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     600,
+     304,
+     960,
+     344
+    ],
+    "orientation": "upright",
+    "title": "S CHILDREN",
+    "author": "Salman Rushdie",
+    "publisher": "Vintage",
+    "all_text": "S CHILDREN Salman Rushdie Vintage",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     573,
+     344,
+     962,
+     363
+    ],
+    "orientation": "upright",
+    "title": "",
+    "author": "Malcolm Gladwell",
+    "publisher": "Penguin",
+    "all_text": "Malcolm Gladwell Penguin",
+    "legible": false,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     664,
+     363,
+     962,
+     391
+    ],
+    "orientation": "upright",
+    "title": "E BOY",
+    "author": "Vikram Seth",
+    "publisher": "Penguin",
+    "all_text": "E BOY Vikram Seth Penguin",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     950,
+     394,
+     971,
+     582
+    ],
+    "orientation": "flat",
+    "title": "",
+    "author": "",
+    "publisher": "",
+    "all_text": "",
+    "legible": false,
+    "age_cues": []
+   }
+  ]
+ }
+}

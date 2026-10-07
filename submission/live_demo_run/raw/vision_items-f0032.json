@@ -1,0 +1,38 @@
+{
+ "usage": {
+  "model": "gemini-3.5-flash-lite",
+  "latency_s": 1.75,
+  "input_tokens": 1234,
+  "output_tokens": 180
+ },
+ "response": {
+  "items": [
+   {
+    "box_2d": [
+     102,
+     212,
+     1000,
+     810
+    ],
+    "category": "shelving",
+    "description": "Brown wooden bookshelf holding books",
+    "material": "wood",
+    "brand_model": "",
+    "is_artwork": false
+   },
+   {
+    "box_2d": [
+     168,
+     228,
+     432,
+     391
+    ],
+    "category": "art",
+    "description": "Black and white marker or tag on a white background attached to the bookshelf side",
+    "material": "paper",
+    "brand_model": "",
+    "is_artwork": true
+   }
+  ]
+ }
+}

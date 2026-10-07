@@ -1,0 +1,3826 @@
+[
+ {
+  "book_id": "B001",
+  "plane": "P1",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0001",
+    "box_plane": [
+     11.47,
+     5.0,
+     14.78,
+     32.18
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "DUNE",
+    "author": "Frank Herbert"
+   },
+   {
+    "frame_id": "f0000",
+    "box_plane": [
+     11.47,
+     2.2,
+     14.87,
+     32.07
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "DUNE",
+    "author": "Frank Herbert"
+   },
+   {
+    "frame_id": "f0004",
+    "box_plane": [
+     11.37,
+     19.38,
+     14.87,
+     32.15
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "DUNE",
+    "author": ""
+   }
+  ]
+ },
+ {
+  "book_id": "B002",
+  "plane": "P1",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0001",
+    "box_plane": [
+     14.78,
+     4.95,
+     17.62,
+     32.18
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "THE IMMORTALS OF MELUHA",
+    "author": "Amish Tripathi"
+   },
+   {
+    "frame_id": "f0000",
+    "box_plane": [
+     14.78,
+     0.97,
+     17.56,
+     32.07
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "THE IMMORTALS OF MELUHA",
+    "author": "Amish Tripathi"
+   },
+   {
+    "frame_id": "f0004",
+    "box_plane": [
+     14.87,
+     19.38,
+     17.63,
+     32.15
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "THE IMMORTALS OF I",
+    "author": ""
+   }
+  ]
+ },
+ {
+  "book_id": "B003",
+  "plane": "P1",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0001",
+    "box_plane": [
+     17.8,
+     6.41,
+     20.26,
+     32.18
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "THE HOBBIT",
+    "author": "J. R. R. Tolkien"
+   },
+   {
+    "frame_id": "f0000",
+    "box_plane": [
+     17.74,
+     6.54,
+     20.34,
+     32.07
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "THE HOBBIT",
+    "author": "J. R. R. Tolkien"
+   },
+   {
+    "frame_id": "f0004",
+    "box_plane": [
+     17.73,
+     19.38,
+     20.31,
+     32.15
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "THE HOBBIT",
+    "author": ""
+   }
+  ]
+ },
+ {
+  "book_id": "B004",
+  "plane": "P1",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0001",
+    "box_plane": [
+     20.26,
+     14.17,
+     24.23,
+     32.18
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "EGO IS THE ENEMY",
+    "author": "Ryan Holiday"
+   },
+   {
+    "frame_id": "f0000",
+    "box_plane": [
+     20.34,
+     14.15,
+     24.11,
+     32.07
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "EGO IS THE ENEMY",
+    "author": "Ryan Holiday"
+   },
+   {
+    "frame_id": "f0004",
+    "box_plane": [
+     20.31,
+     19.38,
+     24.17,
+     32.15
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "EGO IS THE ENEMY",
+    "author": "Ryan"
+   }
+  ]
+ },
+ {
+  "book_id": "B005",
+  "plane": "P1",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0001",
+    "box_plane": [
+     24.23,
+     13.67,
+     27.26,
+     32.18
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "THE GOD OF SMALL THINGS",
+    "author": "Arundhati Roy"
+   },
+   {
+    "frame_id": "f0000",
+    "box_plane": [
+     24.11,
+     13.64,
+     27.34,
+     32.07
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "THE GOD OF SMALL THINGS",
+    "author": "Arundhati Roy"
+   },
+   {
+    "frame_id": "f0004",
+    "box_plane": [
+     24.17,
+     19.38,
+     27.4,
+     32.15
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "THE GOD OF SMALL THINGS",
+    "author": "Aru"
+   }
+  ]
+ },
+ {
+  "book_id": "B006",
+  "plane": "P1",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0001",
+    "box_plane": [
+     27.54,
+     11.96,
+     31.61,
+     32.18
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "FIVE POINT SOMEONE",
+    "author": "Chetan Bhagat"
+   },
+   {
+    "frame_id": "f0000",
+    "box_plane": [
+     27.52,
+     12.0,
+     29.49,
+     32.07
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": false,
+    "title": "",
+    "author": ""
+   },
+   {
+    "frame_id": "f0004",
+    "box_plane": [
+     27.58,
+     19.38,
+     29.61,
+     32.15
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": false,
+    "title": "",
+    "author": ""
+   }
+  ]
+ },
+ {
+  "book_id": "B007",
+  "plane": "P1",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0001",
+    "box_plane": [
+     31.7,
+     4.95,
+     34.35,
+     32.18
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "CLEAN CODE",
+    "author": "Robert C. Martin"
+   },
+   {
+    "frame_id": "f0000",
+    "box_plane": [
+     32.71,
+     23.65,
+     33.7,
+     30.95
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "CLEAN CODE",
+    "author": ""
+   },
+   {
+    "frame_id": "f0000",
+    "box_plane": [
+     31.82,
+     1.64,
+     34.33,
+     32.07
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": false,
+    "title": "",
+    "author": "Robert C. Martin"
+   },
+   {
+    "frame_id": "f0004",
+    "box_plane": [
+     31.82,
+     19.38,
+     34.3,
+     32.26
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "CLEAN CODE",
+    "author": ""
+   }
+  ]
+ },
+ {
+  "book_id": "B008",
+  "plane": "P1",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0001",
+    "box_plane": [
+     34.35,
+     13.62,
+     37.0,
+     32.18
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "WHERE THE CRAWDADS SING",
+    "author": "Delia Owens"
+   },
+   {
+    "frame_id": "f0000",
+    "box_plane": [
+     34.33,
+     13.64,
+     36.93,
+     32.07
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "WHERE THE CRAWDADS SING",
+    "author": "Delia Owens"
+   },
+   {
+    "frame_id": "f0004",
+    "box_plane": [
+     34.3,
+     19.38,
+     37.07,
+     32.31
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "WHERE THE CRAWDADS SING",
+    "author": "Del"
+   }
+  ]
+ },
+ {
+  "book_id": "B009",
+  "plane": "P1",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0001",
+    "box_plane": [
+     -0.54,
+     44.18,
+     2.68,
+     54.31
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom"
+    ],
+    "legible": true,
+    "title": "EA",
+    "author": "Eric Ries"
+   },
+   {
+    "frame_id": "f0004",
+    "box_plane": [
+     -0.6,
+     44.13,
+     2.81,
+     69.2
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "THE LEAN STARTUP",
+    "author": "Eric Ries"
+   },
+   {
+    "frame_id": "f0007",
+    "box_plane": [
+     -0.43,
+     44.13,
+     2.76,
+     69.17
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "THE LEAN STARTUP",
+    "author": "Eric Ries"
+   },
+   {
+    "frame_id": "f0010",
+    "box_plane": [
+     -0.49,
+     50.04,
+     2.69,
+     69.09
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "THE LEAN STARTUP",
+    "author": "Eric Rie"
+   },
+   {
+    "frame_id": "f0014",
+    "box_plane": [
+     -0.69,
+     65.78,
+     2.73,
+     69.09
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": false,
+    "title": "",
+    "author": ""
+   }
+  ]
+ },
+ {
+  "book_id": "B010",
+  "plane": "P1",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0001",
+    "box_plane": [
+     2.68,
+     43.22,
+     4.66,
+     54.31
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom"
+    ],
+    "legible": false,
+    "title": "",
+    "author": "Aravind Adiga"
+   },
+   {
+    "frame_id": "f0004",
+    "box_plane": [
+     2.81,
+     43.13,
+     4.74,
+     69.25
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "THE WHITE TIGER",
+    "author": "Aravind Adiga"
+   },
+   {
+    "frame_id": "f0007",
+    "box_plane": [
+     2.76,
+     43.13,
+     4.69,
+     69.22
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "THE WHITE TIGER",
+    "author": "Aravind Adiga"
+   },
+   {
+    "frame_id": "f0010",
+    "box_plane": [
+     2.69,
+     50.1,
+     4.64,
+     69.2
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "THE WHITE TIGER",
+    "author": "Aravin"
+   },
+   {
+    "frame_id": "f0014",
+    "box_plane": [
+     2.73,
+     65.83,
+     4.78,
+     69.2
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": false,
+    "title": "",
+    "author": ""
+   }
+  ]
+ },
+ {
+  "book_id": "B011",
+  "plane": "P1",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0001",
+    "box_plane": [
+     4.66,
+     41.3,
+     6.55,
+     54.31
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom"
+    ],
+    "legible": false,
+    "title": "",
+    "author": "Ernest Hemingway"
+   },
+   {
+    "frame_id": "f0004",
+    "box_plane": [
+     4.74,
+     41.4,
+     6.58,
+     69.25
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "THE OLD MAN AND THE SEA",
+    "author": "Ernest Hemingway"
+   },
+   {
+    "frame_id": "f0007",
+    "box_plane": [
+     4.88,
+     41.28,
+     6.52,
+     69.17
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "THE OLD MAN AND THE SEA",
+    "author": "Ernest Hemingway"
+   },
+   {
+    "frame_id": "f0010",
+    "box_plane": [
+     4.74,
+     50.1,
+     6.59,
+     69.2
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "THE OLD MAN AND THE SEA",
+    "author": "Erne"
+   },
+   {
+    "frame_id": "f0014",
+    "box_plane": [
+     4.88,
+     65.73,
+     6.93,
+     69.25
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": false,
+    "title": "",
+    "author": ""
+   }
+  ]
+ },
+ {
+  "book_id": "B012",
+  "plane": "P1",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0001",
+    "box_plane": [
+     6.55,
+     48.36,
+     9.11,
+     54.31
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom"
+    ],
+    "legible": false,
+    "title": "",
+    "author": ""
+   },
+   {
+    "frame_id": "f0004",
+    "box_plane": [
+     6.49,
+     48.39,
+     9.07,
+     69.25
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": false,
+    "title": "",
+    "author": ""
+   },
+   {
+    "frame_id": "f0007",
+    "box_plane": [
+     6.52,
+     48.4,
+     9.03,
+     69.28
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": false,
+    "title": "",
+    "author": ""
+   },
+   {
+    "frame_id": "f0010",
+    "box_plane": [
+     6.69,
+     50.1,
+     9.06,
+     69.2
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": false,
+    "title": "",
+    "author": ""
+   },
+   {
+    "frame_id": "f0014",
+    "box_plane": [
+     6.83,
+     65.73,
+     8.88,
+     69.25
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": false,
+    "title": "",
+    "author": ""
+   }
+  ]
+ },
+ {
+  "book_id": "B013",
+  "plane": "P1",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0001",
+    "box_plane": [
+     9.11,
+     49.47,
+     11.94,
+     54.31
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom"
+    ],
+    "legible": false,
+    "title": "",
+    "author": ""
+   },
+   {
+    "frame_id": "f0004",
+    "box_plane": [
+     9.16,
+     49.49,
+     12.02,
+     69.25
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": false,
+    "title": "",
+    "author": ""
+   },
+   {
+    "frame_id": "f0007",
+    "box_plane": [
+     9.03,
+     49.51,
+     12.12,
+     69.28
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": false,
+    "title": "",
+    "author": ""
+   },
+   {
+    "frame_id": "f0010",
+    "box_plane": [
+     9.06,
+     50.1,
+     12.03,
+     69.25
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": false,
+    "title": "",
+    "author": ""
+   },
+   {
+    "frame_id": "f0014",
+    "box_plane": [
+     9.17,
+     65.73,
+     11.91,
+     69.25
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": false,
+    "title": "",
+    "author": ""
+   }
+  ]
+ },
+ {
+  "book_id": "B014",
+  "plane": "P1",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0001",
+    "box_plane": [
+     11.94,
+     50.38,
+     13.93,
+     54.31
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom"
+    ],
+    "legible": false,
+    "title": "",
+    "author": ""
+   },
+   {
+    "frame_id": "f0004",
+    "box_plane": [
+     11.92,
+     50.23,
+     14.96,
+     69.3
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "THE PSYCHOLOGY OF MONEY",
+    "author": "Morgan Housel"
+   },
+   {
+    "frame_id": "f0007",
+    "box_plane": [
+     12.12,
+     49.98,
+     14.92,
+     69.33
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "THE PSYCHOLOGY OF MONEY",
+    "author": ""
+   },
+   {
+    "frame_id": "f0010",
+    "box_plane": [
+     12.03,
+     50.1,
+     15.01,
+     69.25
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "THE PSYCHOLOGY OF MONEY",
+    "author": ""
+   },
+   {
+    "frame_id": "f0014",
+    "box_plane": [
+     11.91,
+     65.73,
+     14.06,
+     69.31
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": false,
+    "title": "",
+    "author": ""
+   }
+  ]
+ },
+ {
+  "book_id": "B015",
+  "plane": "P1",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0000",
+    "box_plane": [
+     29.49,
+     2.86,
+     31.64,
+     32.07
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "FIVE POINT SOMEONE",
+    "author": "Chetan Bhagat"
+   },
+   {
+    "frame_id": "f0004",
+    "box_plane": [
+     29.52,
+     19.38,
+     31.82,
+     32.2
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "FIVE POINT SOMEONE",
+    "author": ""
+   }
+  ]
+ },
+ {
+  "book_id": "B016",
+  "plane": "P1",
+  "orientation": "flat",
+  "sightings": [
+   {
+    "frame_id": "f0004",
+    "box_plane": [
+     15.24,
+     62.26,
+     36.98,
+     65.52
+    ],
+    "orientation": "flat",
+    "cut": [],
+    "legible": true,
+    "title": "ZERO TO ONE",
+    "author": "Peter Thiel"
+   },
+   {
+    "frame_id": "f0007",
+    "box_plane": [
+     15.21,
+     62.63,
+     36.94,
+     65.43
+    ],
+    "orientation": "flat",
+    "cut": [],
+    "legible": true,
+    "title": "ZERO TO ONE",
+    "author": "Peter Thiel"
+   },
+   {
+    "frame_id": "f0010",
+    "box_plane": [
+     15.01,
+     62.52,
+     36.89,
+     65.5
+    ],
+    "orientation": "flat",
+    "cut": [],
+    "legible": true,
+    "title": "ZERO TO ONE",
+    "author": "Peter Thiel"
+   }
+  ]
+ },
+ {
+  "book_id": "B017",
+  "plane": "P1",
+  "orientation": "flat",
+  "sightings": [
+   {
+    "frame_id": "f0004",
+    "box_plane": [
+     15.24,
+     65.41,
+     39.19,
+     67.46
+    ],
+    "orientation": "flat",
+    "cut": [],
+    "legible": true,
+    "title": "NINETEEN EIGHTY-FOUR",
+    "author": "George Orwell"
+   },
+   {
+    "frame_id": "f0007",
+    "box_plane": [
+     15.21,
+     65.74,
+     39.16,
+     67.69
+    ],
+    "orientation": "flat",
+    "cut": [],
+    "legible": true,
+    "title": "NINETEEN EIGHTY-FOUR",
+    "author": "George Orwell"
+   },
+   {
+    "frame_id": "f0010",
+    "box_plane": [
+     15.11,
+     65.5,
+     39.04,
+     67.71
+    ],
+    "orientation": "flat",
+    "cut": [],
+    "legible": true,
+    "title": "NINETEEN EIGHTY-FOUR",
+    "author": "George Orwell"
+   },
+   {
+    "frame_id": "f0014",
+    "box_plane": [
+     15.23,
+     65.83,
+     39.05,
+     69.36
+    ],
+    "orientation": "flat",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "NINETEEN EIGHTY-FOUR",
+    "author": "George Orwell"
+   }
+  ]
+ },
+ {
+  "book_id": "B018",
+  "plane": "P1",
+  "orientation": "flat",
+  "sightings": [
+   {
+    "frame_id": "f0004",
+    "box_plane": [
+     15.24,
+     67.46,
+     35.59,
+     69.56
+    ],
+    "orientation": "flat",
+    "cut": [],
+    "legible": true,
+    "title": "LONG WALK TO FREEDOM",
+    "author": "Nelson Mandela"
+   },
+   {
+    "frame_id": "f0007",
+    "box_plane": [
+     15.21,
+     67.59,
+     35.59,
+     69.8
+    ],
+    "orientation": "flat",
+    "cut": [],
+    "legible": true,
+    "title": "LONG WALK TO FREEDOM",
+    "author": "Nelson Mandela"
+   },
+   {
+    "frame_id": "f0010",
+    "box_plane": [
+     15.11,
+     67.6,
+     35.55,
+     69.64
+    ],
+    "orientation": "flat",
+    "cut": [],
+    "legible": true,
+    "title": "LONG WALK TO FREEDOM",
+    "author": "Nelson Mandela"
+   },
+   {
+    "frame_id": "f0014",
+    "box_plane": [
+     15.23,
+     67.76,
+     35.64,
+     70.0
+    ],
+    "orientation": "flat",
+    "cut": [],
+    "legible": true,
+    "title": "LONG WALK TO FREEDOM",
+    "author": "Nelson Mandela"
+   }
+  ]
+ },
+ {
+  "book_id": "B019",
+  "plane": "P1",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0007",
+    "box_plane": [
+     7.1,
+     78.08,
+     9.32,
+     86.62
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom"
+    ],
+    "legible": false,
+    "title": "",
+    "author": "an Cain"
+   },
+   {
+    "frame_id": "f0010",
+    "box_plane": [
+     7.0,
+     77.98,
+     9.26,
+     83.72
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": false,
+    "title": "",
+    "author": ""
+   },
+   {
+    "frame_id": "f0014",
+    "box_plane": [
+     7.03,
+     78.13,
+     9.37,
+     106.29
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "QUIET",
+    "author": "Susan Cain"
+   },
+   {
+    "frame_id": "f0017",
+    "box_plane": [
+     7.05,
+     81.87,
+     9.36,
+     106.32
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "QUIET",
+    "author": "Susan Cain"
+   },
+   {
+    "frame_id": "f0022",
+    "box_plane": [
+     7.12,
+     96.86,
+     9.31,
+     106.34
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "QUIET",
+    "author": ""
+   },
+   {
+    "frame_id": "f0020",
+    "box_plane": [
+     7.03,
+     96.86,
+     9.31,
+     106.4
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "QUIET",
+    "author": ""
+   }
+  ]
+ },
+ {
+  "book_id": "B020",
+  "plane": "P1",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0007",
+    "box_plane": [
+     9.32,
+     84.88,
+     12.61,
+     86.67
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom",
+     "left"
+    ],
+    "legible": false,
+    "title": "",
+    "author": ""
+   },
+   {
+    "frame_id": "f0010",
+    "box_plane": [
+     9.36,
+     84.93,
+     12.65,
+     101.27
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom"
+    ],
+    "legible": true,
+    "title": "FISH GENE",
+    "author": "Richard Dawkins"
+   },
+   {
+    "frame_id": "f0014",
+    "box_plane": [
+     9.37,
+     84.97,
+     12.59,
+     106.29
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "THE SELFISH GENE",
+    "author": "Richard Dawkins"
+   },
+   {
+    "frame_id": "f0017",
+    "box_plane": [
+     9.36,
+     82.87,
+     12.64,
+     106.43
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "THE SELFISH GENE",
+    "author": "Richard Dawkins"
+   },
+   {
+    "frame_id": "f0022",
+    "box_plane": [
+     9.31,
+     96.98,
+     12.67,
+     106.45
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": false,
+    "title": "",
+    "author": ""
+   },
+   {
+    "frame_id": "f0020",
+    "box_plane": [
+     9.31,
+     97.03,
+     12.67,
+     106.51
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "THE SELFISH GENE",
+    "author": ""
+   }
+  ]
+ },
+ {
+  "book_id": "B021",
+  "plane": "P1",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0007",
+    "box_plane": [
+     12.61,
+     79.03,
+     14.92,
+     86.67
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom"
+    ],
+    "legible": false,
+    "title": "",
+    "author": "vant Singh"
+   },
+   {
+    "frame_id": "f0010",
+    "box_plane": [
+     12.55,
+     78.81,
+     15.01,
+     101.33
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom"
+    ],
+    "legible": true,
+    "title": "TO PAKISTAN",
+    "author": "Khushwant Singh"
+   },
+   {
+    "frame_id": "f0014",
+    "box_plane": [
+     12.59,
+     78.98,
+     14.93,
+     106.45
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "TRAIN TO PAKISTAN",
+    "author": "Khushwant Singh"
+   },
+   {
+    "frame_id": "f0017",
+    "box_plane": [
+     12.64,
+     82.08,
+     14.96,
+     106.48
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "TRAIN TO PAKISTAN",
+    "author": "Khushwant Singh"
+   },
+   {
+    "frame_id": "f0022",
+    "box_plane": [
+     12.67,
+     97.09,
+     15.03,
+     106.57
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": false,
+    "title": "",
+    "author": ""
+   },
+   {
+    "frame_id": "f0020",
+    "box_plane": [
+     12.49,
+     97.14,
+     15.03,
+     106.51
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "TRAIN TO PAKISTAN",
+    "author": ""
+   }
+  ]
+ },
+ {
+  "book_id": "B022",
+  "plane": "P1",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0007",
+    "box_plane": [
+     14.92,
+     79.87,
+     18.11,
+     86.67
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom"
+    ],
+    "legible": false,
+    "title": "",
+    "author": "Garcia"
+   },
+   {
+    "frame_id": "f0010",
+    "box_plane": [
+     15.01,
+     79.74,
+     17.99,
+     101.71
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom"
+    ],
+    "legible": false,
+    "title": "",
+    "author": ""
+   },
+   {
+    "frame_id": "f0014",
+    "box_plane": [
+     15.03,
+     79.78,
+     17.96,
+     106.56
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "IKIGAI",
+    "author": "Hector Garcia"
+   },
+   {
+    "frame_id": "f0017",
+    "box_plane": [
+     14.96,
+     82.24,
+     18.14,
+     106.54
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "IKIGAI",
+    "author": "Hector Garcia"
+   },
+   {
+    "frame_id": "f0022",
+    "box_plane": [
+     15.03,
+     97.14,
+     18.12,
+     106.62
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "IKIGAI",
+    "author": ""
+   },
+   {
+    "frame_id": "f0020",
+    "box_plane": [
+     14.94,
+     97.2,
+     18.12,
+     106.62
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "IKIGAI",
+    "author": ""
+   }
+  ]
+ },
+ {
+  "book_id": "B023",
+  "plane": "P1",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0007",
+    "box_plane": [
+     18.11,
+     81.56,
+     20.04,
+     86.67
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom"
+    ],
+    "legible": false,
+    "title": "",
+    "author": ""
+   },
+   {
+    "frame_id": "f0010",
+    "box_plane": [
+     17.99,
+     80.63,
+     20.25,
+     101.83
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom"
+    ],
+    "legible": true,
+    "title": "HISTORY OF TIME",
+    "author": "Stephen Hawking"
+   },
+   {
+    "frame_id": "f0014",
+    "box_plane": [
+     18.06,
+     80.42,
+     19.82,
+     106.61
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "A BRIEF HISTORY OF TIME",
+    "author": "Stephen Hawking"
+   },
+   {
+    "frame_id": "f0017",
+    "box_plane": [
+     18.14,
+     82.24,
+     19.88,
+     106.64
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "A BRIEF HISTORY OF TIME",
+    "author": "Stephen Hawking"
+   },
+   {
+    "frame_id": "f0022",
+    "box_plane": [
+     18.12,
+     97.31,
+     19.76,
+     106.68
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": false,
+    "title": "",
+    "author": ""
+   },
+   {
+    "frame_id": "f0020",
+    "box_plane": [
+     17.94,
+     97.31,
+     19.76,
+     106.73
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "A BRIEF HISTORY OF TIME",
+    "author": ""
+   }
+  ]
+ },
+ {
+  "book_id": "B024",
+  "plane": "P1",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0007",
+    "box_plane": [
+     20.04,
+     80.19,
+     24.0,
+     86.67
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom"
+    ],
+    "legible": false,
+    "title": "",
+    "author": ""
+   },
+   {
+    "frame_id": "f0014",
+    "box_plane": [
+     19.92,
+     80.42,
+     24.02,
+     106.72
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "OF MICE AND MEN",
+    "author": "John Steinbeck"
+   },
+   {
+    "frame_id": "f0017",
+    "box_plane": [
+     19.88,
+     82.13,
+     24.02,
+     106.75
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "OF MICE AND MEN",
+    "author": "John Steinbeck"
+   },
+   {
+    "frame_id": "f0022",
+    "box_plane": [
+     21.58,
+     97.59,
+     22.39,
+     106.73
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": false,
+    "title": "",
+    "author": ""
+   },
+   {
+    "frame_id": "f0020",
+    "box_plane": [
+     21.21,
+     97.47,
+     22.85,
+     106.9
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "OF MICE AND MEN",
+    "author": ""
+   },
+   {
+    "frame_id": "f0010",
+    "box_plane": [
+     20.25,
+     87.09,
+     22.51,
+     101.83
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom"
+    ],
+    "legible": true,
+    "title": "E AND MEN",
+    "author": "John Steinbeck"
+   }
+  ]
+ },
+ {
+  "book_id": "B025",
+  "plane": "P1",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0007",
+    "box_plane": [
+     24.0,
+     79.03,
+     26.61,
+     86.78
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom"
+    ],
+    "legible": false,
+    "title": "",
+    "author": "E. Frankl"
+   },
+   {
+    "frame_id": "f0010",
+    "box_plane": [
+     24.05,
+     78.97,
+     26.62,
+     102.1
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom"
+    ],
+    "legible": true,
+    "title": "SEARCH FOR MEANING",
+    "author": "Viktor E. Frankl"
+   },
+   {
+    "frame_id": "f0014",
+    "box_plane": [
+     24.02,
+     78.98,
+     26.56,
+     106.88
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "MAN'S SEARCH FOR MEANING",
+    "author": "Viktor E. Frankl"
+   },
+   {
+    "frame_id": "f0017",
+    "box_plane": [
+     24.02,
+     82.24,
+     26.63,
+     106.8
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "MAN'S SEARCH FOR MEANING",
+    "author": "Viktor E. Frankl"
+   },
+   {
+    "frame_id": "f0022",
+    "box_plane": [
+     24.03,
+     97.7,
+     26.48,
+     106.79
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": false,
+    "title": "",
+    "author": ""
+   },
+   {
+    "frame_id": "f0020",
+    "box_plane": [
+     23.85,
+     97.64,
+     26.48,
+     106.9
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "MAN'S SEARCH FOR MEANING",
+    "author": ""
+   }
+  ]
+ },
+ {
+  "book_id": "B026",
+  "plane": "P1",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0010",
+    "box_plane": [
+     9.16,
+     78.14,
+     12.55,
+     84.82
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "Susan Cain",
+    "author": ""
+   }
+  ]
+ },
+ {
+  "book_id": "B027",
+  "plane": "P1",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0010",
+    "box_plane": [
+     -0.49,
+     87.53,
+     3.31,
+     100.72
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom"
+    ],
+    "legible": true,
+    "title": "ANCE OF LOSS",
+    "author": "Kiran Desai"
+   },
+   {
+    "frame_id": "f0014",
+    "box_plane": [
+     -0.49,
+     87.58,
+     3.22,
+     105.92
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "THE INHERITANCE OF LOSS",
+    "author": "Kiran Desai"
+   },
+   {
+    "frame_id": "f0017",
+    "box_plane": [
+     -0.76,
+     87.55,
+     3.19,
+     105.85
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "THE INHERITANCE OF LOSS",
+    "author": "Kiran Desai"
+   },
+   {
+    "frame_id": "f0022",
+    "box_plane": [
+     -0.51,
+     96.75,
+     3.4,
+     106.07
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": false,
+    "title": "",
+    "author": ""
+   },
+   {
+    "frame_id": "f0020",
+    "box_plane": [
+     -0.51,
+     96.75,
+     3.4,
+     106.07
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "THE INHERITANCE OF LOSS",
+    "author": ""
+   }
+  ]
+ },
+ {
+  "book_id": "B028",
+  "plane": "P1",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0010",
+    "box_plane": [
+     3.31,
+     87.86,
+     7.1,
+     101.0
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom"
+    ],
+    "legible": true,
+    "title": "NT PATIENT",
+    "author": "Alex Michaelides"
+   },
+   {
+    "frame_id": "f0014",
+    "box_plane": [
+     3.22,
+     85.55,
+     7.03,
+     106.08
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "THE SILENT PATIENT",
+    "author": "Alex Michaelides"
+   },
+   {
+    "frame_id": "f0017",
+    "box_plane": [
+     3.29,
+     87.92,
+     7.05,
+     106.17
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "THE SILENT PATIENT",
+    "author": "Alex Michaelides"
+   },
+   {
+    "frame_id": "f0022",
+    "box_plane": [
+     3.31,
+     96.81,
+     7.12,
+     106.12
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": false,
+    "title": "",
+    "author": ""
+   },
+   {
+    "frame_id": "f0020",
+    "box_plane": [
+     3.22,
+     96.75,
+     7.12,
+     106.23
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "THE SILENT PATIENTS",
+    "author": ""
+   }
+  ]
+ },
+ {
+  "book_id": "B029",
+  "plane": "P1",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0014",
+    "box_plane": [
+     -0.4,
+     113.29,
+     2.53,
+     117.35
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom"
+    ],
+    "legible": false,
+    "title": "",
+    "author": ""
+   },
+   {
+    "frame_id": "f0017",
+    "box_plane": [
+     -0.76,
+     113.16,
+     2.61,
+     132.2
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom"
+    ],
+    "legible": true,
+    "title": "RMS, AND STEEL",
+    "author": "Jared Diamond"
+   },
+   {
+    "frame_id": "f0022",
+    "box_plane": [
+     -0.42,
+     113.22,
+     2.58,
+     138.77
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "GUNS, GERMS, AND STEEL",
+    "author": "Jared Diamond"
+   },
+   {
+    "frame_id": "f0020",
+    "box_plane": [
+     -0.51,
+     113.16,
+     2.58,
+     138.77
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "GUNS, GERMS, AND STEEL",
+    "author": "Jared Diamond"
+   }
+  ]
+ },
+ {
+  "book_id": "B030",
+  "plane": "P1",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0014",
+    "box_plane": [
+     2.53,
+     115.37,
+     6.34,
+     117.46
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom"
+    ],
+    "legible": false,
+    "title": "",
+    "author": ""
+   },
+   {
+    "frame_id": "f0017",
+    "box_plane": [
+     2.61,
+     113.32,
+     6.47,
+     132.25
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom"
+    ],
+    "legible": true,
+    "title": "S CHILDREN",
+    "author": "Salman Rushdie"
+   },
+   {
+    "frame_id": "f0022",
+    "box_plane": [
+     2.58,
+     113.33,
+     6.31,
+     138.99
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "MIDNIGHT'S CHILDREN",
+    "author": "Salman Rushdie"
+   },
+   {
+    "frame_id": "f0020",
+    "box_plane": [
+     2.49,
+     113.22,
+     6.4,
+     139.1
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "MIDNIGHT'S CHILDREN",
+    "author": "Salman Rushdie"
+   }
+  ]
+ },
+ {
+  "book_id": "B031",
+  "plane": "P1",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0014",
+    "box_plane": [
+     6.34,
+     111.95,
+     8.1,
+     117.51
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom"
+    ],
+    "legible": false,
+    "title": "",
+    "author": ""
+   },
+   {
+    "frame_id": "f0017",
+    "box_plane": [
+     6.47,
+     111.9,
+     8.3,
+     132.36
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom"
+    ],
+    "legible": false,
+    "title": "",
+    "author": ""
+   },
+   {
+    "frame_id": "f0022",
+    "box_plane": [
+     6.4,
+     111.94,
+     8.31,
+     139.05
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "OUTLIERS",
+    "author": "Malcolm Gladwell"
+   },
+   {
+    "frame_id": "f0020",
+    "box_plane": [
+     6.22,
+     112.05,
+     8.4,
+     139.21
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "OUTLIERS",
+    "author": "Malcolm Gladwell"
+   }
+  ]
+ },
+ {
+  "book_id": "B032",
+  "plane": "P1",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0014",
+    "box_plane": [
+     8.1,
+     116.82,
+     11.03,
+     117.62
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom",
+     "left",
+     "right",
+     "top"
+    ],
+    "legible": false,
+    "title": "",
+    "author": ""
+   },
+   {
+    "frame_id": "f0017",
+    "box_plane": [
+     8.3,
+     116.69,
+     11.0,
+     132.36
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom"
+    ],
+    "legible": true,
+    "title": "E BOY",
+    "author": "Vikram Seth"
+   },
+   {
+    "frame_id": "f0022",
+    "box_plane": [
+     8.31,
+     116.71,
+     11.03,
+     139.16
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "A SUITABLE BOY",
+    "author": "Vikram Seth"
+   },
+   {
+    "frame_id": "f0020",
+    "box_plane": [
+     8.21,
+     116.76,
+     11.03,
+     139.27
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "A SUITABLE BOY",
+    "author": "Vikram Seth"
+   }
+  ]
+ },
+ {
+  "book_id": "B033",
+  "plane": "P1",
+  "orientation": "flat",
+  "sightings": [
+   {
+    "frame_id": "f0017",
+    "box_plane": [
+     11.29,
+     131.73,
+     29.43,
+     132.83
+    ],
+    "orientation": "flat",
+    "cut": [
+     "bottom",
+     "left"
+    ],
+    "legible": false,
+    "title": "",
+    "author": ""
+   },
+   {
+    "frame_id": "f0022",
+    "box_plane": [
+     11.21,
+     131.9,
+     29.39,
+     134.34
+    ],
+    "orientation": "flat",
+    "cut": [],
+    "legible": true,
+    "title": "RANGE",
+    "author": "David Epstein"
+   },
+   {
+    "frame_id": "f0020",
+    "box_plane": [
+     11.12,
+     131.84,
+     29.39,
+     134.39
+    ],
+    "orientation": "flat",
+    "cut": [],
+    "legible": true,
+    "title": "RANGE",
+    "author": "David Epstein"
+   }
+  ]
+ },
+ {
+  "book_id": "B034",
+  "plane": "P2",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0032",
+    "box_plane": [
+     11.4,
+     13.9,
+     15.72,
+     32.16
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "FAHRENHEIT 451",
+    "author": "Ray Bradbury"
+   },
+   {
+    "frame_id": "f0035",
+    "box_plane": [
+     11.51,
+     13.83,
+     15.76,
+     32.13
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "FAHRENHEIT 451",
+    "author": "Ray Bradbury"
+   },
+   {
+    "frame_id": "f0038",
+    "box_plane": [
+     11.43,
+     19.47,
+     15.65,
+     32.07
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "FAHRENHEIT 451",
+    "author": "Ray"
+   }
+  ]
+ },
+ {
+  "book_id": "B035",
+  "plane": "P2",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0032",
+    "box_plane": [
+     15.72,
+     11.66,
+     19.33,
+     32.16
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "SHANTARAM",
+    "author": "Gregory David Roberts"
+   },
+   {
+    "frame_id": "f0035",
+    "box_plane": [
+     15.76,
+     11.58,
+     19.28,
+     32.13
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "SHANTARAM",
+    "author": "Gregory David Roberts"
+   },
+   {
+    "frame_id": "f0038",
+    "box_plane": [
+     15.74,
+     19.47,
+     19.42,
+     32.07
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "SHANTARAM",
+    "author": ""
+   }
+  ]
+ },
+ {
+  "book_id": "B036",
+  "plane": "P2",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0032",
+    "box_plane": [
+     19.6,
+     3.99,
+     22.3,
+     32.16
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "THE ALCHEMIST",
+    "author": "Paulo Coelho"
+   },
+   {
+    "frame_id": "f0035",
+    "box_plane": [
+     19.56,
+     5.1,
+     22.24,
+     32.13
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "THE ALCHEMIST",
+    "author": "Paulo Coelho"
+   },
+   {
+    "frame_id": "f0038",
+    "box_plane": [
+     19.6,
+     19.47,
+     22.27,
+     32.07
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "THE ALCHEMIST",
+    "author": ""
+   }
+  ]
+ },
+ {
+  "book_id": "B037",
+  "plane": "P2",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0032",
+    "box_plane": [
+     22.66,
+     13.42,
+     24.46,
+     32.16
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "WINGS OF FIRE",
+    "author": "A.P.J. Abdul Kalam"
+   },
+   {
+    "frame_id": "f0035",
+    "box_plane": [
+     22.61,
+     13.36,
+     24.55,
+     32.13
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "WINGS OF FIRE",
+    "author": "A.P.J. Abdul Kalam"
+   },
+   {
+    "frame_id": "f0038",
+    "box_plane": [
+     22.64,
+     19.47,
+     24.48,
+     32.07
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "WINGS OF FIRE",
+    "author": ""
+   }
+  ]
+ },
+ {
+  "book_id": "B038",
+  "plane": "P2",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0032",
+    "box_plane": [
+     24.55,
+     11.5,
+     27.07,
+     32.16
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "DEEP WORK",
+    "author": "Cal Newport"
+   },
+   {
+    "frame_id": "f0035",
+    "box_plane": [
+     24.55,
+     11.47,
+     27.14,
+     32.13
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "DEEP WORK",
+    "author": "Cal Newport"
+   },
+   {
+    "frame_id": "f0038",
+    "box_plane": [
+     24.66,
+     19.47,
+     27.05,
+     32.07
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "DEEP WORK",
+    "author": ""
+   }
+  ]
+ },
+ {
+  "book_id": "B039",
+  "plane": "P2",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0032",
+    "box_plane": [
+     27.07,
+     13.9,
+     29.77,
+     32.16
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "THE BOOK THIEF",
+    "author": "Markus Zusak"
+   },
+   {
+    "frame_id": "f0035",
+    "box_plane": [
+     27.14,
+     13.88,
+     29.82,
+     32.13
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "THE BOOK THIEF",
+    "author": "Markus Zusak"
+   },
+   {
+    "frame_id": "f0038",
+    "box_plane": [
+     27.14,
+     19.47,
+     29.81,
+     32.07
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "THE BOOK THIEF",
+    "author": ""
+   }
+  ]
+ },
+ {
+  "book_id": "B040",
+  "plane": "P2",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0032",
+    "box_plane": [
+     30.14,
+     1.75,
+     32.66,
+     32.16
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "THE MIDNIGHT LIBRARY",
+    "author": "Matt Haig"
+   },
+   {
+    "frame_id": "f0035",
+    "box_plane": [
+     30.01,
+     4.84,
+     32.69,
+     32.13
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "THE MIDNIGHT LIBRARY",
+    "author": "Matt Haig"
+   },
+   {
+    "frame_id": "f0038",
+    "box_plane": [
+     30.17,
+     19.47,
+     32.65,
+     32.07
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "THE MIDNIGHT LIBRA",
+    "author": ""
+   }
+  ]
+ },
+ {
+  "book_id": "B041",
+  "plane": "P1",
+  "orientation": "flat",
+  "sightings": [
+   {
+    "frame_id": "f0022",
+    "box_plane": [
+     11.21,
+     134.28,
+     32.48,
+     137.38
+    ],
+    "orientation": "flat",
+    "cut": [],
+    "legible": true,
+    "title": "SAPIENS",
+    "author": "Yuval Noah Harari"
+   },
+   {
+    "frame_id": "f0020",
+    "box_plane": [
+     11.12,
+     134.17,
+     32.48,
+     137.83
+    ],
+    "orientation": "flat",
+    "cut": [],
+    "legible": true,
+    "title": "SAPIENS",
+    "author": "Yuval Noah Harari"
+   }
+  ]
+ },
+ {
+  "book_id": "B042",
+  "plane": "P1",
+  "orientation": "flat",
+  "sightings": [
+   {
+    "frame_id": "f0022",
+    "box_plane": [
+     11.21,
+     137.16,
+     31.85,
+     140.27
+    ],
+    "orientation": "flat",
+    "cut": [],
+    "legible": true,
+    "title": "GITANJALI",
+    "author": "Rabindranath Tagore"
+   },
+   {
+    "frame_id": "f0020",
+    "box_plane": [
+     11.21,
+     136.83,
+     31.94,
+     140.32
+    ],
+    "orientation": "flat",
+    "cut": [],
+    "legible": true,
+    "title": "GITANJALI",
+    "author": "Rabindranath Tagore"
+   }
+  ]
+ },
+ {
+  "book_id": "B043",
+  "plane": "P2",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0035",
+    "box_plane": [
+     -0.61,
+     43.89,
+     1.15,
+     56.33
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom"
+    ],
+    "legible": false,
+    "title": "",
+    "author": ""
+   },
+   {
+    "frame_id": "f0038",
+    "box_plane": [
+     -0.52,
+     43.87,
+     1.13,
+     69.23
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "EDUCATED",
+    "author": "Tara Westover"
+   },
+   {
+    "frame_id": "f0045",
+    "box_plane": [
+     -0.73,
+     50.0,
+     1.3,
+     69.26
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "EDUCATED",
+    "author": "Tara Westover"
+   }
+  ]
+ },
+ {
+  "book_id": "B044",
+  "plane": "P2",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0035",
+    "box_plane": [
+     1.24,
+     50.11,
+     5.22,
+     56.33
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom"
+    ],
+    "legible": false,
+    "title": "",
+    "author": ""
+   },
+   {
+    "frame_id": "f0038",
+    "box_plane": [
+     1.32,
+     50.06,
+     5.27,
+     69.23
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "NORWEGIAN WOOD",
+    "author": "Haruki Murakami"
+   },
+   {
+    "frame_id": "f0045",
+    "box_plane": [
+     1.21,
+     50.0,
+     5.36,
+     69.32
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "NORWEGIAN WOOD",
+    "author": "Haruki Murakami"
+   }
+  ]
+ },
+ {
+  "book_id": "B045",
+  "plane": "P2",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0035",
+    "box_plane": [
+     5.4,
+     42.58,
+     8.08,
+     56.33
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom"
+    ],
+    "legible": false,
+    "title": "",
+    "author": ""
+   },
+   {
+    "frame_id": "f0038",
+    "box_plane": [
+     5.45,
+     42.59,
+     8.03,
+     69.23
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "BECOMING",
+    "author": "Michelle Obama"
+   },
+   {
+    "frame_id": "f0045",
+    "box_plane": [
+     5.36,
+     50.0,
+     8.12,
+     69.26
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "BECOMING",
+    "author": "Michelle Obama"
+   }
+  ]
+ },
+ {
+  "book_id": "B046",
+  "plane": "P2",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0035",
+    "box_plane": [
+     7.99,
+     42.37,
+     10.86,
+     56.23
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom"
+    ],
+    "legible": false,
+    "title": "",
+    "author": ""
+   },
+   {
+    "frame_id": "f0038",
+    "box_plane": [
+     8.03,
+     42.37,
+     10.78,
+     69.23
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "THE POWER OF HABIT",
+    "author": "Charles Duhigg"
+   },
+   {
+    "frame_id": "f0045",
+    "box_plane": [
+     8.12,
+     50.0,
+     10.98,
+     69.26
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "THE POWER OF HABIT",
+    "author": "Charles Duhigg"
+   }
+  ]
+ },
+ {
+  "book_id": "B047",
+  "plane": "P2",
+  "orientation": "flat",
+  "sightings": [
+   {
+    "frame_id": "f0038",
+    "box_plane": [
+     10.87,
+     63.41,
+     31.46,
+     65.44
+    ],
+    "orientation": "flat",
+    "cut": [],
+    "legible": true,
+    "title": "THE PRAGMATIC PROGRAMMER",
+    "author": "David Thomas"
+   },
+   {
+    "frame_id": "f0045",
+    "box_plane": [
+     10.98,
+     63.3,
+     31.63,
+     65.54
+    ],
+    "orientation": "flat",
+    "cut": [],
+    "legible": true,
+    "title": "THE PRAGMATIC PROGRAMMER",
+    "author": "David Thomas"
+   }
+  ]
+ },
+ {
+  "book_id": "B048",
+  "plane": "P2",
+  "orientation": "flat",
+  "sightings": [
+   {
+    "frame_id": "f0038",
+    "box_plane": [
+     10.87,
+     65.44,
+     31.09,
+     67.42
+    ],
+    "orientation": "flat",
+    "cut": [],
+    "legible": true,
+    "title": "PRIDE AND PREJUDICE",
+    "author": "Jane Austen"
+   },
+   {
+    "frame_id": "f0045",
+    "box_plane": [
+     10.89,
+     65.54,
+     31.17,
+     67.4
+    ],
+    "orientation": "flat",
+    "cut": [],
+    "legible": true,
+    "title": "PRIDE AND PREJUDICE",
+    "author": "Jane Austen"
+   }
+  ]
+ },
+ {
+  "book_id": "B049",
+  "plane": "P2",
+  "orientation": "flat",
+  "sightings": [
+   {
+    "frame_id": "f0038",
+    "box_plane": [
+     10.87,
+     67.42,
+     32.01,
+     69.44
+    ],
+    "orientation": "flat",
+    "cut": [],
+    "legible": true,
+    "title": "THE NAMESAKE",
+    "author": "Jhumpa Lahiri"
+   },
+   {
+    "frame_id": "f0045",
+    "box_plane": [
+     10.89,
+     67.4,
+     32.09,
+     69.48
+    ],
+    "orientation": "flat",
+    "cut": [],
+    "legible": true,
+    "title": "THE NAMESAKE",
+    "author": "Jhumpa Lahiri"
+   }
+  ]
+ },
+ {
+  "book_id": "B050",
+  "plane": "P2",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0045",
+    "box_plane": [
+     -0.73,
+     80.92,
+     2.59,
+     101.88
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom"
+    ],
+    "legible": true,
+    "title": "MALGUDI DAYS",
+    "author": "R. K. Narayan"
+   },
+   {
+    "frame_id": "f0051",
+    "box_plane": [
+     -0.58,
+     81.85,
+     2.4,
+     106.28
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "MALGUDI DAYS",
+    "author": "R. K. Narayan"
+   },
+   {
+    "frame_id": "f0054",
+    "box_plane": [
+     -0.54,
+     96.17,
+     2.72,
+     106.35
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "MALGUDI DAYS",
+    "author": ""
+   },
+   {
+    "frame_id": "f0056",
+    "box_plane": [
+     -0.64,
+     96.12,
+     2.42,
+     106.35
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "MALGUDI DAYS",
+    "author": ""
+   }
+  ]
+ },
+ {
+  "book_id": "B051",
+  "plane": "P2",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0045",
+    "box_plane": [
+     2.68,
+     78.04,
+     5.54,
+     101.94
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom"
+    ],
+    "legible": true,
+    "title": "SOPHIE'S WORLD",
+    "author": "Jostein Gaarder"
+   },
+   {
+    "frame_id": "f0051",
+    "box_plane": [
+     2.59,
+     81.9,
+     5.57,
+     106.28
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "HOMO DEUS",
+    "author": "Yuval Noah Harari"
+   },
+   {
+    "frame_id": "f0054",
+    "box_plane": [
+     2.62,
+     96.07,
+     5.58,
+     106.41
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "HOMO DEUS",
+    "author": ""
+   },
+   {
+    "frame_id": "f0056",
+    "box_plane": [
+     2.72,
+     96.07,
+     5.58,
+     106.35
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "HOMO DEUS",
+    "author": ""
+   }
+  ]
+ },
+ {
+  "book_id": "B052",
+  "plane": "P2",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0045",
+    "box_plane": [
+     5.45,
+     78.04,
+     7.75,
+     102.04
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom"
+    ],
+    "legible": false,
+    "title": "",
+    "author": ""
+   },
+   {
+    "frame_id": "f0051",
+    "box_plane": [
+     5.57,
+     81.9,
+     7.71,
+     106.39
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": false,
+    "title": "",
+    "author": ""
+   },
+   {
+    "frame_id": "f0054",
+    "box_plane": [
+     5.48,
+     96.01,
+     7.82,
+     106.46
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": false,
+    "title": "",
+    "author": ""
+   },
+   {
+    "frame_id": "f0056",
+    "box_plane": [
+     5.58,
+     96.01,
+     7.72,
+     106.35
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": false,
+    "title": "",
+    "author": ""
+   }
+  ]
+ },
+ {
+  "book_id": "B053",
+  "plane": "P2",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0045",
+    "box_plane": [
+     7.66,
+     82.99,
+     10.52,
+     102.2
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom"
+    ],
+    "legible": true,
+    "title": "SOPHIE'S WORLD",
+    "author": "Jostein Gaarder"
+   },
+   {
+    "frame_id": "f0051",
+    "box_plane": [
+     7.71,
+     81.9,
+     10.42,
+     106.39
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "SOPHIE'S WORLD",
+    "author": "Jostein Gaarder"
+   },
+   {
+    "frame_id": "f0054",
+    "box_plane": [
+     7.72,
+     95.96,
+     10.58,
+     106.46
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "SOPHIE'S WORLD",
+    "author": ""
+   },
+   {
+    "frame_id": "f0056",
+    "box_plane": [
+     7.72,
+     96.01,
+     10.38,
+     106.41
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "SOPHIE'S WORLD",
+    "author": ""
+   }
+  ]
+ },
+ {
+  "book_id": "B054",
+  "plane": "P2",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0045",
+    "box_plane": [
+     10.52,
+     81.71,
+     14.48,
+     102.15
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom"
+    ],
+    "legible": true,
+    "title": "LIFE OF PI",
+    "author": "Yann Martel"
+   },
+   {
+    "frame_id": "f0051",
+    "box_plane": [
+     10.42,
+     81.9,
+     14.43,
+     106.39
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "TO KILL A MOCKINGBIRD",
+    "author": "Harper Lee"
+   },
+   {
+    "frame_id": "f0054",
+    "box_plane": [
+     10.48,
+     95.85,
+     14.46,
+     106.51
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "TO KILL A MOCKING",
+    "author": ""
+   },
+   {
+    "frame_id": "f0056",
+    "box_plane": [
+     10.48,
+     95.96,
+     14.35,
+     106.46
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "TO KILL A MOCKINGBIRD",
+    "author": ""
+   }
+  ]
+ },
+ {
+  "book_id": "B055",
+  "plane": "P2",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0045",
+    "box_plane": [
+     14.39,
+     88.58,
+     17.62,
+     102.2
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom"
+    ],
+    "legible": true,
+    "title": "LIFE OF PI",
+    "author": "Yann Martel"
+   },
+   {
+    "frame_id": "f0051",
+    "box_plane": [
+     14.33,
+     81.95,
+     17.6,
+     106.39
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "LIFE OF PI",
+    "author": "Yann Martel"
+   },
+   {
+    "frame_id": "f0054",
+    "box_plane": [
+     14.46,
+     95.91,
+     17.72,
+     106.57
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "LIFE OF PI",
+    "author": ""
+   },
+   {
+    "frame_id": "f0056",
+    "box_plane": [
+     14.46,
+     95.91,
+     17.52,
+     106.51
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "LIFE OF PI",
+    "author": ""
+   }
+  ]
+ },
+ {
+  "book_id": "B056",
+  "plane": "P2",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0045",
+    "box_plane": [
+     17.62,
+     84.43,
+     20.66,
+     102.25
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom"
+    ],
+    "legible": true,
+    "title": "RICH DAD POOR DAD",
+    "author": "Robert Kiyosaki"
+   },
+   {
+    "frame_id": "f0051",
+    "box_plane": [
+     17.6,
+     84.47,
+     20.68,
+     106.49
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "RICH DAD POOR DAD",
+    "author": "Robert Kiyosaki"
+   },
+   {
+    "frame_id": "f0054",
+    "box_plane": [
+     17.62,
+     95.85,
+     20.98,
+     106.62
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "RICH DAD POOR D",
+    "author": ""
+   },
+   {
+    "frame_id": "f0056",
+    "box_plane": [
+     17.62,
+     95.85,
+     20.68,
+     106.62
+    ],
+    "orientation": "upright",
+    "cut": [
+     "top"
+    ],
+    "legible": true,
+    "title": "RICH DAD POOR D",
+    "author": ""
+   }
+  ]
+ },
+ {
+  "book_id": "B057",
+  "plane": "P2",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0051",
+    "box_plane": [
+     -0.49,
+     114.74,
+     1.0,
+     132.29
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom"
+    ],
+    "legible": true,
+    "title": "E OF ILLUSIONS",
+    "author": "Chitra Banerjee Divakaruni"
+   },
+   {
+    "frame_id": "f0054",
+    "box_plane": [
+     -1.15,
+     115.4,
+     1.6,
+     139.31
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "THE PALACE OF ILLUSIONS",
+    "author": "Chitra Banerjee Divakaruni"
+   },
+   {
+    "frame_id": "f0056",
+    "box_plane": [
+     -0.95,
+     115.45,
+     0.99,
+     139.25
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "THE PALACE OF ILLUSIONS",
+    "author": "Chitra Banerjee Divakaruni"
+   }
+  ]
+ },
+ {
+  "book_id": "B058",
+  "plane": "P2",
+  "orientation": "upright",
+  "sightings": [
+   {
+    "frame_id": "f0051",
+    "box_plane": [
+     0.91,
+     115.69,
+     4.08,
+     132.29
+    ],
+    "orientation": "upright",
+    "cut": [
+     "bottom"
+    ],
+    "legible": true,
+    "title": "AST AND SLOW",
+    "author": "Daniel Kahneman"
+   },
+   {
+    "frame_id": "f0054",
+    "box_plane": [
+     0.89,
+     115.67,
+     4.15,
+     139.36
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "THINKING, FAST AND SLOW",
+    "author": "Daniel Kahneman"
+   },
+   {
+    "frame_id": "f0056",
+    "box_plane": [
+     0.99,
+     115.67,
+     4.05,
+     139.25
+    ],
+    "orientation": "upright",
+    "cut": [],
+    "legible": true,
+    "title": "THINKING, FAST AND SLOW",
+    "author": "Daniel Kahneman"
+   }
+  ]
+ },
+ {
+  "book_id": "B059",
+  "plane": "P2",
+  "orientation": "flat",
+  "sightings": [
+   {
+    "frame_id": "f0051",
+    "box_plane": [
+     4.08,
+     131.82,
+     27.85,
+     133.08
+    ],
+    "orientation": "flat",
+    "cut": [
+     "bottom",
+     "left",
+     "right"
+    ],
+    "legible": false,
+    "title": "",
+    "author": ""
+   },
+   {
+    "frame_id": "f0054",
+    "box_plane": [
+     4.15,
+     131.98,
+     27.82,
+     134.14
+    ],
+    "orientation": "flat",
+    "cut": [],
+    "legible": true,
+    "title": "THE GREAT GATSBY",
+    "author": "F. Scott Fitzgerald"
+   },
+   {
+    "frame_id": "f0056",
+    "box_plane": [
+     4.15,
+     131.98,
+     27.82,
+     134.14
+    ],
+    "orientation": "flat",
+    "cut": [],
+    "legible": true,
+    "title": "THE GREAT GATSBY",
+    "author": "F. Scott Fitzgerald"
+   }
+  ]
+ },
+ {
+  "book_id": "B060",
+  "plane": "P2",
+  "orientation": "flat",
+  "sightings": [
+   {
+    "frame_id": "f0054",
+    "box_plane": [
+     4.15,
+     134.08,
+     26.8,
+     137.15
+    ],
+    "orientation": "flat",
+    "cut": [],
+    "legible": true,
+    "title": "THE CATCHER IN THE RYE",
+    "author": "J. D. Salinger"
+   },
+   {
+    "frame_id": "f0056",
+    "box_plane": [
+     4.15,
+     134.03,
+     26.8,
+     137.04
+    ],
+    "orientation": "flat",
+    "cut": [],
+    "legible": true,
+    "title": "THE CATCHER IN THE RYE",
+    "author": "J. D. Salinger"
+   }
+  ]
+ },
+ {
+  "book_id": "B061",
+  "plane": "P2",
+  "orientation": "flat",
+  "sightings": [
+   {
+    "frame_id": "f0054",
+    "box_plane": [
+     4.05,
+     137.04,
+     26.7,
+     139.63
+    ],
+    "orientation": "flat",
+    "cut": [],
+    "legible": true,
+    "title": "THE BODY",
+    "author": "Bill Bryson"
+   },
+   {
+    "frame_id": "f0056",
+    "box_plane": [
+     4.15,
+     137.04,
+     26.7,
+     139.36
+    ],
+    "orientation": "flat",
+    "cut": [],
+    "legible": true,
+    "title": "THE BODY",
+    "author": "Bill Bryson"
+   }
+  ]
+ }
+]

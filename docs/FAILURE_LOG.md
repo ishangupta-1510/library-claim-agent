@@ -112,7 +112,36 @@
 - **Fix.** A per-day 429 stops vision for the sweep at once; the packet builds from what was read and
   its stage report says how many frames were not read.
 
+### 14. A unit filmed twice was counted twice
+- **Symptom.** A live run counted 78 books for 60 (11 confidently wrong): the camera came back to the
+  first unit, marker in view, before the sweep ended.
+- **Root cause.** Loop closure only tried to rejoin unscaled fragments; a revisit with the marker in view
+  starts a new *scaled* plane, which never tried.
+- **Fix.** Young scaled planes rejoin an older plane they overlap too. **Measured:** 78 → 61 books.
+
+### 15. The second-country comparison took 220 s
+- **Root cause.** It asked the exchange-rate service to convert USD to USD for every book; the service
+  takes ~17 s to refuse that pair.
+- **Fix.** A currency converts to itself at 1 without a lookup; a failed pair is asked once per packet.
+  **Measured:** time to packet 335 s → 118 s.
+
+### 16. Spoken notes needed repeating
+- **Symptom.** "That blue book is a signed copy" said while vision was a few seconds behind got "hold the
+  camera on it and say it again" (earlier, the agent wrongly answered "noted").
+- **Fix.** The statement is kept against the frame it was said over and attached to the book at that
+  frame's centre once its spines are read; one never matched goes to the review queue. The agent must not
+  confirm a note the tool did not apply.
+- **Limit.** The book is chosen by position in the view, not by the words ("blue", "top shelf").
+
+### 17. Demo recording showed nothing
+- **Root causes.** Screen grabbing recorded black frames (Chrome's window is GPU-composited); a visible
+  window sent one frame while the display was off; headless Chrome did not repaint the camera `<video>`.
+- **Fix.** The recorder records the page through Chrome's screencast, headless, with the camera panel
+  mirrored onto a canvas.
+
 ## Cost per sweep and latency per stage
 
-Recorded in each packet under `stages` (`latency_s`, `usage`, `cost_usd_estimate`); figures from the
-real sweep are to be added here.
+Recorded in each packet under `stages` (`latency_s`, `usage`, `cost_usd_estimate`). The live agent demo
+(`submission/live_demo_run`): 16 spine and 6 item vision calls (about 29k input and 24k output tokens,
+estimated US$0.07 at paid Flash-Lite rates; free tier used), 1 live price search and 99 from cache, and after
+the sweep: 65 s finishing the vision backlog, 49 s identification, under 3 s pricing.

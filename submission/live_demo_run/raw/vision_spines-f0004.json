@@ -1,0 +1,282 @@
+{
+ "usage": {
+  "model": "gemini-3.5-flash-lite",
+  "latency_s": 5.02,
+  "input_tokens": 1347,
+  "output_tokens": 1799
+ },
+ "response": {
+  "books": [
+   {
+    "box_2d": [
+     0,
+     393,
+     243,
+     431
+    ],
+    "orientation": "upright",
+    "title": "DUNE",
+    "author": "",
+    "publisher": "",
+    "all_text": "DUNE",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     0,
+     431,
+     243,
+     461
+    ],
+    "orientation": "upright",
+    "title": "THE IMMORTALS OF I",
+    "author": "",
+    "publisher": "",
+    "all_text": "THE IMMORTALS OF I",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     0,
+     462,
+     243,
+     490
+    ],
+    "orientation": "upright",
+    "title": "THE HOBBIT",
+    "author": "",
+    "publisher": "",
+    "all_text": "THE HOBBIT",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     0,
+     490,
+     243,
+     532
+    ],
+    "orientation": "upright",
+    "title": "EGO IS THE ENEMY",
+    "author": "Ryan",
+    "publisher": "",
+    "all_text": "EGO IS THE ENEMY Ryan",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     0,
+     532,
+     243,
+     567
+    ],
+    "orientation": "upright",
+    "title": "THE GOD OF SMALL THINGS",
+    "author": "Aru",
+    "publisher": "",
+    "all_text": "THE GOD OF SMALL THINGS Aru",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     0,
+     569,
+     243,
+     591
+    ],
+    "orientation": "upright",
+    "title": "",
+    "author": "",
+    "publisher": "",
+    "all_text": "",
+    "legible": false,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     0,
+     590,
+     244,
+     615
+    ],
+    "orientation": "upright",
+    "title": "FIVE POINT SOMEONE",
+    "author": "",
+    "publisher": "",
+    "all_text": "FIVE POINT SOMEONE",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     0,
+     615,
+     245,
+     642
+    ],
+    "orientation": "upright",
+    "title": "CLEAN CODE",
+    "author": "",
+    "publisher": "",
+    "all_text": "CLEAN CODE",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     0,
+     642,
+     246,
+     672
+    ],
+    "orientation": "upright",
+    "title": "WHERE THE CRAWDADS SING",
+    "author": "Del",
+    "publisher": "",
+    "all_text": "WHERE THE CRAWDADS SING Del",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     471,
+     263,
+     948,
+     300
+    ],
+    "orientation": "upright",
+    "title": "THE LEAN STARTUP",
+    "author": "Eric Ries",
+    "publisher": "Portfolio",
+    "all_text": "Portfolio Eric Ries THE LEAN STARTUP",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     452,
+     300,
+     949,
+     321
+    ],
+    "orientation": "upright",
+    "title": "THE WHITE TIGER",
+    "author": "Aravind Adiga",
+    "publisher": "HarperCollins",
+    "all_text": "HarperCollins Aravind Adiga THE WHITE TIGER",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     419,
+     321,
+     949,
+     341
+    ],
+    "orientation": "upright",
+    "title": "THE OLD MAN AND THE SEA",
+    "author": "Ernest Hemingway",
+    "publisher": "Vintage",
+    "all_text": "Vintage Ernest Hemingway THE OLD MAN AND THE SEA",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     552,
+     340,
+     949,
+     368
+    ],
+    "orientation": "upright",
+    "title": "",
+    "author": "",
+    "publisher": "",
+    "all_text": "",
+    "legible": false,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     573,
+     369,
+     949,
+     400
+    ],
+    "orientation": "upright",
+    "title": "",
+    "author": "",
+    "publisher": "",
+    "all_text": "",
+    "legible": false,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     587,
+     399,
+     950,
+     432
+    ],
+    "orientation": "upright",
+    "title": "THE PSYCHOLOGY OF MONEY",
+    "author": "Morgan Housel",
+    "publisher": "Jaico",
+    "all_text": "Jaico Morgan Housel THE PSYCHOLOGY OF MONEY",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     816,
+     435,
+     878,
+     671
+    ],
+    "orientation": "flat",
+    "title": "ZERO TO ONE",
+    "author": "Peter Thiel",
+    "publisher": "Virgin",
+    "all_text": "ZERO TO ONE Peter Thiel Virgin",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     876,
+     435,
+     915,
+     695
+    ],
+    "orientation": "flat",
+    "title": "NINETEEN EIGHTY-FOUR",
+    "author": "George Orwell",
+    "publisher": "Penguin",
+    "all_text": "NINETEEN EIGHTY-FOUR George Orwell Penguin",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     915,
+     435,
+     955,
+     656
+    ],
+    "orientation": "flat",
+    "title": "LONG WALK TO FREEDOM",
+    "author": "Nelson Mandela",
+    "publisher": "Abacus",
+    "all_text": "LONG WALK TO FREEDOM Nelson Mandela Abacus",
+    "legible": true,
+    "age_cues": []
+   }
+  ]
+ }
+}

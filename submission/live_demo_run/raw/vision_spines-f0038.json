@@ -1,0 +1,222 @@
+{
+ "usage": {
+  "model": "gemini-3.5-flash-lite",
+  "latency_s": 6.5,
+  "input_tokens": 1322,
+  "output_tokens": 1444
+ },
+ "response": {
+  "books": [
+   {
+    "box_2d": [
+     10,
+     377,
+     246,
+     423
+    ],
+    "orientation": "upright",
+    "title": "FAHRENHEIT 451",
+    "author": "Ray",
+    "publisher": "",
+    "all_text": "FAHRENHEIT 451 Ray",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     10,
+     424,
+     246,
+     464
+    ],
+    "orientation": "upright",
+    "title": "SHANTARAM",
+    "author": "",
+    "publisher": "",
+    "all_text": "SHANTARAM",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     10,
+     466,
+     246,
+     495
+    ],
+    "orientation": "upright",
+    "title": "THE ALCHEMIST",
+    "author": "",
+    "publisher": "",
+    "all_text": "THE ALCHEMIST",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     10,
+     499,
+     246,
+     519
+    ],
+    "orientation": "upright",
+    "title": "WINGS OF FIRE",
+    "author": "",
+    "publisher": "A P",
+    "all_text": "WINGS OF FIRE A P",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     10,
+     521,
+     246,
+     547
+    ],
+    "orientation": "upright",
+    "title": "DEEP WORK",
+    "author": "",
+    "publisher": "",
+    "all_text": "DEEP WORK",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     10,
+     548,
+     246,
+     577
+    ],
+    "orientation": "upright",
+    "title": "THE BOOK THIEF",
+    "author": "",
+    "publisher": "Mar",
+    "all_text": "THE BOOK THIEF Mar",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     10,
+     581,
+     246,
+     608
+    ],
+    "orientation": "upright",
+    "title": "THE MIDNIGHT LIBRA",
+    "author": "",
+    "publisher": "",
+    "all_text": "THE MIDNIGHT LIBRA",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     467,
+     247,
+     942,
+     265
+    ],
+    "orientation": "upright",
+    "title": "EDUCATED",
+    "author": "Tara Westover",
+    "publisher": "Windmill",
+    "all_text": "EDUCATED Tara Westover Windmill",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     583,
+     267,
+     942,
+     310
+    ],
+    "orientation": "upright",
+    "title": "NORWEGIAN WOOD",
+    "author": "Haruki Murakami",
+    "publisher": "Vintage",
+    "all_text": "NORWEGIAN WOOD Haruki Murakami Vintage",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     443,
+     312,
+     942,
+     340
+    ],
+    "orientation": "upright",
+    "title": "BECOMING",
+    "author": "Michelle Obama",
+    "publisher": "Penguin",
+    "all_text": "BECOMING Michelle Obama Penguin",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     439,
+     340,
+     942,
+     370
+    ],
+    "orientation": "upright",
+    "title": "THE POWER OF HABIT",
+    "author": "Charles Duhigg",
+    "publisher": "Random House",
+    "all_text": "THE POWER OF HABIT Charles Duhigg Random House",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     833,
+     371,
+     871,
+     595
+    ],
+    "orientation": "flat",
+    "title": "THE PRAGMATIC PROGRAMMER",
+    "author": "David Thomas",
+    "publisher": "",
+    "all_text": "THE PRAGMATIC PROGRAMMER David Thomas",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     871,
+     371,
+     908,
+     591
+    ],
+    "orientation": "flat",
+    "title": "PRIDE AND PREJUDICE",
+    "author": "Jane Austen",
+    "publisher": "Penguin",
+    "all_text": "PRIDE AND PREJUDICE Jane Austen Penguin",
+    "legible": true,
+    "age_cues": []
+   },
+   {
+    "box_2d": [
+     908,
+     371,
+     946,
+     601
+    ],
+    "orientation": "flat",
+    "title": "THE NAMESAKE",
+    "author": "Jhumpa Lahiri",
+    "publisher": "HarperCollins",
+    "all_text": "THE NAMESAKE Jhumpa Lahiri HarperCollins",
+    "legible": true,
+    "age_cues": []
+   }
+  ]
+ }
+}
