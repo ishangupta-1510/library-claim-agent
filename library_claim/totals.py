@@ -107,6 +107,8 @@ def _item_reasons(item: Item) -> list[str]:
 
 def build_review_queue(packet: ClaimPacket) -> list[ReviewEntry]:
     queue: list[ReviewEntry] = []
+    for statement in packet.unmatched_statements:
+        queue.append(ReviewEntry(ref_id="sweep", reason=f"Policyholder statement not matched to a book or shelf: {statement}"))
     for book in packet.books:
         queue += [ReviewEntry(ref_id=book.id, reason=r) for r in _book_reasons(book)]
     for item in packet.items:

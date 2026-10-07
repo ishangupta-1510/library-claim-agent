@@ -223,7 +223,7 @@ class PriceClient:
         self.raw: list[dict] = []  # every search used for this packet, with its response
         self.live_searches = 0
         self.failed_searches = 0
-        self._fx: dict[tuple[str, str], FxRate] = {}
+        self._fx: dict[tuple[str, str], FxRate | None] = {}
 
     def _cache_path(self, params: dict) -> Path | None:
         if self.cache_dir is None:
@@ -278,12 +278,22 @@ class PriceClient:
         return parse_ebay(payload, locale.currency, retrieved_at)
 
     async def fx(self, base: str, quote: str) -> FxRate | None:
+        """The day's rate, asked once per pair per packet.
+
+        A currency converts to itself at 1 without a lookup: the rate service
+        takes ~17 s to refuse USD->USD, and the second-country comparison asked
+        it for every book (220 s of a 335 s packet). A pair that failed is not
+        asked again in the same packet.
+        """
+        if base == quote:
+            return FxRate(1.0, now()[:10], source="same currency")
         if (base, quote) not in self._fx:
             response = await net.get(self.http, FX_API, params={"from": base, "to": quote})
             if response is None or response.status_code != 200:
-                return None
-            payload = response.json()
-            self._fx[(base, quote)] = FxRate(float(payload["rates"][quote]), payload["date"])
+                self._fx[(base, quote)] = None
+            else:
+                payload = response.json()
+                self._fx[(base, quote)] = FxRate(float(payload["rates"][quote]), payload["date"])
         return self._fx[(base, quote)]
 
 

@@ -208,12 +208,54 @@ def test_an_item_described_as_a_book_is_not_an_item():
     assert not _is_a_book("Wooden bookshelf") and not _is_a_book("brass bookends")
 
 
-async def test_a_note_with_no_book_read_in_view_is_refused_with_what_to_ask(cfg):
+async def test_a_note_before_anything_was_filmed_is_refused_with_what_to_ask(cfg):
     async def emit(event):
         pass
 
     result = SweepSession(cfg, None, emit).note_book_in_view("user: this one is signed")
-    assert result["applied"] is False and "hold the camera" in result["ask"]
+    assert result["applied"] is False and "point the camera" in result["ask"]
+
+
+async def test_a_note_said_before_its_spine_is_read_is_attached_when_it_is(cfg, monkeypatch):
+    import asyncio
+
+    async def no_candidates(*a, **k):
+        return []
+    monkeypatch.setattr("library_claim.stages.identify.fetch_candidates", no_candidates)
+
+    async def emit(event):
+        pass
+
+    vision = SlowVision()
+    sweep = SweepSession(cfg, vision, emit, device="test")
+    frames, _ = _pan(_shelf_face(), n=2)
+    for _, image in frames:
+        ok, jpeg = cv2.imencode(".jpg", image, [cv2.IMWRITE_JPEG_QUALITY, 95])
+        await sweep.add_frame(jpeg.tobytes())
+    said = sweep.note_book_in_view("user: this one is signed")
+    assert said["applied"] == "pending"  # vision has not answered yet
+    vision.release.set()
+    packet = await sweep.finish()
+    assert any("signed" in n for b in packet.books for n in b.notes) and not packet.unmatched_statements
+    assert any(b.status == "needs_appraisal" or "signed" in " ".join(b.notes) for b in packet.books)
+
+
+async def test_a_statement_never_matched_goes_to_the_review_queue(cfg, monkeypatch):
+    async def no_candidates(*a, **k):
+        return []
+    monkeypatch.setattr("library_claim.stages.identify.fetch_candidates", no_candidates)
+
+    async def emit(event):
+        pass
+
+    sweep = SweepSession(cfg, None, emit, device="test")  # no vision: nothing is ever read
+    frames, _ = _pan(_shelf_face(), n=2)
+    for _, image in frames:
+        ok, jpeg = cv2.imencode(".jpg", image, [cv2.IMWRITE_JPEG_QUALITY, 95])
+        await sweep.add_frame(jpeg.tobytes())
+    assert sweep.note_book_in_view("user: this one is signed")["applied"] == "pending"
+    packet = await sweep.finish()
+    assert any("this one is signed" in r.reason for r in packet.review_queue if r.ref_id == "sweep")
 
 
 async def test_coming_back_to_a_unit_with_its_marker_rejoins_it(cfg):

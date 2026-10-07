@@ -264,7 +264,8 @@ class SweepSession:
         self.workers = [asyncio.create_task(self._vision_worker()) for _ in range(VISION_CONCURRENCY)]
         self.clock = StageClock()
         self.ar_points: list[dict] = []
-        self.notes: list[dict] = []  # policyholder statements, with the book/item they apply to
+        self.notes: list[dict] = []  # policyholder statements, with the frame they were said over
+        self.pending_statements: list[dict] = []  # said before the spines in view were read
         self.art_answers: dict[int, bool] = {}  # item sighting index -> is print
         self.ended_at: float | None = None
         self.merges: list[dict] = []  # loop closures, for the stage report
@@ -599,6 +600,7 @@ class SweepSession:
                                        1 - quality.blur_effect, cut))
             new_books, shift = self.inventory.add_frame(current.id, placed)
             self.inventory.assign_shelves()
+            self._resolve_pending()
             self.inventory.apply_exclusions()  # books first seen on an excluded row
             books = self.live_books()
         if any(shift):
@@ -658,45 +660,74 @@ class SweepSession:
     # ---------------- voice corrections ----------------
 
     def book_in_view(self) -> InventoryBook | None:
-        """The book closest to the centre of the most recent frame, among books inside that frame.
+        """The book at the centre of the most recent frame (see `_book_at`)."""
+        if self.last_frame is None:
+            return None
+        fid, image = self.last_frame
+        return self._book_at(fid, image.shape)
+
+    def _book_at(self, frame_id: str, shape) -> InventoryBook | None:
+        """The book closest to the centre of a frame, among books read inside that frame.
 
         Without the frame check, a note spoken while vision lagged behind went to
         the nearest book already read, which could be on another shelf.
         """
-        if self.last_frame is None or self.current is None:
+        plane = self._plane_of(frame_id)
+        if plane is None:
             return None
-        fid, image = self.last_frame
-        if fid not in self.current.from_frame:
-            return None
-        h, w = image.shape[:2]
-        centre = to_plane_cm(PlaneScale(self.current.from_frame[fid], -1, 1, 1, 0), np.array([[w / 2, h / 2]]))[0]
-        frame = self._footprint(self.current, fid, image.shape).astype(np.float32).reshape(-1, 1, 2)
-        books = [b for b in self.inventory.books if b.plane_id == self.current.id
+        h, w = shape[:2]
+        centre = to_plane_cm(PlaneScale(plane.from_frame[frame_id], -1, 1, 1, 0), np.array([[w / 2, h / 2]]))[0]
+        frame = self._footprint(plane, frame_id, shape).astype(np.float32).reshape(-1, 1, 2)
+        books = [b for b in self.inventory.books if b.plane_id == plane.id
                  and cv2.pointPolygonTest(frame, ((b.box[0] + b.box[2]) / 2, (b.box[1] + b.box[3]) / 2), False) >= 0]
         if not books:
             return None
         return min(books, key=lambda b: np.hypot((b.box[0] + b.box[2]) / 2 - centre[0], (b.box[1] + b.box[3]) / 2 - centre[1]))
 
     def note_book_in_view(self, statement: str) -> dict:
-        book = self.book_in_view()
-        if book is None:
-            # The spines in view have not been read yet (vision runs a few seconds behind the camera).
-            return {"applied": False, "reason": "no book read in the current view yet",
-                    "ask": "hold the camera still on that book for a few seconds, then say it again"}
-        book.statements.append(statement)
-        self.notes.append({"statement": statement, "t": self.elapsed(), "frame_id": self.last_frame[0]})
-        index = self.inventory.books.index(book)
-        return {"applied": True, "book_id": f"B{index + 1:03d}", "title_read": book.best.title or "(unreadable spine)", "shelf": book.shelf}
+        return self._policyholder_says("note", statement)
 
     def exclude_shelf_in_view(self, reason: str) -> dict:
-        book = self.book_in_view()
-        if book is None or not book.shelf:
-            return {"applied": False, "reason": "no shelf read in the current view yet",
-                    "ask": "hold the camera still on that shelf for a few seconds, then say it again"}
-        shelf = book.shelf
-        self.inventory.exclude_row_of(book, reason or "not the policyholder's")
-        self.notes.append({"statement": reason, "t": self.elapsed(), "frame_id": self.last_frame[0], "excluded_shelf": shelf})
-        return {"applied": True, "shelf": shelf}
+        return self._policyholder_says("exclude", reason or "not the policyholder's")
+
+    def _policyholder_says(self, kind: str, statement: str) -> dict:
+        """Attach what the policyholder said to the book (or shelf) they were looking at.
+
+        Vision runs seconds behind the camera, so the spines in view are often not
+        read yet when they speak. The statement is then kept against the frame they
+        were looking at and attached once that frame's spines are read; asking them
+        to hold still and repeat it was the earlier behaviour. One never matched
+        goes to the review queue, so a spoken "this one is signed" cannot vanish.
+        """
+        if self.last_frame is None:
+            return {"applied": False, "reason": "the camera has not shown anything yet",
+                    "ask": "point the camera at it, then say it again"}
+        fid, image = self.last_frame
+        self.notes.append({"kind": kind, "statement": statement, "t": self.elapsed(), "frame_id": fid})
+        pending = {"kind": kind, "statement": statement, "frame_id": fid, "shape": image.shape}
+        applied = self._apply_statement(pending)
+        if applied is None:
+            self.pending_statements.append(pending)
+            return {"applied": "pending", "message": "Recorded against the current view; it will be attached to the "
+                    + ("book" if kind == "note" else "shelf") + " at its centre as soon as the spines there are read."}
+        return applied
+
+    def _apply_statement(self, pending: dict) -> dict | None:
+        book = self._book_at(pending["frame_id"], pending["shape"])
+        if book is None or (pending["kind"] == "exclude" and not book.shelf):
+            return None
+        if pending["kind"] == "exclude":
+            shelf = book.shelf
+            self.inventory.exclude_row_of(book, pending["statement"])
+            return {"applied": True, "shelf": shelf}
+        book.statements.append(pending["statement"])
+        index = self.inventory.books.index(book)
+        return {"applied": True, "book_id": f"B{index + 1:03d}", "title_read": book.best.title or "(unreadable spine)",
+                "shelf": book.shelf}
+
+    def _resolve_pending(self) -> None:
+        """Attach statements whose frame's spines have now been read."""
+        self.pending_statements = [p for p in self.pending_statements if self._apply_statement(p) is None]
 
     def answer_art_question(self, is_print: bool) -> dict:
         pending = [i for i, item in enumerate(self.item_sightings) if item["is_artwork"] and i not in self.art_answers]
@@ -751,6 +782,7 @@ class SweepSession:
         self.clock.add("vision_backlog_after_sweep", time.monotonic() - t0)
         self.split_merges = self.inventory.resolve_splits()
         self.inventory.assign_shelves()
+        self._resolve_pending()  # statements whose spines were read in the last vision answers
         self.inventory.apply_exclusions()  # books first seen on an excluded row
 
         locale = locale_for(self.country)
@@ -778,6 +810,8 @@ class SweepSession:
             sweep=Sweep(id=self.id, captured_at=self.started_at, device=self.device, duration_s=duration,
                         country=locale.country, currency=locale.currency),
             room=room, books=books, items=items, locale_comparison=comparison,
+            unmatched_statements=[f'{p["statement"]} (said over frames/{p["frame_id"]}.jpg)'
+                                  for p in self.pending_statements],
         )
         finalize(packet)
         packet.stages = self._stage_report(time.monotonic() - self.ended_at)

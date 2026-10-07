@@ -152,4 +152,6 @@ class ClaimPacket(BaseModel):
     review_queue: list[ReviewEntry] = Field(default_factory=list)
     # Second-locale pricing of the same sample, to show locale is a setting.
     locale_comparison: dict | None = None
+    # What the policyholder said about a book or shelf that could not be matched to one; each is reviewed.
+    unmatched_statements: list[str] = Field(default_factory=list)
     stages: dict = Field(default_factory=dict)

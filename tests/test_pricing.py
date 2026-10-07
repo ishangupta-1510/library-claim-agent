@@ -236,3 +236,21 @@ def test_same_title_by_someone_else_or_in_translation_is_another_book():
                     "The Midnight Library by Matt Haig Book Poster, Contemporary Fiction"):
         assert not relevant(listing, title, author), listing
     assert relevant("Rich Dad, Poor Dad: What the Rich Teach Their Kids", "Rich Dad, Poor Dad", "Robert Kiyosaki")
+
+
+async def test_fx_same_currency_needs_no_lookup_and_a_failed_pair_is_asked_once(tmp_path):
+    import httpx
+
+    from library_claim.stages.pricing import PriceClient
+
+    calls = []
+
+    def handler(request):
+        calls.append(str(request.url))
+        return httpx.Response(422, json={"message": "bad currency pair"})
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as http:
+        client = PriceClient(http, "key", cache_dir=tmp_path)
+        assert (await client.fx("USD", "USD")).rate == 1.0
+        assert await client.fx("USD", "XYZ") is None and await client.fx("USD", "XYZ") is None
+    assert len(calls) == 1
