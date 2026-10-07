@@ -1,7 +1,39 @@
 # Failure log
 
-> The three worst errors on the real capture will be added after the sweep. Below are the failures
-> found and fixed during development, each with its root cause and a measured before/after.
+> No real room was available. The run below is the live-agent demo on the synthetic library
+> (`submission/live_demo_run`, the run in the demo video): 61 books for 60, titles 98.2% right with one
+> confidently wrong, 17 of 20 spines within 15%, 118 s to packet.
+
+## The three worst errors in the demo run
+
+### 1. One box over two spines gave its title to the wrong book (the one confidently wrong title)
+- **What happened.** *Five Point Someone* appears twice (B006, B015, both at confidence 1.0). B006 is
+  really the unreadable spine to its left: in frame f0001 the model drew one box over both spines
+  (27.5–31.6 cm) and labelled it *Five Point Someone*; that box joined B006's column, and a labelled
+  reading beats the unlabelled ones, so B006 took the title. It also shows up as a 30% "height error":
+  B006's 20.2 cm is compared with the real book's 29 cm.
+- **Root cause.** A box twice as wide as the spines it overlaps is a merge of two spines, but it still
+  counted as a full sighting of one of them, reading included.
+- **What I would change.** Treat a box that spans two established columns as untrusted for both its
+  geometry and its reading (as boxes placed by text already are), and let a title only name a column
+  where it fits the column's width.
+
+### 2. A box around a label inside a spine shortened *Clean Code* by 35%
+- **What happened.** In frame f0000 the model returned two boxes for *Clean Code*: the whole spine
+  (1.6–32.1 cm) and a small one inside it (23.7–31.0 cm, a label). Both counted as uncut sightings, so
+  the spine's top became the median of 1.6 and 23.7: 19.5 cm reported for 30.2 cm.
+- **Root cause.** Two boxes from the same frame were allowed to be two sightings of one book.
+- **What I would change.** One sighting per book per frame: a box lying inside another box from the
+  same frame is a part of that spine and is dropped.
+
+### 3. An author's name read as a title, identified title-only (*Susan Cain*)
+- **What happened.** On a spine whose title was outside the frame, the model returned "Susan Cain" as
+  the title with no author; a catalog record titled that way matched title-only.
+- **Root cause.** The title-equals-author guard only fires when both fields are present.
+- **What contained it.** Title-only matches are capped at 0.7, so B026 went to the review queue and out
+  of the claim total instead of being confidently wrong.
+- **What I would change.** Check a lone "title" against the catalog's author names before accepting it
+  as a title.
 
 ## Development failures (root cause → fix → measured effect)
 

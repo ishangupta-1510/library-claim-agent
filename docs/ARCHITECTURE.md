@@ -10,9 +10,9 @@
  keyframes 1920 px (back-pressured) ───► DURING THE SWEEP (per keyframe, worker thread)
                                            save frame (= frame_ref) → quality (blur / glare / dark)
                                            → ArUco marker → plane homography (px → cm)
-                                           → or chain to the previous frame (ORB + RANSAC homography)
-                                           → coverage gain ≥ 25 % ? → vision queue
-                                         VISION QUEUE (rate-limited Gemini Flash, JSON schema)
+                                           → or chain to recent frames (SIFT + RANSAC); loop closure
+                                           → ≥ 50 % unseen shelf, or end of a pass ? → vision
+                                         VISION QUEUE (Gemini Flash-Lite, 3 in flight, JSON schema)
                                            spines on the head-on rectified view: box + verbatim text
                                            items on the raw frame: category, material, legible brand
                                            → inventory merge in plane coordinates → live UI + [system]
@@ -30,8 +30,8 @@
 | Job | Model / tool | Why |
 |---|---|---|
 | Conversation, directing the sweep | Gemini Live native-audio model | real-time voice in and out, barge-in, tool calls |
-| Spine boxes and transcription | Gemini Flash on the rectified shelf view | reads small rotated text; boxes come back on a 0–1000 grid; strict "copy, don't guess" schema |
-| Non-book items | Gemini Flash on raw frames | category, material, legible brand; never prices |
+| Spine boxes and transcription | Gemini Flash-Lite on the rectified shelf view | reads small rotated text; boxes come back on a 0–1000 grid; strict "copy, don't guess" schema |
+| Non-book items | Gemini Flash-Lite on raw frames | category, material, legible brand; never prices |
 | Everything numeric | plain code | homographies, medians, areas and totals are deterministic and tested |
 
 ## Where metric scale comes from

@@ -21,7 +21,7 @@
   "spine_dimensions": {
     "sample": 20,
     "within_15pct": 17,
-    "median_height_err_pct": 0.6499999999999999,
+    "median_height_err_pct": 0.65,
     "median_thickness_err_pct": 5.4,
     "worst": [
       {

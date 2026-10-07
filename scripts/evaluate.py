@@ -81,8 +81,8 @@ def evaluate(packet: dict, truth: dict) -> dict:
     within = [e for e in sample if e["height_err_pct"] <= 15 and e["thickness_err_pct"] <= 15]
     results["spine_dimensions"] = {
         "sample": len(sample), "within_15pct": len(within),
-        "median_height_err_pct": statistics.median([e["height_err_pct"] for e in sample]) if sample else None,
-        "median_thickness_err_pct": statistics.median([e["thickness_err_pct"] for e in sample]) if sample else None,
+        "median_height_err_pct": round(statistics.median([e["height_err_pct"] for e in sample]), 2) if sample else None,
+        "median_thickness_err_pct": round(statistics.median([e["thickness_err_pct"] for e in sample]), 2) if sample else None,
         "worst": sorted(sample, key=lambda e: -max(e["height_err_pct"], e["thickness_err_pct"]))[:5],
         "pass": bool(sample) and len(within) == len(sample),
     }

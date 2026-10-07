@@ -9,9 +9,9 @@
 | Repository | this repo (root `README.md`: setup and the ways to run) |
 | Demo video (unedited) | [`live_demo_run/demo-video-live-agent-synthetic-library.mp4`](live_demo_run/demo-video-live-agent-synthetic-library.mp4) |
 | Claim packet | [`live_demo_run/claim_packet.json`](live_demo_run/claim_packet.json) and [`report.html`](live_demo_run/report.html) |
-| Ground truth and results | `dev_data/synthetic/ground_truth.json`, [`live_demo_run/evaluation.json`](live_demo_run/evaluation.json), root README "Results" |
-| Architecture note | [`docs/ARCHITECTURE.md`](../docs/ARCHITECTURE.md) |
-| Failure log | [`docs/FAILURE_LOG.md`](../docs/FAILURE_LOG.md) |
+| Ground truth and results | [`live_demo_run/ground_truth_and_results.xlsx`](live_demo_run/ground_truth_and_results.xlsx) (from `dev_data/synthetic/ground_truth.json`; `python -m scripts.results_sheet`), [`evaluation.json`](live_demo_run/evaluation.json) |
+| Architecture note (one page) | [`documents/architecture-note.pdf`](documents/architecture-note.pdf), source [`docs/ARCHITECTURE.md`](../docs/ARCHITECTURE.md) |
+| Failure log (one page) | [`documents/failure-log.pdf`](documents/failure-log.pdf): the three worst errors in the demo run; all development failures in [`docs/FAILURE_LOG.md`](../docs/FAILURE_LOG.md) |
 
 ## `live_demo_run/`: the live agent on the synthetic library
 
