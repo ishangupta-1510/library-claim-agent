@@ -214,3 +214,26 @@ async def test_a_note_with_no_book_read_in_view_is_refused_with_what_to_ask(cfg)
 
     result = SweepSession(cfg, None, emit).note_book_in_view("user: this one is signed")
     assert result["applied"] is False and "hold the camera" in result["ask"]
+
+
+async def test_coming_back_to_a_unit_with_its_marker_rejoins_it(cfg):
+    async def emit(event):
+        pass
+
+    sweep = SweepSession(cfg, None, emit, device="test")
+    face_a = _shelf_face()
+    face_b = np.ascontiguousarray(np.fliplr(face_a))  # a different-looking unit (no readable marker)
+    unit_a, _ = _pan(face_a, n=5)
+    unit_b, _ = _pan(face_b, n=5)
+
+    async def show(image):
+        ok, jpeg = cv2.imencode(".jpg", image, [cv2.IMWRITE_JPEG_QUALITY, 95])
+        return await sweep.add_frame(jpeg.tobytes())
+
+    for _, image in unit_a + unit_b:
+        await show(image)
+    back = await show(unit_a[0][1])  # the policyholder goes back to the first unit, marker in view
+    first_unit = next(p for p in sweep.planes if "f0000" in p.from_frame)
+    assert back["marker"] and back["plane"] == first_unit.id
+    assert len(sweep.planes) == 2
+    sweep.close()

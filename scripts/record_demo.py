@@ -7,7 +7,7 @@ What it does (Windows; needs Chrome and ffmpeg on PATH):
 1. Builds a camera file from dev_data/synthetic/frames (each view held 2.5 s) and, for live mode,
    a microphone file in which a synthesized voice says the policyholder's lines at set times.
 2. Starts the app on its own port with RECORD_CONVERSATION=1.
-3. Runs a separate Chrome window (fresh profile) whose camera and microphone are those files,
+3. Runs a separate, headless Chrome (fresh profile) whose camera and microphone are those files,
    records the page itself through DevTools' screencast, presses Start, ends the sweep when the
    footage is done, waits for the packet and scrolls through the report.
 4. Muxes the recorded conversation (agent voice + policyholder voice) under the page recording.
@@ -39,6 +39,30 @@ WORK = Path(".cache/demo")
 CHROME = Path(r"C:\Program Files\Google\Chrome\Application\chrome.exe")
 PORT, DEBUG_PORT = 8020, 9333
 HOLD_S = 2.5
+TAIL_S = 20  # seconds of blank wall after the last view
+# Headless Chrome does not repaint a camera <video> into the screencast; a canvas drawn every animation
+# frame does. Recording-only: the page's own preview and frame grabs are untouched.
+MIRROR = """(() => {
+  const v = document.getElementById('preview');
+  const c = document.createElement('canvas');
+  v.parentElement.style.position = 'relative';
+  c.style.cssText = 'position:absolute;pointer-events:none;border-radius:' + getComputedStyle(v).borderRadius;
+  v.after(c);
+  const draw = () => {
+    c.style.left = v.offsetLeft + 'px'; c.style.top = v.offsetTop + 'px';
+    c.width = v.clientWidth; c.height = v.clientHeight;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, c.width, c.height);
+    if (v.videoWidth) {
+      const k = Math.min(c.width / v.videoWidth, c.height / v.videoHeight);
+      const w = v.videoWidth * k, h = v.videoHeight * k;
+      ctx.drawImage(v, (c.width - w) / 2, (c.height - h) / 2, w, h);
+    }
+    requestAnimationFrame(draw);
+  };
+  draw();
+  return true;
+})()"""
 # The policyholder's lines and when they are spoken (seconds after the microphone opens).
 LINES = [
     (9.0, "I'm in India."),
@@ -51,11 +75,12 @@ def run(cmd: list[str], **kw) -> None:
 
 
 def build_camera() -> Path:
-    """Y4M (Chrome's fake camera keeps its frame rate): 2 fps, each synthetic view held HOLD_S seconds."""
+    """Y4M (Chrome's fake camera keeps its frame rate): 2 fps, each synthetic view held HOLD_S seconds,
+    then TAIL_S seconds of the last frame (blank wall) so the sweep ends before the file loops."""
     out = WORK / "camera.y4m"
-    if not out.exists():
-        run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-framerate", str(1 / HOLD_S),
-             "-i", str(FRAMES / "%04d.jpg"), "-vf", "fps=2,format=yuv420p", str(out)])
+    run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-framerate", str(1 / HOLD_S),
+         "-i", str(FRAMES / "%04d.jpg"), "-vf", f"fps=2,tpad=stop_mode=clone:stop_duration={TAIL_S},format=yuv420p",
+         str(out)])
     return out
 
 
@@ -99,7 +124,7 @@ class Page:
     """Just enough of the Chrome DevTools protocol: run JavaScript, and record the page as it renders.
 
     Recording uses DevTools' screencast: Chrome sends each rendered frame of the page itself, so the
-    video holds exactly the app (no other windows or notifications), even if the window is covered.
+    video holds exactly the app (no other windows or notifications), independent of the screen.
     Screen grabbing was tried first and recorded only black: Chrome's window is GPU-composited.
     """
 
@@ -151,13 +176,16 @@ async def drive(mode: str, frames_dir: Path) -> tuple[str, list[tuple[float, Pat
         await page.until("document.readyState === 'complete' && !!document.getElementById('start')", 30)
         await page._send("Page.startScreencast", {"format": "jpeg", "quality": 85})
         await asyncio.sleep(3)
+        await page.js(MIRROR)
         if mode == "mock":
             await page.until("document.getElementById('start-mock').style.display !== 'none'", 10)
             await page.js("document.getElementById('start-mock').click()")
         else:
             await page.js("document.getElementById('marker-cm').value = '10'")  # the marker printed in the footage
             await page.js("document.getElementById('start').click()")
-            await asyncio.sleep(len(list(FRAMES.glob("*.jpg"))) * HOLD_S + 6)
+            # End inside the footage's trailing blank wall: the fake camera loops, and coming back to
+            # unit A would only show off the revisit handling, not the sweep.
+            await asyncio.sleep(len(list(FRAMES.glob("*.jpg"))) * HOLD_S + TAIL_S / 2)
             await page.js("document.getElementById('end').click()")
         ready = await page.until("document.getElementById('packet').style.display === 'inline'", 420)
         await asyncio.sleep(6)  # the agent's summary
@@ -213,12 +241,9 @@ def main() -> None:
     try:
         wait_for(f"http://127.0.0.1:{PORT}/api/health")
         flags = [f"--user-data-dir={profile}", f"--remote-debugging-port={DEBUG_PORT}", "--no-first-run",
-                 # A visible window: headless Chrome does not repaint <video> into the screencast, so the
-                 # camera panel looked frozen on its first frame.
-                 "--no-default-browser-check", "--window-position=40,40", "--window-size=1600,900",
-                 "--hide-scrollbars", "--disable-background-timer-throttling", "--disable-renderer-backgrounding",
-                 # Keep painting when other windows cover it (Windows occlusion tracking would pause the page).
-                 "--disable-features=CalculateNativeWinOcclusion",
+                 # Headless, so the recording does not depend on the screen being on (a visible window sent
+                 # one frame while the display was off). The camera panel is mirrored onto a canvas (MIRROR).
+                 "--no-default-browser-check", "--headless=new", "--window-size=1600,900", "--hide-scrollbars",
                  "--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream",
                  f"--use-file-for-fake-video-capture={camera.resolve()}", "--autoplay-policy=no-user-gesture-required",
                  f"--app=http://localhost:{PORT}/"]

@@ -382,17 +382,20 @@ class SweepSession:
         plane.keyframes.append((frame_id, feats.compact()))
 
     def _close_loop(self, plane: Plane, frame_id: str, feats: Features) -> Plane:
-        """Rejoin a young fragment to an older plane it overlaps (loop closure).
+        """Rejoin a young plane to an older plane it overlaps (loop closure).
 
         A gap in the sweep (blur, a fast move, a bare stretch of shelf) starts a
-        new fragment with no scale. When a later frame of that fragment overlaps
-        any frame of an older plane, the fragment is transformed into that plane:
-        it gains the older plane's scale, and books seen on both sides merge.
-        Only young or unscaled fragments are checked, which keeps the cost small.
+        new fragment with no scale; going back to a unit already filmed starts a
+        new plane too, scaled if its marker is in view. When a frame of the young
+        plane overlaps any frame of an older one, it is transformed into that
+        plane: it gains the older plane's scale if it had none, and books seen on
+        both sides merge. Scaled planes rejoin as well: otherwise every book of a
+        revisited unit was counted twice (78 books for 60 in a live run whose
+        camera came back to the first unit). Only young planes are checked,
+        which keeps the cost small.
         """
         age = len(self.frame_log) - plane.created_at_frame
-        # Only unscaled fragments gain from rejoining, and only while young (bounds the cost).
-        if plane.metric or age > CLOSURE_WINDOW:
+        if age > CLOSURE_WINDOW:
             return plane
         for other in reversed(self.planes):
             if other is plane:
